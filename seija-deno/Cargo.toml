@@ -1,0 +1,13 @@
+[package]
+name = "seija-deno"
+version = "0.1.0"
+authors = ["yangdao <=>"]
+edition = "2018"
+
+
+
+[dependencies]
+deno_core = {path = "../deno_core"}
+seija = {path = "../../../Rust/seija"}
+serde_json = "1.0.58"
+clap = "2.33.3"
