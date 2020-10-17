@@ -1,11 +1,13 @@
 package demo
-import core.{App, Entity, IGame, Time, Transform, World}
+
+import core.{App, Entity, IGame, Time, Transform}
 
 class DemoGame extends IGame {
   override def onStart(): Unit = {
     val root = Entity.New()
-    root.addComponent[Transform]()
-    println(root)
+    val trans:Transform = root.addComponent[Transform]();
+    
+
   }
 
   override def onUpdate(): Unit = {

@@ -1,5 +1,6 @@
 package core
 
-class BaseComponent {
-   def addToEntity(e:Entity): Unit = {}
+trait Component[T] {
+   def addToEntity(e:Entity): T
+   def key():Int
 }
