@@ -1,7 +1,6 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
-use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3};
-//use deno_core::v8 as v8;
+use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
 use seija::specs::{WorldExt,Entity,world::Builder};
 use serde_json::Value;
 use seija::module_bundle::{S2DLoader,DefaultBackend};
@@ -10,6 +9,7 @@ use seija::rendy::texture::image::ImageTextureConfig;
 use seija::assets::{TextuteLoaderInfo,AssetLoadError,SpriteSheetLoaderInfo,FontAssetLoaderInfo};
 use seija::math::Vector3;
 use seija::core::Time;
+use byteorder::{ByteOrder,NativeEndian};
 
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "newEntity", new_entity);
@@ -25,9 +25,16 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "getTransformPosition", get_transform_position);
     reg_json_op_sync(rt, "getTransformScale", get_transform_scale);
     reg_json_op_sync(rt, "getTransformRotation", get_transform_rotation);
+    reg_json_op_sync(rt, "getTransformPositionRef", get_transform_position_ref);
+    reg_json_op_sync(rt, "getTransformScaleRef", get_transform_scale_ref);
+    reg_json_op_sync(rt, "getTransformRotationRef", get_transform_rotation_ref);
     reg_json_op_sync(rt, "setTransformPosition", set_transform_position);
     reg_json_op_sync(rt, "setTransformScale", set_transform_scale);
     reg_json_op_sync(rt, "setTransformRotation", set_transform_rotation);
+    reg_json_op_sync(rt, "setTransformPositionRef", set_transform_position_ref);
+    reg_json_op_sync(rt, "setTransformScaleRef", set_transform_scale_ref);
+    reg_json_op_sync(rt, "setTransformRotationRef", set_transform_rotation_ref);
+    
 
     reg_json_op_sync(rt, "getTimeDelta", get_time_delta);
     reg_json_op_sync(rt, "getTimeScale", get_time_scale);
@@ -215,6 +222,39 @@ fn  get_transform_position(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]
     })
 }
 
+fn get_transform_attr_ref(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+
+    let storage = world.read_storage::<Transform>();
+    if let Some(t) = storage.get(entity) {
+        f(t,&mut *buffer[0])
+    };
+    Ok(Value::Null)
+}
+
+fn get_transform_position_ref(state: &mut OpState,value: Value,zero_copy:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+   get_transform_attr_ref(state, value,zero_copy , |t,buffer| {
+       write_vec3_to_buffer(t.position(), buffer)
+   })
+}
+
+fn get_transform_scale_ref(state: &mut OpState,value: Value,zero_copy:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    get_transform_attr_ref(state, value,zero_copy , |t,buffer| {
+        write_vec3_to_buffer(t.scale(), buffer)
+    })
+}
+
+fn get_transform_rotation_ref(state: &mut OpState,value: Value,zero_copy:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    get_transform_attr_ref(state, value,zero_copy , |t,buffer| {
+        let (x,y,z) = t.rotation().euler_angles();
+        NativeEndian::write_f32(buffer,x);
+        NativeEndian::write_f32(&mut buffer[4..8], y);
+        NativeEndian::write_f32(&mut buffer[8..12], z);
+    })
+ }
+
 fn  get_transform_scale(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     get_transform_attr(state,value,z,|t| {
         let pos = t.scale();
@@ -259,3 +299,46 @@ fn set_transform_rotation(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf])
     })
 }
 
+
+fn set_transform_attr_ref(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let mut storage = world.write_storage::<Transform>();
+    if let Some(t) = storage.get_mut(entity) {
+        f(t,&mut *buffer[0])
+    };
+    Ok(Value::Null)
+}
+
+fn set_transform_position_ref(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    set_transform_attr_ref(state,value,z,|t,buffer| {
+        let x  = NativeEndian::read_f32(buffer);
+        let y = NativeEndian::read_f32(&mut buffer[4..8]);
+        let z = NativeEndian::read_f32(&mut buffer[8..12]);
+        t.set_position_x(x);
+        t.set_position_y(y);
+        t.set_position_z(z);
+    })
+}
+
+fn set_transform_scale_ref(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    set_transform_attr_ref(state,value,z,|t,buffer| {
+        let x  = NativeEndian::read_f32(buffer);
+        let y = NativeEndian::read_f32(&mut buffer[4..8]);
+        let z = NativeEndian::read_f32(&mut buffer[8..12]);
+        let mut_scale = t.scale_mut();
+        mut_scale.x = x;
+        mut_scale.y = y;
+        mut_scale.z = z;
+    })
+}
+
+fn set_transform_rotation_ref(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    set_transform_attr_ref(state,value,z,|t,buffer| {
+        let x  = NativeEndian::read_f32(buffer);
+        let y = NativeEndian::read_f32(&mut buffer[4..8]);
+        let z = NativeEndian::read_f32(&mut buffer[8..12]);
+        t.set_rotation_euler(x, y, z);
+    })
+}

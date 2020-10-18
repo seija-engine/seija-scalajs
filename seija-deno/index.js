@@ -1,3 +1,6 @@
+console.log = function(v) {
+  Deno.core.print(v.toString()+"\n")
+}
 
 Deno.core.ops();
 
@@ -59,6 +62,10 @@ function addTransform(e,value) {
 
 function getTransformPosition(e) {
   return Deno.core.jsonOpSync("getTransformPosition",[world,e]);
+}
+
+function getTransformPositionRef(e,buffer) {
+  return Deno.core.jsonOpSync("getTransformPositionRef",[world,e],buffer);
 }
 
 function getTransformScale(e) {
@@ -175,7 +182,7 @@ function game_start(world_rid) {
     
     console.log(start_res);
 
-    addTransform(eid,[[0,0,1],[1,1,1],[0,0,0]]);
+    addTransform(eid,[[3.14159264358,0.3333333,1],[1,1,1],[0,0,0]]);
     addRect2D(eid,100,100,0.5,0.5);
     addImageRender(eid,start_res);
     setTransparent(eid,true);
@@ -185,12 +192,10 @@ function game_start(world_rid) {
     createText(textEntity);
     createSprite(spriteEntity);
     
-    let pos = getTransformPosition(eid);
-    let scale = getTransformScale(eid);
-    let r = getTransformRotation(eid);
-    console.log("pos:" + pos.toString());
-    console.log("scale:" + scale.toString());
-    console.log("r:" + r.toString());
+
+    var pos_arr = new Float32Array([0,0,0]);
+    getTransformPositionRef(eid,pos_arr);
+    console.log("eid pos:" + pos_arr.toString());
 }
 
 function createText(entity) {

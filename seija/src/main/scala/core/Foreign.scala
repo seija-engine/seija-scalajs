@@ -1,4 +1,6 @@
 package core
+
+import scala.scalajs.js.typedarray.Float32Array;
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
@@ -14,9 +16,39 @@ object Foreign {
 
   def getAbsoluteTime(w:Int):Float = Deno.core.jsonOpSync("getAbsoluteTime",w).asInstanceOf[Float]
 
+  def getTimeDelta(world:Int):Float = Deno.core.jsonOpSync("getTimeDelta",world).asInstanceOf[Float]
+
+  def getTimeScale(world:Int):Float = Deno.core.jsonOpSync("getTimeScale",world).asInstanceOf[Float]
+
   def closeApp(w:Int):Unit = Deno.core.jsonOpSync("closeApp",w)
 
   def newEntity(w:Int):Int = Deno.core.jsonOpSync("newEntity",w).asInstanceOf[Int]
+
+  def entitySetParent(world: Int,entity:Int,parent:Int):Unit =
+    Deno.core.jsonOpSync("entitySetParent",js.Array(world,entity,parent))
+
+  def addTransform(world:Int,entity:Int):Unit = Deno.core.jsonOpSync("addTransform",js.Array(world,entity))
+
+  def getTransformPosition(world:Int,entity: Int):js.Array[Float] =
+    Deno.core.jsonOpSync("getTransformPosition",js.Array(world,entity)).asInstanceOf[js.Array[Float]];
+
+  def setTransformPositionRef(world:Int,entity: Int,pos:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformPositionRef",js.Array(world,entity),pos)
+
+  def writeTransformPositionRef(world:Int,entity: Int,pos:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformPositionRef",js.Array(world,entity),pos)
+
+  def writeTransformScaleRef(world:Int,entity: Int,scale:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformScaleRef",js.Array(world,entity),scale)
+
+  def setTransformScaleRef(world:Int,entity: Int,scale:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformScaleRef",js.Array(world,entity),scale)
+
+  def writeTransformRotationRef(world: Int,entity: Int,r:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformRotationRef",js.Array(world,entity),r)
+
+  def setTransformRotationRef(world: Int,entity: Int,r:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformRotationRef",js.Array(world,entity),r)
 }
 
 @js.native
@@ -35,7 +67,7 @@ object Deno extends js.Object {
 trait DenoCore extends js.Object {
   def print(v:js.Any):Unit
   def ops():Unit
-  def jsonOpSync(name:String,value:js.Any):js.Any
+  def jsonOpSync(name:String,value:js.Any,buffer:js.Any = js.native):js.Any
 }
 
 @js.native

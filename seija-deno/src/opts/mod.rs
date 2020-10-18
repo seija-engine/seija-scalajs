@@ -8,6 +8,7 @@ use deno_core::v8 as v8;
 use v8::MapFnTo;
 use seija::specs::{World};
 use seija::math::Vector3;
+use byteorder::{ByteOrder,NativeEndian};
 
 pub fn init(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "op_close", deno_core::op_close);
@@ -59,6 +60,12 @@ pub fn json_to_vec3(val:&Value) -> Vector3<f32> {
 pub fn get_mut_world(rid:u32,state:&mut OpState) -> &mut World {
     let world:*mut World = *state.resource_table.get(rid as u32).unwrap();
     unsafe {std::mem::transmute(world)}
+}
+
+pub fn write_vec3_to_buffer(&vec:&Vector3<f32>,buffer:&mut [u8]) {
+    NativeEndian::write_f32(buffer,vec.x);
+    NativeEndian::write_f32(&mut buffer[4..8], vec.y);
+    NativeEndian::write_f32(&mut buffer[8..12], vec.z);
 }
 
 fn throw_type_error<'s>(

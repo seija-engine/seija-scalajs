@@ -2427,6 +2427,7 @@ dependencies = [
 name = "seija-deno"
 version = "0.1.0"
 dependencies = [
+ "byteorder",
  "clap",
  "deno_core",
  "seija",
