@@ -6,7 +6,7 @@ import s2d.Rect2D
 class DemoGame extends IGame {
   var rootT:Transform = null;
   var uiEntity :Entity = null;
-  var isRun:Boolean = false;
+  var index:Int = 0;
   override def onStart(): Unit = {
     val root = Entity.New()
     this.uiEntity = Entity.New();
@@ -30,11 +30,13 @@ class DemoGame extends IGame {
 
 
   override def onUpdate(): Unit = {
-    if(!this.isRun) {
-      this.isRun = true;
-      println(Entity.allParents());
+
+    if(this.index == 2) {
+
+      println(Entity.all());
       println("end");
     }
+    this.index+=1
 
   }
 

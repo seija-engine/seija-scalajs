@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
-use seija::specs::{WorldExt,Entity,world::Builder,Entities};
+use seija::specs::{WorldExt,Entity,world::Builder,Join};
 use serde_json::Value;
 use seija::module_bundle::{S2DLoader,DefaultBackend};
 use seija::common::transform::{component::ParentHierarchy,Parent,transform::Transform};
@@ -18,7 +18,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "deleteEntity", delete_entity);
     reg_json_op_sync(rt, "deleteAllChildren", delete_all_children);
     reg_json_op_sync(rt, "entityIsAlive", entity_is_alive);
-    reg_json_op_sync(rt, "entityAllParents", entity_all_parents);
+    reg_json_op_sync(rt, "entityAll", entity_all);
     
 
     reg_json_op_sync(rt, "loadSync", load_sync);
@@ -127,13 +127,14 @@ fn entity_is_alive(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    
     Ok(Value::Bool(world.is_alive(entity)))
 }
 
-fn entity_all_parents(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn entity_all(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world(value.as_i64().unwrap() as u32,state);
-    let hierarchy = world.fetch_mut::<ParentHierarchy>();
-    let arr:Vec<Value> = hierarchy.all().iter().map(|e| e.id().into()).collect();
+    let arr:Vec<Value> = world.entities().join().map(|e| e.id().into()).collect();
+    
     Ok(Value::Array(arr))
 }
 

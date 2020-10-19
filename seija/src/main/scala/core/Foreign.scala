@@ -27,8 +27,8 @@ object Foreign {
   def entitySetParent(world: Int,entity:Int,parent:Int):Unit =
     Deno.core.jsonOpSync("entitySetParent",js.Array(world,entity,parent))
 
-  def entityAllParents(world: Int):js.Array[Int] =
-    Deno.core.jsonOpSync("entityAllParents",world).asInstanceOf[js.Array[Int]]
+  def entityAll(world: Int):js.Array[Int] =
+    Deno.core.jsonOpSync("entityAll",world).asInstanceOf[js.Array[Int]]
 
   def deleteEntity(world: Int,entity: Int):Unit =
     Deno.core.jsonOpSync("deleteEntity",js.Array(world,entity))

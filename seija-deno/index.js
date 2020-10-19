@@ -199,7 +199,7 @@ function game_start(world_rid) {
     getTransformPositionRef(eid,pos_arr);
     console.log("eid pos:" + pos_arr.toString());
 
-    let arr2 = Deno.core.jsonOpSync("entityAllParents",world);
+    let arr2 = Deno.core.jsonOpSync("entityAll",world);
     console.log("cccccc2:" + arr2.toString());
 }
 
@@ -232,7 +232,7 @@ function game_update(v) {
     let arr = entityChildrens(eid);
     console.log("children:"+arr.toString());
     setSpriteName(spriteEntity,"EmptyStar");
-    let arr2 = Deno.core.jsonOpSync("entityAllParents",world);
+    let arr2 = Deno.core.jsonOpSync("entityAll",world);
     console.log("cccccc:" + arr2.toString());
    
   });

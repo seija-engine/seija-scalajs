@@ -54,7 +54,7 @@ class Entity(val id:Int) {
 object Entity {
   def New():Entity = new Entity(Foreign.newEntity(World.id))
 
-  def allParents():js.Array[Int] = {
-    Foreign.entityAllParents(World.id)
+  def all():js.Array[Int] = {
+    Foreign.entityAll(World.id)
   }
 }
