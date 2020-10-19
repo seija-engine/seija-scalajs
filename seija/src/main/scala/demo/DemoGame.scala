@@ -8,8 +8,8 @@ class DemoGame extends IGame {
   override def onStart(): Unit = {
     val root = Entity.New()
     this.uiEntity = Entity.New();
-    uiEntity.setParent(root);
-    root.addChildren(this.uiEntity);
+    uiEntity.setParent(Some(root));
+   
     var trans:Transform = root.addComponent[Transform]();
 
     trans.localPosition.x = 0.12f;

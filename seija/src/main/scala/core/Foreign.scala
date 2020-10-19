@@ -27,6 +27,9 @@ object Foreign {
   def entitySetParent(world: Int,entity:Int,parent:Int):Unit =
     Deno.core.jsonOpSync("entitySetParent",js.Array(world,entity,parent))
 
+  def entityIsAlive(world:Int,entity:Int):Boolean = 
+    Deno.core.jsonOpSync("entityIsAlive",js.Array(world,entity)).asInstanceOf[Boolean]
+
   def addTransform(world:Int,entity:Int):Unit = Deno.core.jsonOpSync("addTransform",js.Array(world,entity))
 
   def getTransformPosition(world:Int,entity: Int):js.Array[Float] =
