@@ -31,6 +31,7 @@ class Entity(val id:Int) {
       if(parent.isDefined) {
         this._parent = Some(parent.get)
         parent.get._childrens.push(this)
+        Foreign.entitySetParent(World.id,this.id,parent.get.id);
       }
     }
   }
@@ -46,10 +47,14 @@ class Entity(val id:Int) {
 
   def destory():Unit = {
     this.removeFromParent();
+    Foreign.deleteEntity(World.id,this.id)
   }
 }
 
 object Entity {
   def New():Entity = new Entity(Foreign.newEntity(World.id))
 
+  def allParents():js.Array[Int] = {
+    Foreign.entityAllParents(World.id)
+  }
 }

@@ -27,6 +27,13 @@ object Foreign {
   def entitySetParent(world: Int,entity:Int,parent:Int):Unit =
     Deno.core.jsonOpSync("entitySetParent",js.Array(world,entity,parent))
 
+  def entityAllParents(world: Int):js.Array[Int] =
+    Deno.core.jsonOpSync("entityAllParents",world).asInstanceOf[js.Array[Int]]
+
+  def deleteEntity(world: Int,entity: Int):Unit =
+    Deno.core.jsonOpSync("deleteEntity",js.Array(world,entity))
+
+
   def entityIsAlive(world:Int,entity:Int):Boolean = 
     Deno.core.jsonOpSync("entityIsAlive",js.Array(world,entity)).asInstanceOf[Boolean]
 
@@ -52,6 +59,9 @@ object Foreign {
 
   def setTransformRotationRef(world: Int,entity: Int,r:Float32Array):Unit =
     Deno.core.jsonOpSync("setTransformRotationRef",js.Array(world,entity),r)
+
+  def addRect2D(world: Int,entity: Int):Unit =
+    Deno.core.jsonOpSync("addRect2D",js.Array(world,entity,0,0,0,0))
 }
 
 @js.native

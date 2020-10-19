@@ -8,4 +8,5 @@ object World {
   }
 
   def id:Int = this._id
+
 }

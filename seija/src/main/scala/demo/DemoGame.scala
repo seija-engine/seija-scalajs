@@ -1,31 +1,40 @@
 package demo
 import math.Vector3
 import core.{App, Entity, IGame, Time, Transform}
+import s2d.Rect2D
 
 class DemoGame extends IGame {
   var rootT:Transform = null;
   var uiEntity :Entity = null;
+  var isRun:Boolean = false;
   override def onStart(): Unit = {
     val root = Entity.New()
     this.uiEntity = Entity.New();
-    uiEntity.setParent(Some(root));
-   
-    var trans:Transform = root.addComponent[Transform]();
+    this.uiEntity.addComponent[Transform]();
+    this.uiEntity.setParent(Some(root));
+    this.uiEntity.addComponent[Rect2D]();
 
-    trans.localPosition.x = 0.12f;
+    var e2 = Entity.New();
+    e2.setParent(Some(this.uiEntity));
+    e2.addComponent[Transform]();
+    this.rootT = root.addComponent[Transform]();
 
-    trans.scale.x = 10f;
-    trans.rotation.x = 0.25f;
+    this.uiEntity.destory()
 
-    println("position:" + trans.localPosition);
-    println("scale:" + trans.scale);
-    println("rotation:" + trans.rotation);
-    this.rootT = trans;
 
-    println(root.childrens)
+
+
+    println("Alive:"+root.isAlive);
+
   }
 
+
   override def onUpdate(): Unit = {
+    if(!this.isRun) {
+      this.isRun = true;
+      println(Entity.allParents());
+      println("end");
+    }
 
   }
 

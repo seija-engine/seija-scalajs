@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
-use seija::specs::{WorldExt,Entity,world::Builder};
+use seija::specs::{WorldExt,Entity,world::Builder,Entities};
 use serde_json::Value;
 use seija::module_bundle::{S2DLoader,DefaultBackend};
 use seija::common::transform::{component::ParentHierarchy,Parent,transform::Transform};
@@ -17,6 +17,9 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "entitySetParent", entity_set_parent);
     reg_json_op_sync(rt, "deleteEntity", delete_entity);
     reg_json_op_sync(rt, "deleteAllChildren", delete_all_children);
+    reg_json_op_sync(rt, "entityIsAlive", entity_is_alive);
+    reg_json_op_sync(rt, "entityAllParents", entity_all_parents);
+    
 
     reg_json_op_sync(rt, "loadSync", load_sync);
     reg_json_op_sync(rt, "setAssetRootPath", set_asset_root_path);
@@ -118,6 +121,20 @@ fn delete_entity(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resul
     let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
     let is_ok = world.delete_entity(entity).is_ok();
     Ok(Value::Bool(is_ok))
+}
+
+fn entity_is_alive(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    Ok(Value::Bool(world.is_alive(entity)))
+}
+
+fn entity_all_parents(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world(value.as_i64().unwrap() as u32,state);
+    let hierarchy = world.fetch_mut::<ParentHierarchy>();
+    let arr:Vec<Value> = hierarchy.all().iter().map(|e| e.id().into()).collect();
+    Ok(Value::Array(arr))
 }
 
 fn delete_all_children(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {

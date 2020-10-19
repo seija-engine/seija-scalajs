@@ -191,11 +191,16 @@ function game_start(world_rid) {
     
     createText(textEntity);
     createSprite(spriteEntity);
+    entitySetParent(textEntity,spriteEntity);
+    entitySetParent(spriteEntity,eid);
     
 
     var pos_arr = new Float32Array([0,0,0]);
     getTransformPositionRef(eid,pos_arr);
     console.log("eid pos:" + pos_arr.toString());
+
+    let arr2 = Deno.core.jsonOpSync("entityAllParents",world);
+    console.log("cccccc2:" + arr2.toString());
 }
 
 function createText(entity) {
@@ -227,6 +232,9 @@ function game_update(v) {
     let arr = entityChildrens(eid);
     console.log("children:"+arr.toString());
     setSpriteName(spriteEntity,"EmptyStar");
+    let arr2 = Deno.core.jsonOpSync("entityAllParents",world);
+    console.log("cccccc:" + arr2.toString());
+   
   });
   let delta = getTimeDelta();
   let abs = getAbsoluteTime();
