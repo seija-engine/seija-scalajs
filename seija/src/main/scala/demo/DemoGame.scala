@@ -2,6 +2,7 @@ package demo
 import math.Vector3
 import core.{App, Entity, IGame, Time, Transform}
 import s2d.Rect2D
+import s2d.assets.{Image, TextureConfig}
 
 class DemoGame extends IGame {
   var rootT:Transform = null;
@@ -12,15 +13,16 @@ class DemoGame extends IGame {
     this.uiEntity = Entity.New();
     this.uiEntity.addComponent[Transform]();
     this.uiEntity.setParent(Some(root));
-    this.uiEntity.addComponent[Rect2D]();
+    var rect2d = this.uiEntity.addComponent[Rect2D]();
 
     var e2 = Entity.New();
     e2.setParent(Some(this.uiEntity));
-    e2.addComponent[Transform]();
+    var t = e2.addComponent[Transform]();
     this.rootT = root.addComponent[Transform]();
 
     this.uiEntity.destory()
 
+    //assets.Loader.loadSync[Image]("a.png",new TextureConfig);
 
 
 
@@ -43,5 +45,10 @@ class DemoGame extends IGame {
   override def onQuit(): Unit = {
 
 
+  }
+
+  def createImage(parent:Option[Entity]):Entity = {
+    var entity = Entity.New();
+    entity
   }
 }

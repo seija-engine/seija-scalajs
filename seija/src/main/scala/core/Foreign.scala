@@ -62,6 +62,21 @@ object Foreign {
 
   def addRect2D(world: Int,entity: Int):Unit =
     Deno.core.jsonOpSync("addRect2D",js.Array(world,entity,0,0,0,0))
+
+  def setRect2DSizeRef(world: Int,entity: Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setRect2DSizeRef",js.Array(world,entity),buffer)
+
+  def getRect2DSizeRef(world: Int,entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getRect2DSizeRef",js.Array(world,entity),buffer)
+
+  def setRect2DAnchorRef(world: Int,entity: Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setRect2DAnchorRef",js.Array(world,entity),buffer)
+
+  def getRect2DAnchorRef(world:Int,entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getRect2DAnchorRef",js.Array(world,entity),buffer)
+
+  def setTransparent(world: Int,entity:Int,isTransparent:Boolean):Unit =
+    Deno.core.jsonOpSync("setTransparent",js.Array(world,entity,isTransparent))
 }
 
 @js.native

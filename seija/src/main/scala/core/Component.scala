@@ -2,5 +2,13 @@ package core
 
 trait Component[T] {
    def addToEntity(e:Entity): T
-   def key():Int
+   val key:Int
+}
+
+class BaseComponent(protected val entity: Entity) {
+ 
+   def onAttach():Unit = {}
+
+   def onDetach():Unit = {}
+
 }

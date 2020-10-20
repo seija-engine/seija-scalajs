@@ -25,11 +25,8 @@ class Vector3(private var _inner:Float32Array) {
   def inner():Float32Array = this._inner
 
   var updateCallback:Option[() => Unit] = None;
-  def callCallBack():Unit = {
-    if(this.updateCallback.isDefined) {
-      this.updateCallback.get();
-    }
-  }
+  def callCallBack():Unit = this.updateCallback.foreach(_())
+
 
   def setCallBack(f:() => Unit):Unit = this.updateCallback = Some(f)
 

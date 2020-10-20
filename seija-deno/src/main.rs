@@ -6,8 +6,7 @@ use clap::{App,Arg};
 fn main() {
     let mut runtime = JsRuntime::new(Default::default());
     opts::init(&mut runtime);
-    let matches = App::new("seija")
-                                .arg(Arg::with_name("file").short("f").default_value("./index.js")).get_matches();
+    let matches = App::new("seija").arg(Arg::with_name("file").short("f").default_value("./index.js")).get_matches();
     
     let file_name = matches.value_of("file").unwrap();
    
