@@ -16,6 +16,7 @@ class DemoGame extends IGame {
     var rect2d = this.uiEntity.addComponent[Rect2D]();
     rect2d.size.x = 100;
     rect2d.size.y = 100;
+    println(rect2d.anchor);
 
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
 

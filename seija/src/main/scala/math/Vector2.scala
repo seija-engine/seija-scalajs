@@ -31,8 +31,8 @@ object Vector2 {
 
   def default():Vector2 = new Vector2(Float32Array.from(js.Array(0,0)))
 
-  def defaultByCB(f:() => Unit): Vector2 = {
-    var vec = Vector2.default();
+  def defaultByCB(f:() => Unit,x:Float = 0,y:Float = 0): Vector2 = {
+    var vec = Vector2.New(x,y);
     vec.setCallBack(f);
     vec
   }

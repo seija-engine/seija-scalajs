@@ -4,7 +4,7 @@ import core.{BaseComponent, Component, Entity, Foreign, Transform, World}
 
 class Rect2D(override val entity:Entity) extends BaseComponent(entity) {
   private var _size:Vector2 = Vector2.defaultByCB(this.sizeToRust);
-  private var _anchor:Vector2 = Vector2.defaultByCB(this.anchorToRust);
+  private var _anchor:Vector2 = Vector2.defaultByCB(this.anchorToRust,0.5f,0.5f);
 
   def size:Vector2 = {
     Foreign.getRect2DSizeRef(World.id,this.entity.id,_size.inner())

@@ -61,7 +61,7 @@ object Foreign {
     Deno.core.jsonOpSync("setTransformRotationRef",js.Array(world,entity),r)
 
   def addRect2D(world: Int,entity: Int):Unit =
-    Deno.core.jsonOpSync("addRect2D",js.Array(world,entity,0,0,0,0))
+    Deno.core.jsonOpSync("addRect2D",js.Array(world,entity,0,0,0.5,0.5))
 
   def setRect2DSizeRef(world: Int,entity: Int,buffer:Float32Array):Unit =
     Deno.core.jsonOpSync("setRect2DSizeRef",js.Array(world,entity),buffer)
