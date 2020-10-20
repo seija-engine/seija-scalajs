@@ -1,45 +1,36 @@
 package demo
 import math.Vector3
 import core.{App, Entity, IGame, Time, Transform}
-import s2d.Rect2D
+import s2d.{ImageRender, Rect2D}
+import assets.Loader;
 import s2d.assets.{Image, TextureConfig}
 
 class DemoGame extends IGame {
-  var rootT:Transform = null;
   var uiEntity :Entity = null;
   var index:Int = 0;
+  var uiT:Transform = null;
   override def onStart(): Unit = {
     val root = Entity.New()
     this.uiEntity = Entity.New();
-    this.uiEntity.addComponent[Transform]();
-    this.uiEntity.setParent(Some(root));
+    this.uiT = this.uiEntity.addComponent[Transform]();
     var rect2d = this.uiEntity.addComponent[Rect2D]();
+    rect2d.size.x = 100;
+    rect2d.size.y = 100;
 
-    var e2 = Entity.New();
-    e2.setParent(Some(this.uiEntity));
-    var t = e2.addComponent[Transform]();
-    this.rootT = root.addComponent[Transform]();
+    assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
 
-    this.uiEntity.destory()
-
-    //assets.Loader.loadSync[Image]("a.png",new TextureConfig);
-
-
-
-    println("Alive:"+root.isAlive);
+    Loader.loadSync[Image]("StarIcon.png",new TextureConfig()) match {
+      case Right(image) =>
+        var imageRender = this.uiEntity.addComponent[ImageRender]()
+        imageRender.setTexture(image)
+      case Left(err) => println(err)
+    }
 
   }
 
 
   override def onUpdate(): Unit = {
-
-    if(this.index == 2) {
-
-      println(Entity.all());
-      println("end");
-    }
-    this.index+=1
-
+    //this.uiT.localPosition.x += 1
   }
 
   override def onQuit(): Unit = {

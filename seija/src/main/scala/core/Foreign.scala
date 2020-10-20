@@ -77,6 +77,18 @@ object Foreign {
 
   def setTransparent(world: Int,entity:Int,isTransparent:Boolean):Unit =
     Deno.core.jsonOpSync("setTransparent",js.Array(world,entity,isTransparent))
+
+  def loadSync(world:Int,path:String,assetType:Int,config:js.Any):js.Any =
+    Deno.core.jsonOpSync("loadSync",js.Array(world,assetType,path,config))
+
+  def setAssetRootPath(world: Int,path:String):Unit =
+    Deno.core.jsonOpSync("setAssetRootPath",js.Array(world,path))
+
+  def addImageRender(world:Int,entity: Int,textureId:Option[Int]):Unit =
+    Deno.core.jsonOpSync("addImageRender",js.Array(world,entity,textureId))
+
+  def setImageTexture(world:Int,entity: Int,textureId:Int):Unit =
+    Deno.core.jsonOpSync("setImageTexture",js.Array(world,entity,textureId))
 }
 
 @js.native

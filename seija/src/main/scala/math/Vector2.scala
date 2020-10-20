@@ -21,6 +21,8 @@ class Vector2(private var _inner:Float32Array) {
   var updateCallback:Option[() => Unit] = None;
   def callCallBack():Unit = if(this.updateCallback.isDefined) { this.updateCallback.get(); }
   def setCallBack(f:() => Unit):Unit = this.updateCallback = Some(f)
+
+  override def toString = s"Vector2(${this.x},${this.y})"
 }
 
 

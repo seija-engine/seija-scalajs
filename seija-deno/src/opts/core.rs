@@ -10,6 +10,7 @@ use seija::assets::{TextuteLoaderInfo,AssetLoadError,SpriteSheetLoaderInfo,FontA
 use seija::math::Vector3;
 use seija::core::Time;
 use byteorder::{ByteOrder,NativeEndian};
+use seija::rendy::hal::image::{SamplerDesc,Filter,WrapMode};
 
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "newEntity", new_entity);
@@ -163,12 +164,12 @@ fn load_sync(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
     let asset_path = arr[2].as_str().unwrap();
     let assert_id = match asset_type {
         1 => {
-            let mut tex_config = ImageTextureConfig::default();
+            let mut tex_config = parse_image_config(&arr[3]);
             tex_config.premultiply_alpha = true;
             loader.load_sync::<_, DefaultBackend>(TextuteLoaderInfo::new(asset_path,tex_config), world).map(|h| h.id())
         },
         2 => {
-            let mut tex_config = ImageTextureConfig::default();
+            let mut tex_config = parse_image_config(&arr[3]);
             tex_config.premultiply_alpha = true;
             loader.load_sync::<_, DefaultBackend>(SpriteSheetLoaderInfo::new(&asset_path,tex_config), world).map(|h| h.id())
         },
@@ -185,6 +186,43 @@ fn load_sync(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
             Ok(Value::String(format!("{:?}",err)))
         }
     }   
+}
+
+fn parse_image_config(value:&Value) -> ImageTextureConfig {
+    let mut config = ImageTextureConfig::default();
+    let object = value.as_object();
+    if let Some(b) = object.and_then(|m|m.get("generateMips")).and_then(|v|v.as_bool()) {
+        config.generate_mips = b;
+    }
+    if let Some(b) = object.and_then(|m|m.get("premultiplyAlpha")).and_then(|v|v.as_bool()) {
+        config.premultiply_alpha = b;
+    }
+    if let Some(b) = object.and_then(|m|m.get("sampler_info")).and_then(|v|v.as_array()) {
+       let filter = b[0].as_i64().unwrap_or(1);
+       let wrap_mode = b[1].as_i64().unwrap_or(3);
+       config.sampler_info = match filter {
+           0 => {
+               match wrap_mode {
+                   0 => SamplerDesc::new(Filter::Nearest, WrapMode::Tile),
+                   1 => SamplerDesc::new(Filter::Nearest, WrapMode::Mirror),
+                   3 => SamplerDesc::new(Filter::Nearest, WrapMode::Clamp),
+                   4 => SamplerDesc::new(Filter::Nearest, WrapMode::Border),
+                   _ => panic!()
+               }
+           },
+           1 => {
+                match wrap_mode {
+                    0 => SamplerDesc::new(Filter::Linear, WrapMode::Tile),
+                    1 => SamplerDesc::new(Filter::Linear, WrapMode::Mirror),
+                    3 => SamplerDesc::new(Filter::Linear, WrapMode::Clamp),
+                    4 => SamplerDesc::new(Filter::Linear, WrapMode::Border),
+                    _ => panic!()
+                }
+           },
+           _ => panic!()
+       };
+    }
+    config
 }
 
 fn set_asset_root_path(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {

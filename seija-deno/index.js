@@ -49,7 +49,7 @@ function deleteAllChildren(e) {
 }
 
 function loadSync(typ,path) {
-  return Deno.core.jsonOpSync("loadSync",[world,typ,path]); 
+  return Deno.core.jsonOpSync("loadSync",[world,typ,path,null]); 
 }
 
 function setAssetRootPath(path) {
@@ -97,11 +97,13 @@ function addRect2D(e,width,height,anchorX,anchorY) {
 }
 
 function setRect2DSize(e,width,height) {
-  return Deno.core.jsonOpSync("setRect2DSize",[world,e,width,height]);
+  let arr = new Float32Array([width,height]);
+  return Deno.core.jsonOpSync("setRect2DSizeRef",[world,e],arr);
 }
 
 function setRect2dAnchor(e,x,y) {
-  return Deno.core.jsonOpSync("setRect2dAnchor",[world,e,x,y]);
+  let arr = new Float32Array([x,y]);
+  return Deno.core.jsonOpSync("setRect2dAnchorRef",[world,e],arr);
 }
 
 function setTransparent(e,b) {
@@ -146,6 +148,13 @@ function addSpriteRender(e,sheet,name) {
 
 function setSpriteName(e,name) {
   return Deno.core.jsonOpSync("setSpriteName",[world,e,name]);
+}
+
+function getRect2dAnchorRef(e) {
+  
+  var fff = new Float32Array(2);
+   Deno.core.jsonOpSync("getRect2dAnchorRef",[world,e],fff);
+  return fff;
 }
 ////////////////////////////////////////////
 let isCall = false;
@@ -201,6 +210,9 @@ function game_start(world_rid) {
 
     let arr2 = Deno.core.jsonOpSync("entityAll",world);
     console.log("cccccc2:" + arr2.toString());
+
+    var a = getRect2dAnchorRef(eid);
+    console.log("?????" + a[0] + a[1]);
 }
 
 function createText(entity) {
