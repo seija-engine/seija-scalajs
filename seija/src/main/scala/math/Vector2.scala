@@ -17,6 +17,12 @@ class Vector2(private var _inner:Float32Array) {
     this.callCallBack()
   }
 
+  def set(x:Float,y:Float):Unit = {
+    this._inner.set(0,x);
+    this._inner.set(1,y)
+    this.callCallBack()
+  }
+
 
   var updateCallback:Option[() => Unit] = None;
   def callCallBack():Unit = if(this.updateCallback.isDefined) { this.updateCallback.get(); }

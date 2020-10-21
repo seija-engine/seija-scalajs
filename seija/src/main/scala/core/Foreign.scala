@@ -4,6 +4,10 @@ import scala.scalajs.js.typedarray.Float32Array;
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+trait ToJSValue {
+  def toJsValue:js.Any
+}
+
 object Foreign {
   def init_deno(): Unit = {
     console.log = (v:js.Any) => {
@@ -89,6 +93,13 @@ object Foreign {
 
   def setImageTexture(world:Int,entity: Int,textureId:Int):Unit =
     Deno.core.jsonOpSync("setImageTexture",js.Array(world,entity,textureId))
+
+  //
+  def getImageColor(world:Int,entity:Int,buffer:Float32Array):js.Any = 
+    Deno.core.jsonOpSync("getImageColorRef",js.Array(world,entity),buffer)
+
+  def setImageColor(world:Int,entity:Int,buffer:Float32Array):Unit = 
+    Deno.core.jsonOpSync("setImageColorRef",js.Array(world,entity),buffer)
 }
 
 @js.native

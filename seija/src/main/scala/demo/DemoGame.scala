@@ -24,6 +24,8 @@ class DemoGame extends IGame {
       case Right(image) =>
         var imageRender = this.uiEntity.addComponent[ImageRender]()
         imageRender.setTexture(image)
+        imageRender.setImageType(s2d.ImageSimple)
+        imageRender.color.a = 0.5f
       case Left(err) => println(err)
     }
 

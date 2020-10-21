@@ -21,6 +21,12 @@ class Vector3(private var _inner:Float32Array) {
     this.callCallBack()
   }
 
+  def set(x:Float,y:Float,z:Float):Unit = {
+    this._inner.set(0,x);
+    this._inner.set(1,y);
+    this._inner.set(2,z);
+    this.callCallBack()
+  }
 
   def inner():Float32Array = this._inner
 

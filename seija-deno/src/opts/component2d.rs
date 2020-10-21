@@ -173,9 +173,9 @@ fn add_sprite_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> R
     if storage.contains(entity) {
         return Ok(Value::Bool(false))
     }
-    let sheet_id = arr[2].as_i64().unwrap() as u32;
-    let sprite_name = arr[3].as_str().unwrap();
-    let sprite_render = SpriteRender::new(Handle::new(sheet_id), sprite_name);
+    let sheet_id = arr[2].as_i64().map(|v| Handle::new(v as u32) );
+    let sprite_name = arr[3].as_str();
+    let sprite_render = SpriteRender::new(sheet_id, sprite_name);
     storage.insert(entity, sprite_render).unwrap();
     let mut mesh_storage = world.write_storage::<Mesh2D>();
     mesh_storage.insert(entity,Mesh2D::default()).unwrap();
@@ -186,7 +186,7 @@ fn set_sprite_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let name = arr[2].as_str().unwrap();
+    let name = arr[2].as_str();
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
        sprite.set_sprite_name(name);
@@ -215,10 +215,10 @@ fn set_sprite_sheet(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let sheet = arr[2].as_i64().unwrap() as u32;
+    let sheet = arr[2].as_i64().map(|v| Handle::new(v as u32));
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
-       sprite.set_sprite_sheet(Handle::new(sheet));
+       sprite.set_sprite_sheet(sheet);
        update_mesh_2d(world, entity);
     }
     Ok(Value::Null)

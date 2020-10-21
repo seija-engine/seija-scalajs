@@ -1,5 +1,6 @@
 package s2d.assets
-import assets.ToJSValue;
+import core.ToJSValue
+
 import scala.scalajs.js;
 
 object Filter extends Enumeration {
@@ -22,7 +23,7 @@ class SamplerDesc(filter:Filter.Filter,wrapMode:WrapMode.WrapMode)
 class TextureConfig(var samplerDesc:Option[SamplerDesc] = None,
                     var generateMips:Option[Boolean] = None,
                     var premultiplyAlpha:Option[Boolean] = None) extends ToJSValue {
-    override def toJsValue(): js.Any = {
+    override def toJsValue: js.Any = {
         1233.asInstanceOf[js.Any]
     }
 

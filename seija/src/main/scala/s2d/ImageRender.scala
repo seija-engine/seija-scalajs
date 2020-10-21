@@ -1,10 +1,22 @@
 package s2d
 import core.{BaseComponent, Component, Entity, Foreign, World}
 import s2d.assets.Image;
-class ImageRender(override val entity:Entity) extends BaseComponent(entity) {
+import data.Color;
+class ImageRender(override val entity:Entity) extends BaseComponent(entity) with GenericImage[ImageRender] {
+  
+
   def setTexture(image:Image):Unit = {
     Foreign.setImageTexture(World.id,this.entity.id,image.id)
   }
+
+  def color:Color = {
+    Foreign.getImageColor(World.id,this.entity.id,_color.inner())
+    _color
+  }
+
+ 
+
+  override def colorToRust():Unit = Foreign.setImageColor(World.id,this.entity.id,_color.inner())
 }
 
 

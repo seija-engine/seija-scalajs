@@ -1,8 +1,8 @@
 package assets
+import core.ToJSValue
+
 import scala.scalajs.js;
-trait ToJSValue {
-  def toJsValue():js.Any
-}
+
 
 abstract class Asset(val id:Int) {
   type Config <: ToJSValue
