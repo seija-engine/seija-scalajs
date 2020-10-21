@@ -94,12 +94,20 @@ object Foreign {
   def setImageTexture(world:Int,entity: Int,textureId:Int):Unit =
     Deno.core.jsonOpSync("setImageTexture",js.Array(world,entity,textureId))
 
-  //
   def getImageColor(world:Int,entity:Int,buffer:Float32Array):js.Any = 
     Deno.core.jsonOpSync("getImageColorRef",js.Array(world,entity),buffer)
 
   def setImageColor(world:Int,entity:Int,buffer:Float32Array):Unit = 
     Deno.core.jsonOpSync("setImageColorRef",js.Array(world,entity),buffer)
+
+  def addSpriteRender(world:Int,entity: Int):Unit =
+    Deno.core.jsonOpSync("addSpriteRender",js.Array(world,entity,null,null))
+
+  def setSpriteSheet(world: Int,entity: Int,sheet:Int):Unit =
+    Deno.core.jsonOpSync("setSpriteSheet",js.Array(world,entity,sheet))
+
+  def setSpriteName(world: Int,entity: Int,name:String):Unit =
+    Deno.core.jsonOpSync("setSpriteName",js.Array(world,entity,name))
 }
 
 @js.native

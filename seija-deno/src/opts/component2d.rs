@@ -10,7 +10,8 @@ use byteorder::{ByteOrder,NativeEndian};
 
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "addImageRender", add_image_render);
-    reg_json_op_sync(rt, "setImageColor", set_image_color);
+    reg_json_op_sync(rt, "setImageColorRef", set_image_color);
+    reg_json_op_sync(rt, "getImageColorRef", get_image_color);
     reg_json_op_sync(rt, "setImageTexture", set_image_texture);
 
     reg_json_op_sync(rt, "addTextRender", add_text_render);
@@ -54,19 +55,40 @@ fn add_image_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
     Ok(Value::Bool(true)) 
 }
 
-fn set_image_color(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn set_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let r = arr[2].as_f64().unwrap() as f32;
-    let g = arr[3].as_f64().unwrap() as f32;
-    let b = arr[4].as_f64().unwrap() as f32;
-    let a = arr[5].as_f64().unwrap() as f32;
+    let bytes =  &mut *buffer[0];
+    let r  = NativeEndian::read_f32(bytes);
+    let g = NativeEndian::read_f32(&mut bytes[4..8]);
+    let b = NativeEndian::read_f32(&mut bytes[8..12]);
+    let a = NativeEndian::read_f32(&mut bytes[12..16]);
+    
     let mut image_storage = world.write_storage::<ImageRender>();
     let mimage = image_storage.get_mut(entity);
     if let Some(image) = mimage {
         image.set_color(r, g, b, a);
         update_mesh_2d(world, entity);
+    }
+    Ok(Value::Null)
+}
+
+fn get_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let bytes =  &mut *buffer[0];
+    
+    let mut image_storage = world.write_storage::<ImageRender>();
+    let mimage = image_storage.get_mut(entity);
+    if let Some(image) = mimage {
+       let color = image.get_color();
+       NativeEndian::write_f32(bytes,color[0]);
+       NativeEndian::write_f32(&mut bytes[4..8],color[1]);
+       NativeEndian::write_f32(&mut bytes[8..12],color[2]);
+       NativeEndian::write_f32(&mut bytes[12..16],color[3]);
+       update_mesh_2d(world, entity);
     }
     Ok(Value::Null)
 }

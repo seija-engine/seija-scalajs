@@ -42,6 +42,10 @@ class Color(private var _inner:Float32Array) {
     var callBack:Option[()=> Unit] = None
     def setCallback(f:() => Unit):Unit = this.callBack = Some(f)
     def callCallBack():Unit = this.callBack.foreach(_());
+
+    override def toString: String = s"Color($r,$g,$b,$a)"
+
+    def toJsArray:js.Array[Float] = js.Array(this.r,this.g,this.b,this.a)
 }
 
 object Color {

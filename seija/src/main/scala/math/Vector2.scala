@@ -20,6 +20,7 @@ class Vector2(private var _inner:Float32Array) {
   def set(x:Float,y:Float):Unit = {
     this._inner.set(0,x);
     this._inner.set(1,y)
+
     this.callCallBack()
   }
 

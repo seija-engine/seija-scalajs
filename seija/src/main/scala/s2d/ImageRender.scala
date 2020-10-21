@@ -9,13 +9,8 @@ class ImageRender(override val entity:Entity) extends BaseComponent(entity) with
     Foreign.setImageTexture(World.id,this.entity.id,image.id)
   }
 
-  def color:Color = {
-    Foreign.getImageColor(World.id,this.entity.id,_color.inner())
-    _color
-  }
 
- 
-
+  override def colorFromRust(): Unit = Foreign.getImageColor(World.id,this.entity.id,_color.inner())
   override def colorToRust():Unit = Foreign.setImageColor(World.id,this.entity.id,_color.inner())
 }
 
@@ -27,6 +22,5 @@ object ImageRender {
       Foreign.addImageRender(World.id,e.id,None)
       new ImageRender(e)
     }
-
   }
 }
