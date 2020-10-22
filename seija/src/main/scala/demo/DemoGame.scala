@@ -24,11 +24,8 @@ class DemoGame extends IGame {
     var image = Loader.loadSync[Image]("StarIcon.png",new TextureConfig()).toOption.get;
     var imageRender = this.uiEntity.addComponent[ImageRender]()
     imageRender.setTexture(image)
-    imageRender.setImageType(s2d.ImageSimple)
-    imageRender.color = Color.New(1,0,1,1)
-
-
-
+    imageRender.setImageType(s2d.ImageSliced(5f,5f,5f,5f))
+    imageRender.color = Color.New(1,0,1,0.1f)
 
     var sheet = Loader.loadSync[SpriteSheet]("material.json",new TextureConfig()).toOption.get;
     this.createSprite(sheet)
@@ -44,7 +41,12 @@ class DemoGame extends IGame {
     var sprite = entity.addComponent[SpriteRender]();
     sprite.setSpriteSheet(sheet)
     sprite.setSpriteName("button")
-    sprite.color = Color.New(0,0,1,1)
+    sprite.color.set(1,0,0,0.1f)
+
+    println(s"simple: ${s2d.ImageSimple.toJsValue}");
+    println(s"Sliced:${s2d.ImageSliced(6f,7f,8f,9f).toJsValue}")
+    println(s"Filled: ${s2d.ImageFilled(s2d.ImageFilledType.VerticalBottom,0.7f).toJsValue}")
+    println(s"Tiled:${s2d.ImageTiled.toJsValue}")
     println(sprite);
   }
 

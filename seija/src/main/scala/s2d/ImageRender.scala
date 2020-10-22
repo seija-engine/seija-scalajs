@@ -9,6 +9,9 @@ class ImageRender(override val entity:Entity) extends BaseComponent(entity) with
     Foreign.setImageTexture(World.id,this.entity.id,image.id)
   }
 
+  override def setImageType(typ: ImageType): Unit = {
+    Foreign.setImageType(World.id,entity.id,typ.toJsValue)
+  }
 
   override def colorFromRust(): Unit = Foreign.getImageColor(World.id,this.entity.id,_color.inner())
   override def colorToRust():Unit = Foreign.setImageColor(World.id,this.entity.id,_color.inner())

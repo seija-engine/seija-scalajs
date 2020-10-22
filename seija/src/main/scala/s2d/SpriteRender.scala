@@ -5,8 +5,8 @@ import s2d.assets.SpriteSheet
 
 class SpriteRender(override val entity:Entity) extends BaseComponent(entity) with GenericImage[SpriteRender] {
 
-
-
+  var _spriteName:String = "";
+  def spriteName:String = _spriteName
 
   def setSpriteSheet(sheet:SpriteSheet):Unit = {
     Foreign.setSpriteSheet(World.id,this.entity.id,sheet.id)
@@ -14,10 +14,13 @@ class SpriteRender(override val entity:Entity) extends BaseComponent(entity) wit
 
   def setSpriteName(name:String):Unit = {
     Foreign.setSpriteName(World.id,this.entity.id,name)
+    _spriteName = name;
   }
 
-  override def colorToRust(): Unit = {}
-  override def colorFromRust(): Unit = {}
+
+
+  override def colorToRust(): Unit = Foreign.setSpriteColor(World.id,entity.id,this._color.inner())
+  override def colorFromRust(): Unit = Foreign.getSpriteColor(World.id,entity.id,this._color.inner())
 }
 
 

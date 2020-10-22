@@ -108,6 +108,15 @@ object Foreign {
 
   def setSpriteName(world: Int,entity: Int,name:String):Unit =
     Deno.core.jsonOpSync("setSpriteName",js.Array(world,entity,name))
+
+  def setSpriteColor(world: Int,entity:Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setSpriteColorRef",js.Array(world,entity),buffer)
+
+  def getSpriteColor(world:Int,entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getSpriteColorRef",js.Array(world,entity),buffer)
+
+  def setImageType(world:Int,entity: Int,value:js.Any):Unit =
+    Deno.core.jsonOpSync("setImageType",js.Array(world,entity,value))
 }
 
 @js.native

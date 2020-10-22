@@ -103,7 +103,7 @@ function setRect2DSize(e,width,height) {
 
 function setRect2dAnchor(e,x,y) {
   let arr = new Float32Array([x,y]);
-  return Deno.core.jsonOpSync("setRect2dAnchorRef",[world,e],arr);
+  return Deno.core.jsonOpSync("setRect2DAnchorRef",[world,e],arr);
 }
 
 function setTransparent(e,b) {
@@ -111,7 +111,7 @@ function setTransparent(e,b) {
 }
 
 function setImageColor(e,r,g,b,a) {
-  return Deno.core.jsonOpSync("setImageColor",[world,e,r,g,b,a]);
+  return Deno.core.jsonOpSync("setImageColorRef",[world,e],new Float32Array([r,g,b,a]));
 }
 
 function setImageTexture(e,texId) {
@@ -153,7 +153,7 @@ function setSpriteName(e,name) {
 function getRect2dAnchorRef(e) {
   
   var fff = new Float32Array(2);
-   Deno.core.jsonOpSync("getRect2dAnchorRef",[world,e],fff);
+   Deno.core.jsonOpSync("getRect2DAnchorRef",[world,e],fff);
   return fff;
 }
 ////////////////////////////////////////////
@@ -266,7 +266,7 @@ function game_quit() {
 
 const _newline = new Uint8Array([10]);
 let s2d = Deno.core.jsonOpSync("newSimple2d",{
-  window:{bg_color:[0.6,0.6,0.6,1] }
+  window:{bg_color:[0.6,0.6,0.6,1],width:10,height:10 }
 });
  
 Seija.runApp(s2d,game_start,game_update,game_quit);

@@ -1,0 +1,1 @@
+seija-deno.exe -f target/scala-2.13/seija-fastopt.js

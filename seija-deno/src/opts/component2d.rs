@@ -3,7 +3,7 @@ use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3};
 use serde_json::Value;
 use seija::specs::{WorldExt,Entity,world::Builder,World};
 use deno_core::error::AnyError;
-use seija::render::{components::{ImageRender,Mesh2D,TextRender,LineMode,SpriteRender},Transparent};
+use seija::render::{components::{ImageRender,Mesh2D,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
 use seija::common::{Rect2D,AnchorAlign};
 use byteorder::{ByteOrder,NativeEndian};
@@ -13,6 +13,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "setImageColorRef", set_image_color);
     reg_json_op_sync(rt, "getImageColorRef", get_image_color);
     reg_json_op_sync(rt, "setImageTexture", set_image_texture);
+    reg_json_op_sync(rt, "setImageType",set_image_type);
 
     reg_json_op_sync(rt, "addTextRender", add_text_render);
     reg_json_op_sync(rt, "setTextString", set_text_string);
@@ -23,8 +24,10 @@ pub fn init_json_func(rt:&mut JsRuntime) {
 
     reg_json_op_sync(rt, "addSpriteRender", add_sprite_render);
     reg_json_op_sync(rt, "setSpriteName", set_sprite_name);
-    reg_json_op_sync(rt, "setSpriteColor",set_sprite_color);
+    reg_json_op_sync(rt, "setSpriteColorRef",set_sprite_color);
     reg_json_op_sync(rt, "setSpriteSheet", set_sprite_sheet);
+    reg_json_op_sync(rt, "setSpriteType",set_sprite_type);
+    reg_json_op_sync(rt, "getSpriteColorRef", get_sprite_color);
 
 
     reg_json_op_sync(rt, "addRect2D",add_rect_2d);
@@ -84,10 +87,7 @@ fn get_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -
     let mimage = image_storage.get_mut(entity);
     if let Some(image) = mimage {
        let color = image.get_color();
-       NativeEndian::write_f32(bytes,color[0]);
-       NativeEndian::write_f32(&mut bytes[4..8],color[1]);
-       NativeEndian::write_f32(&mut bytes[8..12],color[2]);
-       NativeEndian::write_f32(&mut bytes[12..16],color[3]);
+       NativeEndian::write_f32_into(color, bytes);
        update_mesh_2d(world, entity);
     }
     Ok(Value::Null)
@@ -105,6 +105,42 @@ fn set_image_texture(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> R
         update_mesh_2d(world,entity);
     }
     Ok(Value::Null)
+}
+
+fn set_image_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let mut image_storage = world.write_storage::<ImageRender>();
+    let mimage = image_storage.get_mut(entity);
+    if let Some(image) = mimage {
+       let img_type = json_to_image_type(&arr[2]);   
+       image.set_type(img_type)
+    }
+    Ok(Value::Null)
+}
+
+fn json_to_image_type(value:&Value) -> ImageType {
+    if let Some(typ) = value[0].as_i64() {
+        match typ {
+            0 => ImageType::Simple,
+            3 => ImageType::Tiled,
+            _ => panic!("error image type")
+        }
+    } else {
+        let arr = value.as_array().unwrap();
+        match arr[0].as_i64().unwrap() {
+            1 => ImageType::Sliced(arr[1].as_f64().unwrap() as f32,
+                                   arr[2].as_f64().unwrap() as f32,
+                                   arr[3].as_f64().unwrap() as f32,
+                                   arr[4].as_f64().unwrap() as f32),
+            2 => {
+                let filled_type = ImageFilledType::from(arr[1].as_i64().unwrap() as u32);
+                ImageType::Filled(filled_type,arr[2].as_f64().unwrap() as f32)
+            },
+            _ => panic!("error image type")
+        }
+    }
 }
 
 fn add_text_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
@@ -217,18 +253,32 @@ fn set_sprite_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     Ok(Value::Null)
 }
 
-fn set_sprite_color(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn set_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let r = arr[2].as_f64().unwrap() as f32;
-    let g = arr[3].as_f64().unwrap() as f32;
-    let b = arr[4].as_f64().unwrap() as f32;
-    let a = arr[5].as_f64().unwrap() as f32;
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
+        let bytes = &mut *buffer[0];
+        let r =  NativeEndian::read_f32(bytes);
+        let g =  NativeEndian::read_f32(&mut bytes[4..8]);
+        let b =  NativeEndian::read_f32(&mut bytes[8..12]);
+        let a =  NativeEndian::read_f32(&mut bytes[12..16]);
        sprite.set_color(r, g, b, a);
        update_mesh_2d(world, entity);
+    }
+    Ok(Value::Null)
+}
+
+fn get_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let mut storage = world.write_storage::<SpriteRender>();
+    if let Some(sprite) = storage.get_mut(entity) {
+        let bytes = &mut *buffer[0];
+        let color = sprite.get_color();
+        NativeEndian::write_f32_into(color, bytes);
     }
     Ok(Value::Null)
 }
@@ -246,7 +296,16 @@ fn set_sprite_sheet(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
     Ok(Value::Null)
 }
 
-
+fn set_sprite_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let mut storage = world.write_storage::<SpriteRender>();
+    if let Some(sprite) = storage.get_mut(entity) {
+        sprite.set_type(json_to_image_type(&arr[2]))
+    }
+    Ok(Value::Null)
+}
 
 fn add_rect_2d(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
