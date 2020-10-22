@@ -117,6 +117,19 @@ object Foreign {
 
   def setImageType(world:Int,entity: Int,value:js.Any):Unit =
     Deno.core.jsonOpSync("setImageType",js.Array(world,entity,value))
+
+  def setSpriteType(world:Int,entity: Int,value:js.Any):Unit =
+    Deno.core.jsonOpSync("setSpriteType",js.Array(world,entity,value))
+
+  def setImageFilledValue(world: Int,entity: Int,value:Float):Unit =
+    Deno.core.jsonOpSync("setImageFilledValue",js.Array(world,entity,value))
+
+  def setSpriteFilledValue(world: Int,entity: Int,value:Float):Unit =
+    Deno.core.jsonOpSync("setSpriteFilledValue",js.Array(world,entity,value))
+
+  def setSpriteSliceByConfig(world: Int,entity: Int,value:Int):Unit =
+    Deno.core.jsonOpSync("setSpriteSliceByConfig",js.Array(world,entity,value))
+
 }
 
 @js.native

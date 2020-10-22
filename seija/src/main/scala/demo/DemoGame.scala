@@ -1,7 +1,7 @@
 package demo
 import math.Vector3
 import core.{App, Entity, IGame, Time, Transform}
-import s2d.{ImageRender, Rect2D, SpriteRender, Transparent}
+import s2d.{ImageFilled, ImageRender, Rect2D, SpriteRender, Transparent}
 import assets.Loader
 import data.Color
 import s2d.assets.{Image, SpriteSheet, TextureConfig}
@@ -10,6 +10,7 @@ class DemoGame extends IGame {
   var uiEntity :Entity = null;
   var index:Int = 0;
   var uiT:Transform = null;
+  var imageRender:ImageRender =  null;
   override def onStart(): Unit = {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
     this.uiEntity = Entity.New();
@@ -22,10 +23,11 @@ class DemoGame extends IGame {
 
 
     var image = Loader.loadSync[Image]("StarIcon.png",new TextureConfig()).toOption.get;
-    var imageRender = this.uiEntity.addComponent[ImageRender]()
+    this.imageRender = this.uiEntity.addComponent[ImageRender]()
     imageRender.setTexture(image)
-    imageRender.setImageType(s2d.ImageSliced(5f,5f,5f,5f))
-    imageRender.color = Color.New(1,0,1,0.1f)
+    imageRender.setImageType(s2d.ImageFilled(s2d.ImageFilledType.HorizontalLeft,0.1f))
+    imageRender.setFilledValue(0.45f)
+    imageRender.color = Color.New(1f,1f,1f,1f)
 
     var sheet = Loader.loadSync[SpriteSheet]("material.json",new TextureConfig()).toOption.get;
     this.createSprite(sheet)
@@ -41,19 +43,24 @@ class DemoGame extends IGame {
     var sprite = entity.addComponent[SpriteRender]();
     sprite.setSpriteSheet(sheet)
     sprite.setSpriteName("button")
-    sprite.color.set(1,0,0,0.1f)
+    sprite.color.set(1,1,1,1f)
+    sprite.setSliceByConfig(0)
 
-    println(s"simple: ${s2d.ImageSimple.toJsValue}");
-    println(s"Sliced:${s2d.ImageSliced(6f,7f,8f,9f).toJsValue}")
-    println(s"Filled: ${s2d.ImageFilled(s2d.ImageFilledType.VerticalBottom,0.7f).toJsValue}")
-    println(s"Tiled:${s2d.ImageTiled.toJsValue}")
     println(sprite);
   }
 
 
-
+  var fillValue:Float = 0f;
+  var dir:Int = 1;
   override def onUpdate(): Unit = {
-    //this.uiT.localPosition.x += 1
+    this.fillValue += Time.timeDelta() * this.dir * 2;
+    if(this.fillValue > 1f) {
+      dir = -1;
+    }
+    if(this.fillValue < 0) {
+      dir = 1;
+    }
+    this.imageRender.setFilledValue(this.fillValue)
   }
 
   override def onQuit(): Unit = {

@@ -3,7 +3,7 @@ use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3};
 use serde_json::Value;
 use seija::specs::{WorldExt,Entity,world::Builder,World};
 use deno_core::error::AnyError;
-use seija::render::{components::{ImageRender,Mesh2D,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
+use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
 use seija::common::{Rect2D,AnchorAlign};
 use byteorder::{ByteOrder,NativeEndian};
@@ -14,6 +14,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "getImageColorRef", get_image_color);
     reg_json_op_sync(rt, "setImageTexture", set_image_texture);
     reg_json_op_sync(rt, "setImageType",set_image_type);
+    reg_json_op_sync(rt, "setImageFilledValue",set_image_filled_value);
 
     reg_json_op_sync(rt, "addTextRender", add_text_render);
     reg_json_op_sync(rt, "setTextString", set_text_string);
@@ -28,6 +29,9 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "setSpriteSheet", set_sprite_sheet);
     reg_json_op_sync(rt, "setSpriteType",set_sprite_type);
     reg_json_op_sync(rt, "getSpriteColorRef", get_sprite_color);
+    reg_json_op_sync(rt, "setSpriteFilledValue",set_sprite_filled_value);
+    reg_json_op_sync(rt, "setSpriteSliceByConfig",set_sprite_slice_by_config);
+
 
 
     reg_json_op_sync(rt, "addRect2D",add_rect_2d);
@@ -120,8 +124,23 @@ fn set_image_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resu
     Ok(Value::Null)
 }
 
+fn set_image_filled_value(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let value = arr[2].as_f64().unwrap() as f32;
+
+    let mut image_storage = world.write_storage::<ImageRender>();
+    let mimage = image_storage.get_mut(entity);
+    if let Some(image) = mimage {
+        image.info_mut().set_fill_value(value);
+        update_mesh_2d(world, entity);
+    }
+    Ok(Value::Null)
+}
+
 fn json_to_image_type(value:&Value) -> ImageType {
-    if let Some(typ) = value[0].as_i64() {
+    if let Some(typ) = value.as_i64() {
         match typ {
             0 => ImageType::Simple,
             3 => ImageType::Tiled,
@@ -306,6 +325,33 @@ fn set_sprite_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     }
     Ok(Value::Null)
 }
+
+fn set_sprite_filled_value(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let value = arr[2].as_f64().unwrap() as f32;
+    let mut storage = world.write_storage::<SpriteRender>();
+    if let Some(sprite) = storage.get_mut(entity) {
+        sprite.info_mut().set_fill_value(value);
+        update_mesh_2d(world, entity);
+    }
+    Ok(Value::Null)
+}
+
+fn set_sprite_slice_by_config(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let value = arr[2].as_i64().unwrap() as usize;
+    let mut storage = world.write_storage::<SpriteRender>();
+    if let Some(sprite) = storage.get_mut(entity) {
+        let sheet_storage = world.fetch::<seija::assets::AssetStorage<SpriteSheet>>();
+        sprite.set_slice_type_by_cfg(value, &sheet_storage);
+    }
+    Ok(Value::Null)
+}
+
 
 fn add_rect_2d(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();

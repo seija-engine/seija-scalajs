@@ -19,6 +19,8 @@ trait GenericImage[T] {
     def imageType:ImageType = _imageType
     def setImageType(typ:ImageType):Unit = {}
 
+    def setFilledValue(v:Float) :Unit = {}
+
     def colorToRust():Unit
     def colorFromRust():Unit
 }
