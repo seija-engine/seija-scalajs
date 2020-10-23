@@ -4,7 +4,7 @@ import core.{App, Entity, IGame, Time, Transform}
 import s2d.{ImageFilled, ImageRender, Rect2D, SpriteRender, Transparent}
 import assets.Loader
 import data.Color
-import s2d.assets.{Image, SpriteSheet, TextureConfig}
+import s2d.assets.{Font, Image, SpriteSheet, TextureConfig}
 
 class DemoGame extends IGame {
   var uiEntity :Entity = null;
@@ -22,15 +22,19 @@ class DemoGame extends IGame {
     this.uiT.localPosition.set(200f,0f,99f)
 
 
-    var image = Loader.loadSync[Image]("StarIcon.png",new TextureConfig()).toOption.get;
+    var image = Loader.loadSync[Image]("StarIcon.png",Some(new TextureConfig())).toOption.get;
     this.imageRender = this.uiEntity.addComponent[ImageRender]()
     imageRender.setTexture(image)
     imageRender.setImageType(s2d.ImageFilled(s2d.ImageFilledType.HorizontalLeft,0.1f))
     imageRender.setFilledValue(0.45f)
     imageRender.color = Color.New(1f,1f,1f,1f)
 
-    var sheet = Loader.loadSync[SpriteSheet]("material.json",new TextureConfig()).toOption.get;
+    var sheet = Loader.loadSync[SpriteSheet]("material.json",Some(new TextureConfig())).toOption.get;
     this.createSprite(sheet)
+
+    var font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
+
+    println(font);
   }
 
   def createSprite(sheet:SpriteSheet):Unit = {
@@ -47,6 +51,10 @@ class DemoGame extends IGame {
     sprite.setSliceByConfig(0)
 
     println(sprite);
+  }
+
+  def createLabel():Unit = {
+
   }
 
 
