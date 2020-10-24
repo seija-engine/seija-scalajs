@@ -12,9 +12,7 @@ object Xml {
 }
 
 object XmlExt {
-  implicit def RichXmlNode(node: XmlNode): Object {
-    def toJsonString: String
-  } = new {
+  implicit class RichXmlNode(node: XmlNode) {
     def toJsonString:String = js.JSON.stringify(node)
   }
 }
