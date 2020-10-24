@@ -130,8 +130,8 @@ function setTextColor(e,r,g,b,a) {
   return Deno.core.jsonOpSync("setTextColor",[world,e,r,g,b,a]);
 }
 
-function setFontSize(e,fontSize) {
-  return Deno.core.jsonOpSync("setFontSize",[world,e,fontSize]);
+function setTextFontSize(e,fontSize) {
+  return Deno.core.jsonOpSync("setTextFontSize",[world,e,fontSize]);
 }
 
 function setFontAnchor(e,anchorType) {
@@ -221,7 +221,7 @@ function createText(entity) {
   setTransparent(entity,true);
   let fontId = loadSync(3,"WenQuanYiMicroHei.ttf");
   addTextRender(entity,fontId);
-  setFontSize(entity,32);
+  setTextFontSize(entity,32);
   setTextColor(textEntity,0,0,0,1);
   setFontAnchor(textEntity,9);
   setTextLineMode(textEntity,0);

@@ -18,8 +18,9 @@ pub fn init_json_func(rt:&mut JsRuntime) {
 
     reg_json_op_sync(rt, "addTextRender", add_text_render);
     reg_json_op_sync(rt, "setTextString", set_text_string);
-    reg_json_op_sync(rt, "setTextColor", set_text_color);
-    reg_json_op_sync(rt, "setFontSize", set_font_size);
+    reg_json_op_sync(rt, "setTextColorRef", set_text_color);
+    reg_json_op_sync(rt, "setTextFont", set_text_font);
+    reg_json_op_sync(rt, "setTextFontSize", set_text_font_size);
     reg_json_op_sync(rt, "setTextAnchor", set_text_anchor);
     reg_json_op_sync(rt, "setTextLineMode", set_text_line_mode);
 
@@ -166,13 +167,13 @@ fn add_text_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let font_id = arr[2].as_i64().unwrap() as u32;
+    let font_id = arr[2].as_i64().map(|v| Handle::new(v as u32));
     
     let mut storage = world.write_storage::<TextRender>();
     if storage.contains(entity) {
         return  Ok(Value::Bool(false));
     }
-    let  text_render = TextRender::new(Handle::new(font_id));
+    let  text_render = TextRender::new(font_id);
     storage.insert(entity, text_render).unwrap();
     let mut mesh_storage = world.write_storage::<Mesh2D>();
     mesh_storage.insert(entity,Mesh2D::default()).unwrap();
@@ -191,22 +192,20 @@ fn set_text_string(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     Ok(Value::Null)
 }
 
-fn set_text_color(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn set_text_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
-    let r = arr[2].as_f64().unwrap() as f32;
-    let g = arr[3].as_f64().unwrap() as f32;
-    let b = arr[4].as_f64().unwrap() as f32;
-    let a = arr[5].as_f64().unwrap() as f32;
+    
     let mut storage = world.write_storage::<TextRender>();
     if let Some(text) = storage.get_mut(entity) {
-        text.set_color(r, g, b, a);
+        let bytes = &mut *buffer[0];
+        NativeEndian::read_f32_into(bytes, &mut text.color);
     }
     Ok(Value::Null)
 }
 
-fn set_font_size(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn set_text_font_size(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
@@ -214,6 +213,18 @@ fn set_font_size(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resul
     let mut storage = world.write_storage::<TextRender>();
     if let Some(text) = storage.get_mut(entity) {
         text.set_font_size(font_size);
+    }
+    Ok(Value::Null)
+}
+
+fn set_text_font(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
+    let font_id = arr[2].as_i64().unwrap() as u32;
+    let mut storage = world.write_storage::<TextRender>();
+    if let Some(text) = storage.get_mut(entity) {
+        text.font = Some(Handle::new(font_id));
     }
     Ok(Value::Null)
 }

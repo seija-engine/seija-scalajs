@@ -1,74 +1,98 @@
 package demo
 import math.Vector3
 import core.{App, Entity, IGame, Time, Transform}
-import s2d.{ImageFilled, ImageRender, Rect2D, SpriteRender, Transparent}
+import s2d.{ImageFilled, ImageRender, Rect2D, SpriteRender, TextRender, Transparent}
 import assets.Loader
 import data.Color
 import s2d.assets.{Font, Image, SpriteSheet, TextureConfig}
 
 class DemoGame extends IGame {
-  var uiEntity :Entity = null;
-  var index:Int = 0;
-  var uiT:Transform = null;
-  var imageRender:ImageRender =  null;
+
   override def onStart(): Unit = {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
-    this.uiEntity = Entity.New();
-    this.uiEntity.addComponent[Transparent]()
-    this.uiT = this.uiEntity.addComponent[Transform]();
-    var rect2d = this.uiEntity.addComponent[Rect2D]();
-    rect2d.size.x = 100;
-    rect2d.size.y = 100;
-    this.uiT.localPosition.set(200f,0f,99f)
-
-
-    var image = Loader.loadSync[Image]("StarIcon.png",Some(new TextureConfig())).toOption.get;
-    this.imageRender = this.uiEntity.addComponent[ImageRender]()
-    imageRender.setTexture(image)
-    imageRender.setImageType(s2d.ImageFilled(s2d.ImageFilledType.HorizontalLeft,0.1f))
-    imageRender.setFilledValue(0.45f)
-    imageRender.color = Color.New(1f,1f,1f,1f)
-
-    var sheet = Loader.loadSync[SpriteSheet]("material.json",Some(new TextureConfig())).toOption.get;
-    this.createSprite(sheet)
-
     var font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
+    var paperSheet = Loader.loadSync[SpriteSheet]("paper.json").toOption.get;
+    var starTexture = Loader.loadSync[Image]("StarIcon.png").toOption.get;
 
-    println(font);
+    this.createImage(starTexture,-400,300)
+    this.createLabel(font,"Simple Texture",-400,230)
+
+    this.createSprite(paperSheet,"BlueButton",260,176,-200,300)
+    this.createLabel(font,"Simple Sprite",-200,230)
+
+    var sprite = this.createSprite(paperSheet,"BlueButton",660,176,100,300)
+    this.createLabel(font,"Slice Sprite",100,230)
+    sprite.setImageType(s2d.ImageSliced(170,50,10,10))
+
+    var sprite2 = this.createSprite(paperSheet,"StarIcon",176,176,400,300)
+    this.createLabel(font,"Filled Sprite",400,230)
+    sprite2.setImageType(s2d.ImageFilled(s2d.ImageFilledType.HorizontalLeft,0.6f))
+
+
+    this.createLabel(font,"Single LineText",0,100)
+    var text = this.createLabel(font,"Single LineText Anchor Left",0,50,300)
+    text.setAnchor(data.AnchorAlign.Left)
+
+    this.createLabel(font,"Single LineText",0,100)
+    var text2 = this.createLabel(font,"Single LineText Anchor Right",0,0,300)
+    text2.setAnchor(data.AnchorAlign.Right)
+
+    val longText = "彼岸的世界的观念是起自柏拉图，彼岸的世界是建立在线性时间观上的，而线性时间观是由基督教提出并影响现世的。一切始于亚当和夏娃偷吃了禁果，一切终于最后的审判。 最后的审判是一《圣经》中启示录的预言，在世界末日之时真神耶稣基督会从天上而临，耶稣基督会将死者复生并对他们进行审判，恶人将会被丢入硫磺火湖中永远灭亡。善者将会上天堂。一切的一切 将会到此时得到结算和偿还。而一切将在此时结束。此岸世界不值得过，此岸世界只是暂时的，而一切都有一个最终的目的，这个目的是神圣的。";
+
+    this.createLabel(font,"Single LineText",0,100)
+    var text3 = this.createLabel(font,"多行文本自动换行\r\r"+longText,-400,-100,800,16)
+    text3.setAnchor(data.AnchorAlign.TopLeft)
+    text3.setLineMode(s2d.LineMode.Wrap)
   }
 
-  def createSprite(sheet:SpriteSheet):Unit = {
+  def createImage(tex:Image,x:Int,y:Int):Unit = {
     var entity = Entity.New();
     var t = entity.addComponent[Transform]();
-    t.localPosition.set(0f,0f,100f)
+    t.localPosition.set(x,y,100)
     var rect2d = entity.addComponent[Rect2D]();
-    rect2d.size.set(100f,100f);
+    rect2d.size.set(100,100)
+    entity.addComponent[Transparent]();
+    var image = entity.addComponent[ImageRender]();
+    image.setTexture(tex)
+  }
+
+  def createSprite(sheet:SpriteSheet,spriteName:String,w:Int,h:Int,x:Int,y:Int,scale:Float = 0.5f,z:Int = 100):SpriteRender = {
+    var entity = Entity.New();
+    var t = entity.addComponent[Transform]();
+    t.localPosition.set(x,y,z)
+    t.scale.set(scale,scale,1)
+    var rect2d = entity.addComponent[Rect2D]();
+    rect2d.size.set(w,h);
     entity.addComponent[Transparent]();
     var sprite = entity.addComponent[SpriteRender]();
     sprite.setSpriteSheet(sheet)
-    sprite.setSpriteName("button")
-    sprite.color.set(1,1,1,1f)
+    sprite.setSpriteName(spriteName)
+
     sprite.setSliceByConfig(0)
 
-    println(sprite);
+    return sprite;
   }
 
-  def createLabel():Unit = {
+  def createLabel(font:Font,txt:String,x:Int,y:Int,width:Int = 120,fontSize:Int = 24):TextRender = {
+    var entity = Entity.New();
+    var t = entity.addComponent[Transform]();
+    t.localPosition.set(x,y,2);
+    var rect = entity.addComponent[Rect2D]();
+    rect.size.set(width,200);
+    entity.addComponent[Transparent]();
+    var text = entity.addComponent[TextRender]();
+    text.setFont(font)
+    text.setFontSize(fontSize)
+    text.color.set(1,1,1,1)
 
+    text.setText(txt)
+    return text
   }
 
 
-  var fillValue:Float = 0f;
-  var dir:Int = 1;
+
   override def onUpdate(): Unit = {
-    this.fillValue += Time.timeDelta() * this.dir * 2;
-    if(this.fillValue > 1f) {
-      dir = -1;
-    }
-    if(this.fillValue < 0) {
-      dir = 1;
-    }
-    this.imageRender.setFilledValue(this.fillValue)
+
   }
 
   override def onQuit(): Unit = {

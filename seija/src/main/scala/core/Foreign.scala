@@ -130,6 +130,26 @@ object Foreign {
   def setSpriteSliceByConfig(world: Int,entity: Int,value:Int):Unit =
     Deno.core.jsonOpSync("setSpriteSliceByConfig",js.Array(world,entity,value))
 
+  def addTextRender(world: Int,entity: Int,fontId:Option[Int]):Unit =
+    Deno.core.jsonOpSync("addTextRender",js.Array(world,entity,fontId.getOrElse(false)))
+
+  def setTextFont(world: Int,entity: Int,fontId:Int):Unit =
+    Deno.core.jsonOpSync("setTextFont",js.Array(world,entity,fontId))
+
+  def setTextString(world:Int,entity: Int,str:String):Unit =
+    Deno.core.jsonOpSync("setTextString",js.Array(world,entity,str))
+
+  def setTextFontSize(world: Int,entity: Int,fontSize:Int):Unit =
+    Deno.core.jsonOpSync("setTextFontSize",js.Array(world,entity,fontSize))
+
+  def setTextColor(world:Int,entity: Int,color:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTextColorRef",js.Array(world,entity),color)
+
+  def setTextLineMode(world:Int,entity:Int,lineMode:Int):Unit =
+    Deno.core.jsonOpSync("setTextLineMode",js.Array(world,entity,lineMode))
+
+  def setTextAnchor(world:Int,entity: Int,anchorType:Int):Unit =
+    Deno.core.jsonOpSync("setTextAnchor",js.Array(world,entity,anchorType))
 }
 
 @js.native

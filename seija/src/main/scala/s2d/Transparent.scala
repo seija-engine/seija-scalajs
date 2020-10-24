@@ -11,6 +11,6 @@ object Transparent {
       new Transparent(e)
     }
     
-    override val key: Int = 2
+    override val key: Int = 5
   }
 }

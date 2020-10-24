@@ -22,7 +22,7 @@ class ImageRender(override val entity:Entity) extends BaseComponent(entity) with
 
 object ImageRender {
   implicit val imageRenderComp: Component[ImageRender] = new Component[ImageRender] {
-    override val key: Int = 3
+    override val key: Int = 2
     override def addToEntity(e: Entity): ImageRender = {
       Foreign.addImageRender(World.id,e.id,None)
       new ImageRender(e)
