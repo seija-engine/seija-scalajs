@@ -175,5 +175,9 @@ trait DenoCore extends js.Object {
 @JSGlobal
 object Seija extends js.Object {
   def runApp(int: Int,start:js.Function1[Int,Unit],update:js.Function0[Unit],quit:js.Function0[Unit]):Unit = js.native
+
+  def parseXML(path:String):js.Any = js.native
+
+  def parseXMLString(string:String):js.Any = js.native
 }
 

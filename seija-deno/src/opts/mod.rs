@@ -1,5 +1,6 @@
 pub mod app;
 pub mod core;
+mod libs;
 pub mod component2d;
 use deno_core::{JsRuntime,ZeroCopyBuf,json_op_sync,OpState,OpId};
 use deno_core::error::AnyError;
@@ -27,7 +28,7 @@ pub fn init(rt:&mut JsRuntime) {
     global.set(&mut scope, seija_key.into(), seija_val.into());
 
     app::init_v8_func(scope,seija_val);
-   
+    libs::init_v8_func(scope, seija_val);
 }
 
 pub fn reg_json_op_sync<F>(rt:&mut JsRuntime,name:&str,op_fn:F) -> OpId 
@@ -67,7 +68,7 @@ pub fn write_vec3_to_buffer(&vec:&Vector3<f32>,buffer:&mut [u8]) {
     NativeEndian::write_f32(&mut buffer[4..8], vec.y);
     NativeEndian::write_f32(&mut buffer[8..12], vec.z);
 }
-
+/*
 fn throw_type_error<'s>(
     scope: &mut v8::HandleScope<'s>,
     message: impl AsRef<str>,
@@ -76,4 +77,4 @@ fn throw_type_error<'s>(
     let exception = v8::Exception::type_error(scope, message);
     scope.throw_exception(exception);
   }
-  
+  */

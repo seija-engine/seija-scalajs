@@ -1,0 +1,11 @@
+<Entity>
+    <Components>
+        <Transform scale="1,1,1" />
+        <Rect2D width= "{param.width} | 200" />
+        <Transparent />
+        <ImageRender texture = "1" color = "#555555" />
+    </Components>
+    <UseParam.Children >
+       
+    </UseParam.Children>
+</Entity>

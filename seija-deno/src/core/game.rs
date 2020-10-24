@@ -1,5 +1,5 @@
 use seija::core::IGame;
-use seija::specs::{World,WorldExt,Component,Builder};
+use seija::specs::{World,WorldExt,Builder};
 use deno_core::{v8,OpState};
 use seija::common::Transform;
 use seija::window::ViewPortSize;
