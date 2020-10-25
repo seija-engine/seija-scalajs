@@ -55,3 +55,11 @@ object Transform {
     override val key:Int = 0
   }
 }
+
+
+class TransformTmpl extends TemplateComponent {
+  override val name: String = "Transform"
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String]):Unit = {
+    attrs.get("rotation").foreach(Template.parseParam);
+  }
+}

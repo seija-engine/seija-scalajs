@@ -1,0 +1,8 @@
+<Entity>
+    <Components>
+        <Transform />
+        <Rect2D />
+    </Components>
+    <Ref src="/image.xml"/>
+    <Ref src="/label.xml"/>
+</Entity>

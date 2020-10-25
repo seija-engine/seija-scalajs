@@ -6,6 +6,5 @@
         <ImageRender texture = "1" color = "#555555" />
     </Components>
     <UseParam.Children >
-       
     </UseParam.Children>
 </Entity>

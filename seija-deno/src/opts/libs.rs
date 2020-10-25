@@ -39,6 +39,7 @@ fn xml_reader_to_v8<T>(mut reader:quick_xml::Reader<T>,scope:&mut v8::HandleScop
     let children_name = v8::String::new(scope, "children").unwrap().into();
     let text_name = v8::String::new(scope, "text").unwrap().into();
     let attrs_name = v8::String::new(scope, "attrs").unwrap().into();
+    let length_name = v8::String::new(scope, "_length").unwrap().into();
     fn set_attr(e:&quick_xml::events::BytesStart,scope: &mut v8::HandleScope,obj:&v8::Local<v8::Object>,key: v8::Local<v8::Value>) {
         let attr_object = v8::Object::new(scope);
         for eattr in e.attributes().into_iter() {
@@ -77,10 +78,17 @@ fn xml_reader_to_v8<T>(mut reader:quick_xml::Reader<T>,scope:&mut v8::HandleScop
             },
             Ok(Event::End(_)) => {
                 let pop_elem = stack.pop();
-                if stack.len() == 0 && pop_elem.is_some() {
+                if pop_elem.is_some() {
                     let object = pop_elem.unwrap();
-                    ret.set(object.0.into());
+                    let children = object.0.get(scope, children_name).unwrap().to_object(scope).unwrap();
+                    let v8_len  = v8::Number::new(scope, object.1 as f64);
+                    children.set(scope, length_name, v8_len.into());
+                    
+                    if stack.len() == 0 {
+                        ret.set(object.0.into());
+                    }
                 }
+                
                
             },
             Ok(Event::Empty(ref empty)) => {
