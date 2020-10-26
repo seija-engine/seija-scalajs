@@ -3,6 +3,7 @@ package core
 import data.XmlExt._
 import data.XmlNode
 
+import scala.collection.immutable.NumericRange
 import scala.collection.mutable
 import scala.scalajs.js
 
@@ -93,16 +94,18 @@ trait TemplateComponent {
 
 sealed trait TemplateParam
 case class TemplateConstParam(value:String) extends TemplateParam
-case class TemplateVarParam(varName:String) extends TemplateParam
-case class TemplateSeqParam(array: Array[TemplateParam]) extends TemplateParam
+case class TemplateVarParam(varNames:js.Array[String]) extends TemplateParam
+case class TemplateSeqParam(array: js.Array[TemplateParam]) extends TemplateParam
 
 class TmplParamParser(var chars:Array[Char]) {
   var curIndex:Int = -1;
  
-  
- 
 
-  def moveNext():Unit = this.curIndex += 1;
+  def moveNext():Unit = {
+    if(this.curIndex + 1 < this.chars.length) {
+      this.curIndex += 1
+    }
+  }
 
   def lookNext(n:Int):Option[Char] = {
     if(this.chars.length > this.curIndex + n) {
@@ -111,96 +114,125 @@ class TmplParamParser(var chars:Array[Char]) {
     None
   }
 
-  def isEnd():Boolean = this.curIndex == (this.chars.length - 1)
+  def isEnd:Boolean = this.curIndex == (this.chars.length - 1)
 
-
-
-  def parse(str:String):TemplateParam = {
-    this.chars = str.toCharArray();
+  def parse(str:String):Either[String,TemplateParam] = {
+    this.chars = str.toCharArray;
     this.curIndex = -1;
-    var mSpace = this.skipSpace();
+    var mSpace = this.takeSpace();
     if(this.isEnd) {
-      return TemplateConstParam(mSpace.getOrElse(""))
+      return Right(TemplateConstParam(mSpace))
     }
-    this.lookNext(1) match {
-      case Some('{') => this.parseVar()
-      case _ => ()
-    };
+    var firstChar = this.lookNext(1);
+    if(firstChar.contains('@')) {
+      this.moveNext();
+      var constString = this.takeWhile(_ => true);
+      return Right(TemplateConstParam(constString))
+    }
+    if(firstChar.contains('{')) {
+      this.moveNext();
+      this.takeDotVarList().flatMap((dotArray) => {
+        this.takeSpace()
+        var lookNext = this.lookNext(1);
+        if (lookNext.contains('|')) {
+          this.moveNext();
+          var constString = this.takeWhile(_ => true)
+          dotArray.push(TemplateConstParam(constString))
+        } else if(lookNext.isDefined) {
+          return Left("error format need |")
+        }
+        if (dotArray.length > 1) {
+          Right(TemplateSeqParam(dotArray))
+        } else if(dotArray.length == 1) {
+          Right(dotArray(0))
+        } else {
+          Left("zero params")
+        }
+      })
+    } else {
+      Right(TemplateConstParam(str))
+    }
 
-    TemplateConstParam("")
   }
 
-  def parseVar():Unit = {
-
+  def takeDotVarList():Either[String,js.Array[TemplateParam]]  = {
+    this.takeSpace();
+    var arr:js.Array[TemplateParam] = js.Array();
+    var isEnd = false;
+    var isNeedNextOr = false;
+    var errString:String = "";
+    while (!isEnd) {
+      this.lookNext(1) match {
+        case Some(value)  =>
+          if(isIdentChar(value)) {
+            if(isNeedNextOr) {
+              errString = "error format need |"
+              isEnd = true;
+            } else {
+              var dotVar = this.takeDotVar()
+              arr.push(dotVar);
+              isNeedNextOr = true;
+            }
+          } else if(value == ' ') {
+            this.takeSpace();
+          } else if (value == '|') {
+            isNeedNextOr = false;
+            this.moveNext();
+          } else if (value == '}') {
+            this.moveNext();
+            isEnd = true
+          } else {
+            errString = "error Char " + value
+            isEnd = true
+          }
+        case None => isEnd = true
+      }
+    }
+    if(errString == "") Right(arr) else Left(errString)
   }
 
-  def skipSpace():Option[String] = {
-    var spaceString = "";
+  def takeDotVar(): TemplateParam = {
+    var retArray:js.Array[String] = js.Array()
+    while(this.lookNext(1).exists(isIdentChar)) {
+      var ident = this.takeWhile(isIdentChar)
+      retArray.push(ident);
+      if(this.lookNext(1).contains('.')) {
+        this.moveNext()
+      }
+    }
+    TemplateVarParam(retArray)
+  }
+
+  def takeWhile(f:(Char) => Boolean):String = {
+    var retString:String = "";
     do {
       this.lookNext(1) match {
-        case Some(' ') => 
-          this.moveNext()
-          spaceString += ' ';
-        case v => 
-          if(spaceString == "") {
-            return None
+        case Some(value) =>
+          if(f(value)) {
+            retString += value;
+            this.moveNext()
           } else {
-            return Some(spaceString)
+            return retString
           }
+        case None => return retString
       }
     } while(true);
-    None
+    ""
   }
 
+  def takeSpace():String = this.takeWhile(_ == ' ')
+
+  def takeIdent():String = this.takeWhile(isIdentChar)
+
+  def isIdentChar(chr:Char): Boolean = TemplateParam.numberSet(chr) || TemplateParam.identSet(chr)
 }
 
 object TemplateParam {
   private var parser:TmplParamParser = new TmplParamParser(Array())
-  def parse(str:String):TemplateParam = {
-    if(str == "") {
-      return TemplateConstParam("")
-    }
-    this.parser.parse(str);
-    TemplateConstParam("0,0,0")
-  }
-  /*
-  def parse(str:String):TemplateParam = {
-    var trimString = str.trim();
-    var charIter = trimString.toCharArray().toIterator;
-    if(charIter.isEmpty) {
-      return TemplateConstParam("")
-    }
-    var eFirstChar = this.takeFirst(charIter);
-    if(eFirstChar.isLeft) {
-      return TemplateConstParam(eFirstChar.left.get)
-    }
-    val firstChar = eFirstChar.getOrElse(' ');
-    if(firstChar == '{') {
-      this.parseVarParam(charIter)
-    }
+  val identSet: Set[Char] = ('a' to 'z').toSet ++ ('A' to 'Z').toSet + '_'
+  val numberSet:Set[Char] = ('0' to '9').toSet
+  def parse(str:String): Either[String, TemplateParam] = this.parser.parse(str)
 
-    TemplateConstParam("0,0,0")
-  }
 
-  def takeFirst(chars:Iterator[Char]):Either[String,Char] = {
-    var retString:String = "";
-    while (chars.hasNext) {
-      val chr = chars.next();
-      retString = retString + chr;
-      if(chr != ' ') {
-        return Right(chr);
-      }
-    }
-    Left(retString)
-  }
-
-  def parseVarParam(chars:Iterator[Char]):Unit = {
-    this.skipSpace(chars)
-  }
-
-  def skipSpace(chars:Iterator[Char]):Unit = {
-    
-  }
-  */
 }
 

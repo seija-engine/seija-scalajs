@@ -3,7 +3,7 @@ import scala.scalajs.js;
 import math.Vector3
 
 class Transform(override val entity:Entity) extends BaseComponent(entity) {
-  private var _localPosition:Vector3 = Vector3.defaultByCB(this.positonToRust)
+  private var _localPosition:Vector3 = Vector3.defaultByCB(this.positionToRust)
   private var _scale:Vector3 = Vector3.defaultByCB(this.scaleToRust)
   private var _rotation:Vector3 = Vector3.defaultByCB(this.rotationToRust)
 
@@ -15,8 +15,8 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
 
   def localPosition_= (newVal:Vector3): Unit = {
     this._localPosition = newVal
-    newVal.setCallBack(this.positonToRust);
-    this.positonToRust();
+    newVal.setCallBack(this.positionToRust);
+    this.positionToRust();
   }
 
   def scale:Vector3 = {
@@ -41,7 +41,7 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
     this.rotationToRust();
   }
 
-  private def positonToRust():Unit = Foreign.setTransformPositionRef(World.id,this.entity.id,this._localPosition.inner());
+  private def positionToRust():Unit = Foreign.setTransformPositionRef(World.id,this.entity.id,this._localPosition.inner());
   private def scaleToRust():Unit = Foreign.setTransformScaleRef(World.id,this.entity.id,this._scale.inner())
   private def rotationToRust():Unit = Foreign.setTransformRotationRef(World.id,this.entity.id,this._rotation.inner())
 }
@@ -60,6 +60,15 @@ object Transform {
 class TransformTmpl extends TemplateComponent {
   override val name: String = "Transform"
   def attachComponent(entity: Entity,attrs:js.Dictionary[String]):Unit = {
-    
+    var position = attrs.get("position");
+    if(position.isDefined) {
+      var posParam = TemplateParam.parse(position.get)
+      posParam match {
+        case Right(TemplateConstParam(value)) => ()
+        case Right(TemplateVarParam(arr)) => ()
+        case Right(TemplateSeqParam(seq)) => ()
+        case Left(_) => ()
+      }
+    }
   }
 }
