@@ -83,9 +83,7 @@ object Template {
     components.put(tc.name,tc)
   }
 
-  def parseParam(str:String):TemplateParam = {
-    TemplateConstParam("0,0,0")
-  }
+  
 }
 
 trait TemplateComponent {
@@ -97,3 +95,112 @@ sealed trait TemplateParam
 case class TemplateConstParam(value:String) extends TemplateParam
 case class TemplateVarParam(varName:String) extends TemplateParam
 case class TemplateSeqParam(array: Array[TemplateParam]) extends TemplateParam
+
+class TmplParamParser(var chars:Array[Char]) {
+  var curIndex:Int = -1;
+ 
+  
+ 
+
+  def moveNext():Unit = this.curIndex += 1;
+
+  def lookNext(n:Int):Option[Char] = {
+    if(this.chars.length > this.curIndex + n) {
+      return Some(this.chars(this.curIndex + n))
+    }
+    None
+  }
+
+  def isEnd():Boolean = this.curIndex == (this.chars.length - 1)
+
+
+
+  def parse(str:String):TemplateParam = {
+    this.chars = str.toCharArray();
+    this.curIndex = -1;
+    var mSpace = this.skipSpace();
+    if(this.isEnd) {
+      return TemplateConstParam(mSpace.getOrElse(""))
+    }
+    this.lookNext(1) match {
+      case Some('{') => this.parseVar()
+      case _ => ()
+    };
+
+    TemplateConstParam("")
+  }
+
+  def parseVar():Unit = {
+
+  }
+
+  def skipSpace():Option[String] = {
+    var spaceString = "";
+    do {
+      this.lookNext(1) match {
+        case Some(' ') => 
+          this.moveNext()
+          spaceString += ' ';
+        case v => 
+          if(spaceString == "") {
+            return None
+          } else {
+            return Some(spaceString)
+          }
+      }
+    } while(true);
+    None
+  }
+
+}
+
+object TemplateParam {
+  private var parser:TmplParamParser = new TmplParamParser(Array())
+  def parse(str:String):TemplateParam = {
+    if(str == "") {
+      return TemplateConstParam("")
+    }
+    this.parser.parse(str);
+    TemplateConstParam("0,0,0")
+  }
+  /*
+  def parse(str:String):TemplateParam = {
+    var trimString = str.trim();
+    var charIter = trimString.toCharArray().toIterator;
+    if(charIter.isEmpty) {
+      return TemplateConstParam("")
+    }
+    var eFirstChar = this.takeFirst(charIter);
+    if(eFirstChar.isLeft) {
+      return TemplateConstParam(eFirstChar.left.get)
+    }
+    val firstChar = eFirstChar.getOrElse(' ');
+    if(firstChar == '{') {
+      this.parseVarParam(charIter)
+    }
+
+    TemplateConstParam("0,0,0")
+  }
+
+  def takeFirst(chars:Iterator[Char]):Either[String,Char] = {
+    var retString:String = "";
+    while (chars.hasNext) {
+      val chr = chars.next();
+      retString = retString + chr;
+      if(chr != ' ') {
+        return Right(chr);
+      }
+    }
+    Left(retString)
+  }
+
+  def parseVarParam(chars:Iterator[Char]):Unit = {
+    this.skipSpace(chars)
+  }
+
+  def skipSpace(chars:Iterator[Char]):Unit = {
+    
+  }
+  */
+}
+
