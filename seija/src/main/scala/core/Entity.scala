@@ -1,6 +1,5 @@
 package core
 import scala.collection.mutable
-import scala.reflect.ClassTag
 import scala.scalajs.js
 
 class Entity(val id:Int) {

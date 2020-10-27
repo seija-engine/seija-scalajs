@@ -68,7 +68,7 @@ object BaseRenderComps {
 
     sprite.setSliceByConfig(0)
 
-    return sprite;
+    sprite;
   }
 
   def createLabel(font:Font,txt:String,x:Int,y:Int,width:Int = 120,fontSize:Int = 24):TextRender = {
@@ -84,6 +84,6 @@ object BaseRenderComps {
     text.color.set(1,1,1,1)
 
     text.setText(txt)
-    return text
+    text
   }
 }

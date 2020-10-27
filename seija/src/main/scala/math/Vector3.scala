@@ -57,4 +57,8 @@ object Vector3 {
   def New(x:Float,y:Float,z:Float) :Vector3 = {
     new Vector3(Float32Array.from(js.Array(x,y,z)))
   }
+
+  implicit val vector3Read: data.Read[Vector3] = (string: String) => {
+    None
+  }
 }

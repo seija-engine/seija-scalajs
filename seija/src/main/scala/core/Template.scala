@@ -2,29 +2,29 @@ package core
 
 import data.XmlExt._
 import data.XmlNode
+import data.Read
 
-import scala.collection.immutable.NumericRange
 import scala.collection.mutable
 import scala.scalajs.js
 
 
 case class Template(private val xmlNode: XmlNode) {
-  def call(dic:js.Dictionary[js.Any]):Entity = {
-    this.createEntityByXml(xmlNode,None).get
+  def call(data:js.Dictionary[js.Any]):Entity = {
+    this.createEntityByXml(xmlNode,None,data).get
   }
 
-  private def createEntityByXml(node:XmlNode,parent:Option[Entity]):Option[Entity] = {
+  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[js.Any]):Option[Entity] = {
     node.tag match {
       case "Entity" =>
-        var newEntity = Entity.New();
-        newEntity.setParent(parent);
+        var newEntity = Entity.New()
+        newEntity.setParent(parent)
         if(node.children.isDefined) {
           for(n <- node.children.get) {
             n.tag match {
               case "Components" =>
-                n.children.map(_.foreach(attachComponent(newEntity,_)))
-              case "Entity" => createEntityByXml(n,Some(newEntity))
-            };
+                n.children.map(_.foreach(attachComponent(newEntity,_,data)))
+              case "Entity" => createEntityByXml(n,Some(newEntity),data)
+            }
           }
         }
         Some(newEntity)
@@ -33,39 +33,39 @@ case class Template(private val xmlNode: XmlNode) {
     }
   }
 
-  private def attachComponent(entity:Entity,node:XmlNode):Unit = {
-    var opt = Template.components(node.tag);
-    opt.attachComponent(entity,node.attrs);
+  private def attachComponent(entity:Entity,node:XmlNode,data:js.Dictionary[js.Any]):Unit = {
+
+    Template.components(node.tag).attachComponent(entity,node.attrs,data)
 
   }
 }
 
 
 object Template {
-  var _rootPath:String = "";
-  def rootPath:String = _rootPath;
+  var _rootPath:String = ""
+  def rootPath:String = _rootPath
   def setRootPath(path:String):Unit = _rootPath = path
 
-  private var cacheTemplates:mutable.HashMap[String,Template] = mutable.HashMap();
-  private var components:mutable.HashMap[String,TemplateComponent] = mutable.HashMap();
+  private var cacheTemplates:mutable.HashMap[String,Template] = mutable.HashMap()
+  private var components:mutable.HashMap[String,TemplateComponent] = mutable.HashMap()
 
   def fromXmlFile(path:String):Either[String,Template] = {
     if(this.cacheTemplates.contains(path)) {
       return Right(this.cacheTemplates(path))
     }
 
-    var xmlNode = data.Xml.fromFile(_rootPath + path);
+    var xmlNode = data.Xml.fromFile(_rootPath + path)
     xmlNode match {
       case Left(err) => Left(err)
       case Right(xmlNode) =>
-        var tmpl = new Template(xmlNode);
-        this.cacheTemplates.put(path,tmpl);
+        var tmpl = new Template(xmlNode)
+        this.cacheTemplates.put(path,tmpl)
 
         var depFiles = scanDepFiles(tmpl)
         for(file <- depFiles) {
           var ret = Template.fromXmlFile(file)
           if(ret.isLeft) {
-            return ret;
+            return ret
           }
         }
         Right(tmpl)
@@ -73,7 +73,7 @@ object Template {
   }
 
   def scanDepFiles(tmpl:Template): js.Array[String] = {
-    var refs:js.Array[XmlNode] = tmpl.xmlNode.searchTagNode("Ref");
+    var refs:js.Array[XmlNode] = tmpl.xmlNode.searchTagNode("Ref")
     refs.map(_.attrs.get("src").getOrElse("")).filter( _ != "")
   }
 
@@ -89,7 +89,7 @@ object Template {
 
 trait TemplateComponent {
   val name:String
-  def attachComponent(entity:Entity,attrs:js.Dictionary[String])
+  def attachComponent(entity:Entity,attrs:js.Dictionary[String],data:js.Dictionary[js.Any])
 }
 
 sealed trait TemplateParam
@@ -98,7 +98,7 @@ case class TemplateVarParam(varNames:js.Array[String]) extends TemplateParam
 case class TemplateSeqParam(array: js.Array[TemplateParam]) extends TemplateParam
 
 class TmplParamParser(var chars:Array[Char]) {
-  var curIndex:Int = -1;
+  var curIndex:Int = -1
  
 
   def moveNext():Unit = {
@@ -117,25 +117,25 @@ class TmplParamParser(var chars:Array[Char]) {
   def isEnd:Boolean = this.curIndex == (this.chars.length - 1)
 
   def parse(str:String):Either[String,TemplateParam] = {
-    this.chars = str.toCharArray;
-    this.curIndex = -1;
-    var mSpace = this.takeSpace();
+    this.chars = str.toCharArray
+    this.curIndex = -1
+    var mSpace = this.takeSpace()
     if(this.isEnd) {
       return Right(TemplateConstParam(mSpace))
     }
-    var firstChar = this.lookNext(1);
+    var firstChar = this.lookNext(1)
     if(firstChar.contains('@')) {
-      this.moveNext();
-      var constString = this.takeWhile(_ => true);
+      this.moveNext()
+      var constString = this.takeWhile(_ => true)
       return Right(TemplateConstParam(constString))
     }
     if(firstChar.contains('{')) {
-      this.moveNext();
-      this.takeDotVarList().flatMap((dotArray) => {
+      this.moveNext()
+      this.takeDotVarList().flatMap(dotArray => {
         this.takeSpace()
-        var lookNext = this.lookNext(1);
+        var lookNext = this.lookNext(1)
         if (lookNext.contains('|')) {
-          this.moveNext();
+          this.moveNext()
           var constString = this.takeWhile(_ => true)
           dotArray.push(TemplateConstParam(constString))
         } else if(lookNext.isDefined) {
@@ -156,46 +156,34 @@ class TmplParamParser(var chars:Array[Char]) {
   }
 
   def takeDotVarList():Either[String,js.Array[TemplateParam]]  = {
-    this.takeSpace();
-    var arr:js.Array[TemplateParam] = js.Array();
-    var isEnd = false;
-    var isNeedNextOr = false;
-    var errString:String = "";
-    while (!isEnd) {
-      this.lookNext(1) match {
-        case Some(value)  =>
-          if(isIdentChar(value)) {
-            if(isNeedNextOr) {
-              errString = "error format need |"
-              isEnd = true;
-            } else {
-              var dotVar = this.takeDotVar()
-              arr.push(dotVar);
-              isNeedNextOr = true;
+    this.takeSpace()
+    var arr:js.Array[TemplateParam] = js.Array()
+    while (true) {
+        this.lookNext(1) match {
+          case Some(value) if isIdentChar(value) =>
+            var dotVar = this.takeDotVar()
+            arr.push(dotVar)
+            this.takeSpace()
+            this.lookNext(1) match {
+              case Some('|') =>
+              this.moveNext()
+              this.takeSpace()
+              case Some('}') =>
+                this.moveNext()
+                return Right(arr)
+              case _ => return Left("error params need | or }")
             }
-          } else if(value == ' ') {
-            this.takeSpace();
-          } else if (value == '|') {
-            isNeedNextOr = false;
-            this.moveNext();
-          } else if (value == '}') {
-            this.moveNext();
-            isEnd = true
-          } else {
-            errString = "error Char " + value
-            isEnd = true
-          }
-        case None => isEnd = true
-      }
+          case _ => return Left("error format need ident")
+        }
     }
-    if(errString == "") Right(arr) else Left(errString)
+    Left("error")
   }
 
   def takeDotVar(): TemplateParam = {
     var retArray:js.Array[String] = js.Array()
     while(this.lookNext(1).exists(isIdentChar)) {
       var ident = this.takeWhile(isIdentChar)
-      retArray.push(ident);
+      retArray.push(ident)
       if(this.lookNext(1).contains('.')) {
         this.moveNext()
       }
@@ -203,20 +191,20 @@ class TmplParamParser(var chars:Array[Char]) {
     TemplateVarParam(retArray)
   }
 
-  def takeWhile(f:(Char) => Boolean):String = {
-    var retString:String = "";
+  def takeWhile(f: Char => Boolean):String = {
+    var retString:String = ""
     do {
       this.lookNext(1) match {
         case Some(value) =>
           if(f(value)) {
-            retString += value;
+            retString += value
             this.moveNext()
           } else {
             return retString
           }
         case None => return retString
       }
-    } while(true);
+    } while(true)
     ""
   }
 
@@ -233,6 +221,30 @@ object TemplateParam {
   val numberSet:Set[Char] = ('0' to '9').toSet
   def parse(str:String): Either[String, TemplateParam] = this.parser.parse(str)
 
+  def setToByAttrDic[T](attrs:js.Dictionary[String],name:String,f:T=>Unit,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Boolean = {
+    false
+  }
+
+  def setTo[T](param:TemplateParam,f: T =>Unit,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Boolean = {
+    this.readParamValue(param,data)(readT) match {
+      case Some(v) => 
+        f(v)
+        true
+      case None => false
+    }
+  }
+
+  def readParamValue[T](param:TemplateParam,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Option[T] = {
+    param match {
+      case TemplateConstParam(value) => readT.read(value)
+      case TemplateVarParam(varNames) => None
+      case TemplateSeqParam(array) => None
+    }
+  }
+
+  def findObjectValue(data:js.Dictionary[js.Any]):Unit = {
+    
+  }
 
 }
 
