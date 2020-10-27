@@ -59,6 +59,11 @@ object Vector3 {
   }
 
   implicit val vector3Read: data.Read[Vector3] = (string: String) => {
-    None
+    val splitArr = string.split(',')
+    if(splitArr.length == 3) {
+      Some(Vector3.New(splitArr(0).toFloat,splitArr(1).toFloat,splitArr(2).toFloat))
+    } else {
+      None
+    }
   }
 }

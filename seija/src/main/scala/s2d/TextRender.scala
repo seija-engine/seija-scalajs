@@ -1,9 +1,12 @@
 package s2d
 
-import core.{BaseComponent, Component, Entity, Foreign, World}
+import core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam, World}
 import data.AnchorAlign.AnchorAlign
 import data.Color
 import s2d.assets.Font
+import data.CoreRead._
+
+import scala.scalajs.js
 
 class TextRender(override val entity:Entity) extends BaseComponent(entity) {
   private var _color:Color = Color.NewCB(1,1,1,1,this.colorToRust)
@@ -37,4 +40,20 @@ object LineMode extends Enumeration {
   type LinMode = Value;
   val Single:LinMode = Value(0);
   val Wrap:LinMode = Value(1)
+}
+
+
+class TextRenderTmpl extends TemplateComponent {
+  override val name: String = "TextRender"
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+    println("attach TextRender");
+    val textRender = entity.addComponent[TextRender]()
+    val errFont = TemplateParam.setToByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data)
+    val errText =TemplateParam.setToByAttrDic[String](attrs,"text",textRender.setText,data);
+    val errFontSize =TemplateParam.setToByAttrDic[Int](attrs,"fontSize",textRender.setFontSize,data);
+
+
+
+    textRender.color.set(1,1,1,1)
+  }
 }

@@ -73,6 +73,7 @@ object BaseRenderComps {
 
   def createLabel(font:Font,txt:String,x:Int,y:Int,width:Int = 120,fontSize:Int = 24):TextRender = {
     var entity = Entity.New();
+    println("newLabel:"+entity.toString);
     var t = entity.addComponent[Transform]();
     t.localPosition.set(x,y,2);
     var rect = entity.addComponent[Rect2D]();

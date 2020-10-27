@@ -1,8 +1,8 @@
 <Entity>
     <Components>
-        <Transform rotation="0,0,0" scale="{params.scale} | 1,1,1" position="{params.postion}" />
-       <!--  <Rect2D width= "{param.width} | 200" height="{param.height} | 50" />
+        <Transform scale="1,1,1" position="0,200,1" />
+        <Rect2D size="100,100"/>
         <Transparent />
-        <TextRender font="{param.font}" color = "#555555" />-->
+        <TextRender font="{params.font}" text="OKKKKKKKKKK" fontSize="32"/>
     </Components>
 </Entity>

@@ -9,11 +9,11 @@ import scala.scalajs.js
 
 
 case class Template(private val xmlNode: XmlNode) {
-  def call(data:js.Dictionary[js.Any]):Entity = {
+  def call(data:js.Dictionary[Any]):Entity = {
     this.createEntityByXml(xmlNode,None,data).get
   }
 
-  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[js.Any]):Option[Entity] = {
+  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[Any]):Option[Entity] = {
     node.tag match {
       case "Entity" =>
         var newEntity = Entity.New()
@@ -33,7 +33,7 @@ case class Template(private val xmlNode: XmlNode) {
     }
   }
 
-  private def attachComponent(entity:Entity,node:XmlNode,data:js.Dictionary[js.Any]):Unit = {
+  private def attachComponent(entity:Entity,node:XmlNode,data:js.Dictionary[Any]):Unit = {
 
     Template.components(node.tag).attachComponent(entity,node.attrs,data)
 
@@ -89,13 +89,19 @@ object Template {
 
 trait TemplateComponent {
   val name:String
-  def attachComponent(entity:Entity,attrs:js.Dictionary[String],data:js.Dictionary[js.Any])
+  def attachComponent(entity:Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any])
 }
 
 sealed trait TemplateParam
-case class TemplateConstParam(value:String) extends TemplateParam
-case class TemplateVarParam(varNames:js.Array[String]) extends TemplateParam
-case class TemplateSeqParam(array: js.Array[TemplateParam]) extends TemplateParam
+case class TemplateConstParam(value:String) extends TemplateParam {
+  override def toString: String = value
+}
+case class TemplateVarParam(varNames:js.Array[String]) extends TemplateParam {
+  override def toString: String = varNames.fold("")((a,b)=> a + "." + b)
+}
+case class TemplateSeqParam(array: js.Array[TemplateParam]) extends TemplateParam {
+  override def toString: String = s"Seq(${array.fold("")((a,b) => a + "|" + b)})"
+}
 
 class TmplParamParser(var chars:Array[Char]) {
   var curIndex:Int = -1
@@ -180,9 +186,9 @@ class TmplParamParser(var chars:Array[Char]) {
   }
 
   def takeDotVar(): TemplateParam = {
-    var retArray:js.Array[String] = js.Array()
+    val retArray: js.Array[String] = js.Array()
     while(this.lookNext(1).exists(isIdentChar)) {
-      var ident = this.takeWhile(isIdentChar)
+      val ident = this.takeWhile(isIdentChar)
       retArray.push(ident)
       if(this.lookNext(1).contains('.')) {
         this.moveNext()
@@ -221,29 +227,58 @@ object TemplateParam {
   val numberSet:Set[Char] = ('0' to '9').toSet
   def parse(str:String): Either[String, TemplateParam] = this.parser.parse(str)
 
-  def setToByAttrDic[T](attrs:js.Dictionary[String],name:String,f:T=>Unit,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Boolean = {
-    false
+  def setToByAttrDic[T](attrs:js.Dictionary[String],name:String,f:T=>Unit,data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
+    val attrValue = attrs.get(name)
+    if(attrValue.isEmpty) {
+      return Right()
+    }
+    for {
+      attrString <- attrValue.toRight("")
+      param <- TemplateParam.parse(attrString)
+      setRet <- this.setTo(param,f,data)(readT)
+    } yield setRet
   }
 
-  def setTo[T](param:TemplateParam,f: T =>Unit,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Boolean = {
+  def setTo[T](param:TemplateParam,f: T =>Unit,data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
     this.readParamValue(param,data)(readT) match {
-      case Some(v) => 
-        f(v)
-        true
-      case None => false
+      case Some(value) =>
+        println("set "+value.toString)
+        f(value)
+        Right()
+      case None => Left(s"not found value ${param.toString}")
     }
   }
 
-  def readParamValue[T](param:TemplateParam,data:js.Dictionary[js.Any])(implicit readT:Read[T]):Option[T] = {
+  def readParamValue[T](param:TemplateParam,data:js.Dictionary[Any])(implicit readT:Read[T]):Option[T] = {
     param match {
       case TemplateConstParam(value) => readT.read(value)
-      case TemplateVarParam(varNames) => None
-      case TemplateSeqParam(array) => None
+      case TemplateVarParam(varNames) =>
+        if(varNames.length > 0 && varNames(0) == "params") {
+          varNames.remove(0)
+        }
+        this.findObjectValue(varNames,data).map(_.asInstanceOf[T])
+      case TemplateSeqParam(array) =>
+        for(item <- array) {
+          this.readParamValue(item,data) match {
+            case Some(value) =>
+              return Some(value)
+            case None => ()
+          }
+        }
+        None
     }
   }
 
-  def findObjectValue(data:js.Dictionary[js.Any]):Unit = {
-    
+  def findObjectValue(seqNames:js.Array[String],data:js.Dictionary[Any]):Option[js.Any] = {
+    var curValue:js.Any = data;
+    for(name <- seqNames) {
+      curValue.asInstanceOf[js.Dictionary[js.Any]].get(name) match {
+        case Some(value) =>
+          curValue = value
+        case None => return None
+      }
+    }
+    Some(curValue)
   }
 
 }

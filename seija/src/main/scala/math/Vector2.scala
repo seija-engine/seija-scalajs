@@ -43,4 +43,13 @@ object Vector2 {
     vec.setCallBack(f);
     vec
   }
+
+  implicit val vector2Read: data.Read[Vector2] = (string: String) => {
+    val splitArr = string.split(',')
+    if(splitArr.length == 2) {
+      Some(Vector2.New(splitArr(0).toFloat,splitArr(1).toFloat))
+    } else {
+      None
+    }
+  }
 }

@@ -1,6 +1,8 @@
 package s2d
-import math.Vector2
-import core.{BaseComponent, Component, Entity, Foreign, Transform, World}
+import math.{Vector2, Vector3}
+import core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam, Transform, World}
+
+import scala.scalajs.js
 
 class Rect2D(override val entity:Entity) extends BaseComponent(entity) {
   private var _size:Vector2 = Vector2.defaultByCB(this.sizeToRust);
@@ -40,5 +42,22 @@ object Rect2D {
       new Rect2D(e)
     }
     override val key:Int = 1
+  }
+}
+
+
+class Rect2DTmpl extends TemplateComponent {
+  override val name: String = "Rect2D"
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+    var rect2d = entity.addComponent[Rect2D]();
+    println("attach Rect2D")
+    val errSize = TemplateParam.setToByAttrDic[Vector2](attrs,"size", rect2d.size = _,data)
+    val errAnchor = TemplateParam.setToByAttrDic[Vector2](attrs,"anchor", rect2d.anchor = _,data)
+    if(errSize.isLeft) {
+      println("rect2d size error: "+ errSize.left.getOrElse(""))
+    }
+    if(errAnchor.isLeft) {
+      println("rect2d anchor error: "+ errAnchor.left.getOrElse(""))
+    }
   }
 }
