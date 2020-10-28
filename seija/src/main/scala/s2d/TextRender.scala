@@ -13,11 +13,17 @@ class TextRender(override val entity:Entity) extends BaseComponent(entity) {
 
   def color:Color = _color
 
+  def color_= (newColor:Color):Unit = {
+    _color = newColor
+    this.colorToRust()
+    _color.setCallback(this.colorToRust)
+  }
+
   def setFont(font:Font):Unit = Foreign.setTextFont(World.id,entity.id,font.id)
 
   def setText(str:String):Unit = Foreign.setTextString(World.id,entity.id,str)
 
-  def setLineMode(lineMode: LineMode.LinMode):Unit = Foreign.setTextLineMode(World.id,entity.id,lineMode.id)
+  def setLineMode(lineMode: LineMode.LineMode):Unit = Foreign.setTextLineMode(World.id,entity.id,lineMode.id)
 
   def setAnchor(anchor:AnchorAlign):Unit = Foreign.setTextAnchor(World.id,entity.id,anchor.id)
 
@@ -37,9 +43,15 @@ object TextRender {
 }
 
 object LineMode extends Enumeration {
-  type LinMode = Value;
-  val Single:LinMode = Value(0);
-  val Wrap:LinMode = Value(1)
+  type LineMode = Value;
+  val Single:LineMode = Value(0);
+  val Wrap:LineMode = Value(1)
+
+  implicit val lineModeRead: data.Read[LineMode] = {
+    case "Wrap" => Some(LineMode.Wrap)
+    case "Single" => Some(LineMode.Single)
+    case _ => None
+  }
 }
 
 
@@ -48,12 +60,19 @@ class TextRenderTmpl extends TemplateComponent {
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
     println("attach TextRender");
     val textRender = entity.addComponent[TextRender]()
-    val errFont = TemplateParam.setToByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data)
-    val errText =TemplateParam.setToByAttrDic[String](attrs,"text",textRender.setText,data);
-    val errFontSize =TemplateParam.setToByAttrDic[Int](attrs,"fontSize",textRender.setFontSize,data);
+    TemplateParam.setValueByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data)
+                 .left.foreach(v => println(s"error TextRender.font:$v"))
+    TemplateParam.setValueByAttrDic[String](attrs,"text",textRender.setText,data)
+                 .left.foreach(v => println(s"error TextRender.text:$v"))
+    TemplateParam.setValueByAttrDic[Int](attrs,"fontSize",textRender.setFontSize,data)
+                  .left.foreach(v => println(s"error TextRender.fontSize:$v"))
+    TemplateParam.setValueByAttrDic[Color](attrs,"color",textRender.color = _,data)
+                  .left.foreach(v => println(s"error TextRender.color:$v"))
+    TemplateParam.setValueByAttrDic[LineMode.LineMode](attrs,"lineMode",textRender.setLineMode,data)
+                  .left.foreach(v => println(s"error TextRender.lineMode:$v"))
+    TemplateParam.setValueByAttrDic[AnchorAlign](attrs,"anchor",textRender.setAnchor,data)
+                  .left.foreach(v => println(s"error TextRender.anchor:$v"))
 
 
-
-    textRender.color.set(1,1,1,1)
   }
 }

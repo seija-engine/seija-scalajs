@@ -227,7 +227,7 @@ object TemplateParam {
   val numberSet:Set[Char] = ('0' to '9').toSet
   def parse(str:String): Either[String, TemplateParam] = this.parser.parse(str)
 
-  def setToByAttrDic[T](attrs:js.Dictionary[String],name:String,f:T=>Unit,data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
+  def setValueByAttrDic[T](attrs:js.Dictionary[String], name:String, f:T=>Unit, data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
     val attrValue = attrs.get(name)
     if(attrValue.isEmpty) {
       return Right()
@@ -245,7 +245,7 @@ object TemplateParam {
         println("set "+value.toString)
         f(value)
         Right()
-      case None => Left(s"not found value ${param.toString}")
+      case None => Left(s"read value ${param.toString}")
     }
   }
 

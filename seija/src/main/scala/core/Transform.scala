@@ -62,9 +62,9 @@ class TransformTmpl extends TemplateComponent {
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
     println("attach Transform")
     var trans = entity.addComponent[Transform]();
-    val errPos = TemplateParam.setToByAttrDic[Vector3](attrs,"position", trans.localPosition = _,data)
-    val errScale = TemplateParam.setToByAttrDic[Vector3](attrs,"scale", trans.scale = _,data)
-    val errRotation = TemplateParam.setToByAttrDic[Vector3](attrs,"rotation", trans.rotation = _,data)
+    val errPos = TemplateParam.setValueByAttrDic[Vector3](attrs,"position", trans.localPosition = _,data)
+    val errScale = TemplateParam.setValueByAttrDic[Vector3](attrs,"scale", trans.scale = _,data)
+    val errRotation = TemplateParam.setValueByAttrDic[Vector3](attrs,"rotation", trans.rotation = _,data)
     if(errPos.isLeft) {
       println("transform position error: "+ errPos.left.getOrElse(""))
     }
