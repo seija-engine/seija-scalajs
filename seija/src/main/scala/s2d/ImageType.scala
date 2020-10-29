@@ -18,6 +18,12 @@ case object ImageTiled extends ImageType {
     override def toJsValue: js.Any = 3
 }
 
+object ImageType {
+    implicit val imageTypeRead: data.Read[ImageType] = (string: String) => {
+        None
+    }
+}
+
 
 object ImageFilledType extends Enumeration {
     type ImageFilledType = Value;

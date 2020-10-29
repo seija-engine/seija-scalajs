@@ -1,7 +1,7 @@
 package demo
 import math.Vector3
 import core.{App, Entity, IGame, Template, Time, Transform, TransformTmpl}
-import s2d.{ImageFilled, ImageRender, Rect2D, Rect2DTmpl, SpriteRender, TextRender, TextRenderTmpl, Transparent, TransparentTmpl}
+import s2d.{ImageFilled, ImageRender, ImageRenderTmpl, Rect2D, Rect2DTmpl, SpriteRender, TextRender, TextRenderTmpl, Transparent, TransparentTmpl}
 import assets.Loader
 import data.Color
 import s2d.assets.{Font, Image, SpriteSheet, TextureConfig}
@@ -19,6 +19,7 @@ class DemoGame extends IGame {
     Template.registerComponent(new Rect2DTmpl)
     Template.registerComponent(new TransparentTmpl)
     Template.registerComponent(new TextRenderTmpl)
+    Template.registerComponent(new ImageRenderTmpl)
 
     var eTmpl = Template.fromXmlFile("/label.xml");
     println("font:"+font.toString);

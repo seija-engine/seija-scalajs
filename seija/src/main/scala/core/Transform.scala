@@ -62,17 +62,12 @@ class TransformTmpl extends TemplateComponent {
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
     println("attach Transform")
     var trans = entity.addComponent[Transform]();
-    val errPos = TemplateParam.setValueByAttrDic[Vector3](attrs,"position", trans.localPosition = _,data)
-    val errScale = TemplateParam.setValueByAttrDic[Vector3](attrs,"scale", trans.scale = _,data)
-    val errRotation = TemplateParam.setValueByAttrDic[Vector3](attrs,"rotation", trans.rotation = _,data)
-    if(errPos.isLeft) {
-      println("transform position error: "+ errPos.left.getOrElse(""))
-    }
-    if(errScale.isLeft) {
-      println("transform scale error: "+ errScale.left.getOrElse(""))
-    }
-    if(errRotation.isLeft) {
-      println("transform rotation error: "+ errRotation.left.getOrElse(""))
-    }
+    TemplateParam.setValueByAttrDic[Vector3](attrs,"position", trans.localPosition = _,data)
+                 .left.foreach(v => println(s"Transform.positon error: $v"))
+    TemplateParam.setValueByAttrDic[Vector3](attrs,"scale", trans.scale = _,data)
+                 .left.foreach(v => println(s"Transform.scale error: $v"))
+    TemplateParam.setValueByAttrDic[Vector3](attrs,"rotation", trans.rotation = _,data)
+                 .left.foreach(v => println(s"Transfrom.rotation error: $v"))
+
   }
 }

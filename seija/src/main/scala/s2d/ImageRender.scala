@@ -1,7 +1,11 @@
 package s2d
-import core.{BaseComponent, Component, Entity, Foreign, World}
-import s2d.assets.Image;
-import data.Color;
+import core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam, World}
+import s2d.assets.Image
+import data.Color
+import math.Vector2
+import data.CoreRead._;
+
+import scala.scalajs.js;
 class ImageRender(override val entity:Entity) extends BaseComponent(entity) with GenericImage[ImageRender] {
   
 
@@ -10,7 +14,6 @@ class ImageRender(override val entity:Entity) extends BaseComponent(entity) with
   }
 
   override def setImageType(typ: ImageType): Unit = {
-    println(typ.toJsValue)
     Foreign.setImageType(World.id,entity.id,typ.toJsValue)
   }
 
@@ -27,5 +30,19 @@ object ImageRender {
       Foreign.addImageRender(World.id,e.id,None)
       new ImageRender(e)
     }
+  }
+}
+
+class ImageRenderTmpl extends TemplateComponent {
+  override val name: String = "ImageRender"
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+    println("attach ImageRender")
+    var imageRender = entity.addComponent[ImageRender]();
+    TemplateParam.setValueByAttrDic[Int](attrs,"texture",id => imageRender.setTexture(new Image(id)),data)
+                 .left.foreach(v => println(s"ImageRender.texture error:$v"))
+    TemplateParam.setValueByAttrDic[Color](attrs,"color",imageRender.color = _,data)
+                 .left.foreach(v => println(s"ImageRender.color error:$v"))
+    TemplateParam.setValueByAttrDic[Float](attrs,"filledValue",imageRender.setFilledValue,data)
+                 .left.foreach(v => println(s"ImageRender.filledValue error :$v"))
   }
 }

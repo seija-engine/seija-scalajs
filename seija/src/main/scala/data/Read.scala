@@ -6,5 +6,6 @@ trait Read[T] {
 
 object CoreRead {
    implicit val stringRead: data.Read[String] = (string: String) => Some(string)
-   implicit val intRead: data.Read[Int] = (string: String) => Some(string.toInt)
+   implicit val intRead: data.Read[Int] = (string: String) => string.toIntOption
+   implicit val floatRead:data.Read[Float] = (string:String) => string.toFloatOption
 }

@@ -51,13 +51,10 @@ class Rect2DTmpl extends TemplateComponent {
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
     var rect2d = entity.addComponent[Rect2D]();
     println("attach Rect2D")
-    val errSize = TemplateParam.setValueByAttrDic[Vector2](attrs,"size", rect2d.size = _,data)
-    val errAnchor = TemplateParam.setValueByAttrDic[Vector2](attrs,"anchor", rect2d.anchor = _,data)
-    if(errSize.isLeft) {
-      println("rect2d size error: "+ errSize.left.getOrElse(""))
-    }
-    if(errAnchor.isLeft) {
-      println("rect2d anchor error: "+ errAnchor.left.getOrElse(""))
-    }
+    TemplateParam.setValueByAttrDic[Vector2](attrs,"size", rect2d.size = _,data)
+                 .left.foreach(v => println(s"error Rect2D.size: $v"))
+
+    TemplateParam.setValueByAttrDic[Vector2](attrs,"anchor", rect2d.anchor = _,data)
+                 .left.foreach(v => println(s"error Rect2D.anchor: $v"))
   }
 }
