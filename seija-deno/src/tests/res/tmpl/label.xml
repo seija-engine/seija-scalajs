@@ -3,6 +3,6 @@
         <Transform scale="1,1,1" position="0,0,1" />
         <Rect2D size="200,300"/>
         <Transparent />
-        <TextRender anchor="BottomLeft" font="{params.font}" lineMode="Wrap" color="#00a4ff" text="文字文字文字文字" fontSize="24"/>
+        <TextRender anchor="BottomLeft" font="{params.font}" lineMode="Wrap" color="#00a4ff" text="{params.text} |Text" fontSize="24"/>
     </Components>
 </Entity>

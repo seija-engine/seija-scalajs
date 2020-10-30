@@ -24,6 +24,9 @@ case class Template(private val xmlNode: XmlNode) {
               case "Components" =>
                 n.children.map(_.foreach(attachComponent(newEntity,_,data)))
               case "Entity" => createEntityByXml(n,Some(newEntity),data)
+              case "Ref" =>
+                
+                None
             }
           }
         }

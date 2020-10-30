@@ -3,6 +3,6 @@
         <Transform />
         <Rect2D />
     </Components>
-    <Ref src="/image.xml"/>
-    <Ref src="/label.xml"/>
+    <Ref src="/image.xml" texture = "{params.texture}" />
+    <Ref src="/label.xml" font="{params.font}" text="{params.text}"/>
 </Entity>

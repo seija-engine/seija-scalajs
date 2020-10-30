@@ -1,0 +1,12 @@
+<Entity>
+    <Components>
+        <Transform />
+        <Rect2D  width="1024" height="768" />
+    </Components>
+    <Ref src="/image.xml" texture="{params.res.bg}" width="1024" height="768" />
+    <Ref src="/image.xml" texture="{params.res.title}">
+       <Param.Children>
+           <Ref src="/label.xml" font="{params.res.text}" text="Title" />
+       </Param.Children>
+    </Ref>
+</Entity>

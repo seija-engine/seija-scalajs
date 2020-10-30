@@ -19,8 +19,31 @@ case object ImageTiled extends ImageType {
 }
 
 object ImageType {
-    implicit val imageTypeRead: data.Read[ImageType] = (string: String) => {
-        None
+    implicit val imageTypeRead: data.Read[ImageType] = {
+        case "Simple" => Some(ImageSimple)
+        case "Tiled" => Some(ImageTiled)
+        case str if str.startsWith("Sliced(") =>
+            val arr = str.slice(7,str.length - 1).split(',')
+            if(arr.length == 4) {
+                for {
+                    l <- arr(0).toFloatOption
+                    r <- arr(1).toFloatOption
+                    t <- arr(2).toFloatOption
+                    b <- arr(3).toFloatOption
+                } yield ImageSliced(l,r,t,b)
+            } else {
+                None
+            }
+        case str if str.startsWith("Filled(") =>
+            val arr = str.slice(7,str.length -1).split(',')
+            if(arr.length == 2) {
+                for {
+                   ft <- ImageFilledType.filledTypeRead.read(arr(0)) 
+                   value <- arr(1).toFloatOption
+                } yield ImageFilled(ft,value)
+            } else {
+                None
+            }   
     }
 }
 
@@ -31,4 +54,12 @@ object ImageFilledType extends Enumeration {
     val HorizontalRight: ImageFilledType = Value(1);
     val VerticalTop: ImageFilledType = Value(2);
     val VerticalBottom: ImageFilledType = Value(3);
+
+     implicit val filledTypeRead: data.Read[ImageFilledType] = {
+        case "HorizontalLeft" => Some(ImageFilledType.HorizontalLeft)
+        case "HorizontalRight" => Some(ImageFilledType.HorizontalRight)
+        case "VerticalTop" => Some(ImageFilledType.VerticalTop)
+        case "VerticalBottom" => Some(ImageFilledType.VerticalBottom)
+        case _ => None
+  }
 }

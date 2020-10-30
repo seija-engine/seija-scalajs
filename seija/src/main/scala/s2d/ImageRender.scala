@@ -42,7 +42,7 @@ class ImageRenderTmpl extends TemplateComponent {
                  .left.foreach(v => println(s"ImageRender.texture error:$v"))
     TemplateParam.setValueByAttrDic[Color](attrs,"color",imageRender.color = _,data)
                  .left.foreach(v => println(s"ImageRender.color error:$v"))
-    TemplateParam.setValueByAttrDic[Float](attrs,"filledValue",imageRender.setFilledValue,data)
-                 .left.foreach(v => println(s"ImageRender.filledValue error :$v"))
+    TemplateParam.setValueByAttrDic[ImageType](attrs,"type",imageRender.setImageType(_),data)
+                 .left.foreach(v => println(s"ImageRender.type error:$v"))
   }
 }
