@@ -42,16 +42,16 @@ object SpriteRender {
 
 class SpriteRenderTmpl extends TemplateComponent {
   override val name: String = "SpriteRender"
-  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
       println("attach SpriteRender")
       var spriteRender = entity.addComponent[SpriteRender]();
-      TemplateParam.setValueByAttrDic[String](attrs,"spriteName",spriteRender.setSpriteName(_),data)
+      TemplateParam.setValueByAttrDic[String](attrs,"spriteName",spriteRender.setSpriteName(_),data,parentConst)
                    .left.foreach(v => println(s"SpriteRender.spriteName error: $v"))
-      TemplateParam.setValueByAttrDic[Int](attrs,"sheet",id => spriteRender.setSpriteSheet(new SpriteSheet(id)),data)
+      TemplateParam.setValueByAttrDic[Int](attrs,"sheet",id => spriteRender.setSpriteSheet(new SpriteSheet(id)),data,parentConst)
                    .left.foreach(v => println(s"SpriteRender.sheet error: $v"))
-      TemplateParam.setValueByAttrDic[Color](attrs,"color",spriteRender.color = _,data)
+      TemplateParam.setValueByAttrDic[Color](attrs,"color",spriteRender.color = _,data,parentConst)
                    .left.foreach(v => println(attrs,s"SpriteRender.color error: $v"))
-      TemplateParam.setValueByAttrDic[ImageType](attrs,"type",spriteRender.setImageType(_),data)
+      TemplateParam.setValueByAttrDic[ImageType](attrs,"type",spriteRender.setImageType(_),data,parentConst)
                    .left.foreach(v => println(s"SpriteRender.type error: $v"))
   }
 }

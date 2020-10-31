@@ -62,12 +62,13 @@ object Color {
     }
 
     implicit val colorRead: data.Read[Color] = (string: String) => {
-        if(string(0) == '#' && (string.length == 7 || string.length == 9)) {
-            val r = Integer.parseInt(string.slice(1,3),16)
-            val g = Integer.parseInt(string.slice(3,5),16)
-            val b = Integer.parseInt(string.slice(5,7),16)
-            val a = if(string.length == 9) {
-              Integer.parseInt(string.slice(7,9),16)
+      val trimString = string.trim;
+        if(trimString(0) == '#' && (trimString.length == 7 || trimString.length == 9)) {
+            val r = Integer.parseInt(trimString.slice(1,3),16)
+            val g = Integer.parseInt(trimString.slice(3,5),16)
+            val b = Integer.parseInt(trimString.slice(5,7),16)
+            val a = if(trimString.length == 9) {
+              Integer.parseInt(trimString.slice(7,9),16)
             } else {
               255
             }

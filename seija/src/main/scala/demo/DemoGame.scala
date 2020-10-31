@@ -14,7 +14,8 @@ class DemoGame extends IGame {
   override def onStart(): Unit = {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
     Template.setRootPath("../seija-deno/src/tests/res/tmpl")
-    var font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
+    val font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
+    val tex = Loader.loadSync[Image]("StarIcon.png").toOption.get;
     Template.registerComponent(new TransformTmpl)
     Template.registerComponent(new Rect2DTmpl)
     Template.registerComponent(new TransparentTmpl)
@@ -23,15 +24,18 @@ class DemoGame extends IGame {
     Template.registerComponent(new SpriteRenderTmpl)
     
 
-    var eTmpl = Template.fromXmlFile("/label.xml");
+    var eTmpl = Template.fromXmlFile("/panel.xml");
     println("font:"+font.toString);
+    println("texture:"+tex.toString);
     for {
       tmpl <- eTmpl
     } {
       val entity = tmpl.call(js.Dictionary(
         "font" -> font.id,
-        "position" -> Vector3.New(10,10,0),
-        "scale" -> Vector3.New(1,1,1)
+        "res" -> js.Dictionary(
+          "sheet" -> 0,
+          "star" -> tex.id
+        )
       ))
       println(entity)
 

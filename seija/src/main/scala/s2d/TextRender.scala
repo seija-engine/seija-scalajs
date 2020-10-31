@@ -57,20 +57,20 @@ object LineMode extends Enumeration {
 
 class TextRenderTmpl extends TemplateComponent {
   override val name: String = "TextRender"
-  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
     println("attach TextRender");
     val textRender = entity.addComponent[TextRender]()
-    TemplateParam.setValueByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data)
+    TemplateParam.setValueByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data,parentConst)
                  .left.foreach(v => println(s"error TextRender.font:$v"))
-    TemplateParam.setValueByAttrDic[String](attrs,"text",textRender.setText,data)
+    TemplateParam.setValueByAttrDic[String](attrs,"text",textRender.setText,data,parentConst)
                  .left.foreach(v => println(s"error TextRender.text:$v"))
-    TemplateParam.setValueByAttrDic[Int](attrs,"fontSize",textRender.setFontSize,data)
+    TemplateParam.setValueByAttrDic[Int](attrs,"fontSize",textRender.setFontSize,data,parentConst)
                   .left.foreach(v => println(s"error TextRender.fontSize:$v"))
-    TemplateParam.setValueByAttrDic[Color](attrs,"color",textRender.color = _,data)
+    TemplateParam.setValueByAttrDic[Color](attrs,"color",textRender.color = _,data,parentConst)
                   .left.foreach(v => println(s"error TextRender.color:$v"))
-    TemplateParam.setValueByAttrDic[LineMode.LineMode](attrs,"lineMode",textRender.setLineMode,data)
+    TemplateParam.setValueByAttrDic[LineMode.LineMode](attrs,"lineMode",textRender.setLineMode,data,parentConst)
                   .left.foreach(v => println(s"error TextRender.lineMode:$v"))
-    TemplateParam.setValueByAttrDic[AnchorAlign](attrs,"anchor",textRender.setAnchor,data)
+    TemplateParam.setValueByAttrDic[AnchorAlign](attrs,"anchor",textRender.setAnchor,data,parentConst)
                   .left.foreach(v => println(s"error TextRender.anchor:$v"))
 
 

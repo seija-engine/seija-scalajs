@@ -48,13 +48,13 @@ object Rect2D {
 
 class Rect2DTmpl extends TemplateComponent {
   override val name: String = "Rect2D"
-  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any]):Unit = {
+  def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
     var rect2d = entity.addComponent[Rect2D]();
     println("attach Rect2D")
-    TemplateParam.setValueByAttrDic[Vector2](attrs,"size", rect2d.size = _,data)
+    TemplateParam.setValueByAttrDic[Vector2](attrs,"size", rect2d.size = _,data,parentConst)
                  .left.foreach(v => println(s"error Rect2D.size: $v"))
 
-    TemplateParam.setValueByAttrDic[Vector2](attrs,"anchor", rect2d.anchor = _,data)
+    TemplateParam.setValueByAttrDic[Vector2](attrs,"anchor", rect2d.anchor = _,data,parentConst)
                  .left.foreach(v => println(s"error Rect2D.anchor: $v"))
   }
 }

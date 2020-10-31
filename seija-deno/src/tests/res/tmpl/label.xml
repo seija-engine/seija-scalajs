@@ -1,8 +1,8 @@
 <Entity>
     <Components>
-        <Transform scale="1,1,1" position="0,0,1" />
+        <Transform scale="1,1,1" position="{params.position} | 0,0,1" />
         <Rect2D size="200,300"/>
         <Transparent />
-        <TextRender anchor="BottomLeft" font="{params.font}" lineMode="Wrap" color="#00a4ff" text="{params.text} |Text" fontSize="24"/>
+        <TextRender font="{params.font}" lineMode="Wrap" color="{params.color} | #00a4ff" text="{params.text} |Text" fontSize="24"/>
     </Components>
 </Entity>

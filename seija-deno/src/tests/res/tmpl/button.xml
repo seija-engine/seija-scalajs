@@ -1,7 +1,7 @@
 <Entity>
     <Components>
         <Transform />
-        <Rect2D />
+        <Rect2D size="200,50" />
     </Components>
     <Ref src="/image.xml" texture = "{params.texture}" />
     <Ref src="/label.xml" font="{params.font}" text="{params.text}"/>

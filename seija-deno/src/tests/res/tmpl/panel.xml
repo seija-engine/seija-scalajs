@@ -3,10 +3,14 @@
         <Transform />
         <Rect2D  width="1024" height="768" />
     </Components>
-    <Ref src="/image.xml" texture="{params.res.bg}" width="1024" height="768" />
-    <Ref src="/image.xml" texture="{params.res.title}">
-       <Param.Children>
-           <Ref src="/label.xml" font="{params.res.text}" text="Title" />
-       </Param.Children>
+    <Ref src="/image.xml" res="{params.res}" size="1024,768" color="#ffffff" />
+    <Ref src="/label.xml" color="#ffffff" font="{params.font}" text="确定" position="-100,0,0" />
+
+    <Ref src="/label.xml" color="#ffffff" font="{params.font}" text="取消" position="100,0,0" />
+
+    <Ref src="/image.xml" >
+        <Param.Children>
+
+        </Param.Children>
     </Ref>
 </Entity>

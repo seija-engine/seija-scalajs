@@ -1,5 +1,6 @@
 package core
 
+import core.Template.get
 import data.XmlExt._
 import data.XmlNode
 import data.Read
@@ -10,10 +11,10 @@ import scala.scalajs.js
 
 case class Template(private val xmlNode: XmlNode) {
   def call(data:js.Dictionary[Any]):Entity = {
-    this.createEntityByXml(xmlNode,None,data).get
+    this.createEntityByXml(xmlNode,None,data,None,js.Dictionary()).get
   }
 
-  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[Any]):Option[Entity] = {
+  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[Any],parentConsts:Option[js.Dictionary[String]],entityParams:js.Dictionary[XmlNode]):Option[Entity] = {
     node.tag match {
       case "Entity" =>
         var newEntity = Entity.New()
@@ -22,11 +23,28 @@ case class Template(private val xmlNode: XmlNode) {
           for(n <- node.children.get) {
             n.tag match {
               case "Components" =>
-                n.children.map(_.foreach(attachComponent(newEntity,_,data)))
-              case "Entity" => createEntityByXml(n,Some(newEntity),data)
+                n.children.map(_.foreach(attachComponent(newEntity,_,data,parentConsts)))
+              case "Entity" => createEntityByXml(n,Some(newEntity),data,None,js.Dictionary())
               case "Ref" =>
-                
+                val (getData,constData) = this.attrsToData(n.attrs,data)
+                val entityParams:js.Dictionary[XmlNode] = js.Dictionary();
+                n.children.foreach(childes => {
+                  for(refChildNode <- childes; if refChildNode.tag.startsWith("Param.")) {
+                    val nodeParamName = refChildNode.tag.slice(6,refChildNode.tag.length)
+                    entityParams.put(nodeParamName,refChildNode)
+                  }
+                })
+                Template.fromXmlFile(n.attrs("src")) match {
+                  case Left(err) => println(s"load Ref error:$err")
+                  case Right(value) => createEntityByXml(value.xmlNode,Some(newEntity),getData,Some(constData),entityParams)
+                }
+              case s if s.startsWith("UseParam.") =>
+                val nodeParamName = s.slice(9,s.length)
+                val paramXmlNode = entityParams.get(nodeParamName)
+                println(paramXmlNode)
+                println(nodeParamName)
                 None
+              case _ => None
             }
           }
         }
@@ -36,10 +54,31 @@ case class Template(private val xmlNode: XmlNode) {
     }
   }
 
-  private def attachComponent(entity:Entity,node:XmlNode,data:js.Dictionary[Any]):Unit = {
+  private def attachComponent(entity:Entity,node:XmlNode,data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
+    Template.components(node.tag).attachComponent(entity,node.attrs,data,parentConst)
+  }
 
-    Template.components(node.tag).attachComponent(entity,node.attrs,data)
-
+  private def attrsToData(attrs:js.Dictionary[String],data:js.Dictionary[Any]):(js.Dictionary[Any],js.Dictionary[String]) = {
+    var retData:js.Dictionary[Any] = js.Dictionary();
+    var retConst:js.Dictionary[String] = js.Dictionary();
+    for((attrKey,attrValue) <- attrs) {
+      if(attrKey != "src") {
+        TemplateParam.parse(attrValue) match {
+          case Left(value) =>
+            println(s"Ref attr $attrKey error $value")
+          case Right(value) =>
+            value.readVarOrConst(data) match {
+              case Left(value) =>
+                println(s"Ref attr $attrKey error $value")
+              case Right(Left(value)) =>
+                retConst.put(attrKey,value)
+              case Right(Right(value)) =>
+                retData.put(attrKey,value)
+            }
+        }
+      }
+    }
+    (retData,retConst)
   }
 }
 
@@ -86,16 +125,36 @@ object Template {
   def registerComponent(tc: TemplateComponent):Unit = {
     components.put(tc.name,tc)
   }
-
-  
 }
 
 trait TemplateComponent {
   val name:String
-  def attachComponent(entity:Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any])
+  def attachComponent(entity:Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]])
 }
 
-sealed trait TemplateParam
+sealed trait TemplateParam {
+  def readVarOrConst(data:js.Dictionary[Any]):Either[String,Either[String,Any]] = {
+    this match {
+      case TemplateConstParam(constString) => Right(Left(constString))
+      case TemplateVarParam(seqNames) =>
+        if(seqNames.length > 0 && seqNames(0) == "params") {
+          seqNames.remove(0)
+        }
+        TemplateParam.findObjectValue(seqNames,data) match {
+          case Some(d) => Right(Right(d))
+          case None => Left(s"not find data ${seqNames.toString}")
+        }
+      case TemplateSeqParam(seq) =>
+        for(param <- seq) {
+          val value = param.readVarOrConst(data)
+          if(value.isRight) {
+            return value
+          }
+        }
+        return Left(s"not find data ${seq.toString}")
+    }
+  }
+}
 case class TemplateConstParam(value:String) extends TemplateParam {
   override def toString: String = value
 }
@@ -230,7 +289,7 @@ object TemplateParam {
   val numberSet:Set[Char] = ('0' to '9').toSet
   def parse(str:String): Either[String, TemplateParam] = this.parser.parse(str)
 
-  def setValueByAttrDic[T](attrs:js.Dictionary[String], name:String, f:T=>Unit, data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
+  def setValueByAttrDic[T](attrs:js.Dictionary[String], name:String, f:T=>Unit, data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]])(implicit readT:Read[T]):Either[String,Unit] = {
     val attrValue = attrs.get(name)
     if(attrValue.isEmpty) {
       return Right()
@@ -238,31 +297,36 @@ object TemplateParam {
     for {
       attrString <- attrValue.toRight("")
       param <- TemplateParam.parse(attrString)
-      setRet <- this.setTo(param,f,data)(readT)
+      setRet <- this.setTo(param,f,data,parentConst)(readT)
     } yield setRet
   }
 
-  def setTo[T](param:TemplateParam,f: T =>Unit,data:js.Dictionary[Any])(implicit readT:Read[T]):Either[String,Unit] = {
-    this.readParamValue(param,data)(readT) match {
+  def setTo[T](param:TemplateParam,f: T =>Unit,data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]])(implicit readT:Read[T]):Either[String,Unit] = {
+    this.readParamValue(param,data,parentConst)(readT) match {
       case Some(value) =>
-        println("set "+value.toString)
+        //println("set "+value.toString)
         f(value)
         Right()
-      case None => Left(s"read value ${param.toString}")
+      case None =>
+        Left(s"read value ${param.toString}")
     }
   }
 
-  def readParamValue[T](param:TemplateParam,data:js.Dictionary[Any])(implicit readT:Read[T]):Option[T] = {
+  def readParamValue[T](param:TemplateParam,data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]])(implicit readT:Read[T]):Option[T] = {
     param match {
       case TemplateConstParam(value) => readT.read(value)
       case TemplateVarParam(varNames) =>
         if(varNames.length > 0 && varNames(0) == "params") {
           varNames.remove(0)
         }
-        this.findObjectValue(varNames,data).map(_.asInstanceOf[T])
+        this.findObjectValue(varNames, data).map(_.asInstanceOf[T]) match {
+          case Some(value) => Some(value)
+          case None => parentConst.flatMap(d => d.get(varNames(0))).flatMap(readT.read)
+
+        }
       case TemplateSeqParam(array) =>
         for(item <- array) {
-          this.readParamValue(item,data) match {
+          this.readParamValue(item,data,parentConst) match {
             case Some(value) =>
               return Some(value)
             case None => ()
