@@ -9,8 +9,8 @@ object Main {
   def main(args: Array[String]): Unit = {
     val app = new App(new DemoGame,new Simple2d(new SWindow(
       bgColor = Color.New(0f,0f,0f,1f),
-      width = 1,
-      height = 1
+      width = 1024,
+      height = 768
     )));
     app.run()
   }

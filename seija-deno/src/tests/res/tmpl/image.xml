@@ -1,9 +1,9 @@
 <Entity>
     <Components>
-        <Transform positon="{params.position} | 0,0,1" />
+        <Transform positon="{params.position} | 0,0,0" />
         <Rect2D size="{params.size} | 100,100" />
         <Transparent />
-        <ImageRender texture = "{params.res.star}" color = "{params.color} | #ff0000" />
+        <ImageRender texture = "{params.texture}" color = "{params.color} | #ffffff" />
     </Components>
     <UseParam.Children />
 </Entity>

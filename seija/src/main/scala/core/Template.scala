@@ -14,7 +14,33 @@ case class Template(private val xmlNode: XmlNode) {
     this.createEntityByXml(xmlNode,None,data,None,js.Dictionary()).get
   }
 
-  private def createEntityByXml(node:XmlNode,parent:Option[Entity],data:js.Dictionary[Any],parentConsts:Option[js.Dictionary[String]],entityParams:js.Dictionary[XmlNode]):Option[Entity] = {
+  private def createEntityByXml(node:XmlNode, parent:Option[Entity], data:js.Dictionary[Any],
+                                parentConst:Option[js.Dictionary[String]], entityParams:js.Dictionary[js.Array[XmlNode]]):Option[Entity] = {
+    def handleRef(refNode:XmlNode,refParent:Option[Entity]):Option[Entity] = {
+      val (getData,constData) = this.attrsToData(refNode.attrs,data)
+      val entityParams:js.Dictionary[js.Array[XmlNode]] = js.Dictionary();
+      refNode.children.foreach(childes => {
+        for(refChildNode <- childes; if refChildNode.tag.startsWith("Param.")) {
+          val nodeParamName = refChildNode.tag.slice(6,refChildNode.tag.length)
+          if(refChildNode.children.isDefined) {
+            entityParams.put(nodeParamName,refChildNode.children.get)
+          }
+        }
+      })
+      Template.fromXmlFile(refNode.attrs("src")) match {
+        case Left(err) =>
+          println(s"load Ref error:$err")
+          None
+        case Right(tmpl) =>
+          println(tmpl.xmlNode.toJsonString)
+          println(parent)
+          println(constData.keys.toString)
+          println(getData.keys.toString)
+          createEntityByXml(tmpl.xmlNode,refParent,getData,Some(constData),entityParams)
+      }
+    }
+
+
     node.tag match {
       case "Entity" =>
         var newEntity = Entity.New()
@@ -23,33 +49,24 @@ case class Template(private val xmlNode: XmlNode) {
           for(n <- node.children.get) {
             n.tag match {
               case "Components" =>
-                n.children.map(_.foreach(attachComponent(newEntity,_,data,parentConsts)))
+                n.children.map(_.foreach(attachComponent(newEntity,_,data,parentConst)))
               case "Entity" => createEntityByXml(n,Some(newEntity),data,None,js.Dictionary())
-              case "Ref" =>
-                val (getData,constData) = this.attrsToData(n.attrs,data)
-                val entityParams:js.Dictionary[XmlNode] = js.Dictionary();
-                n.children.foreach(childes => {
-                  for(refChildNode <- childes; if refChildNode.tag.startsWith("Param.")) {
-                    val nodeParamName = refChildNode.tag.slice(6,refChildNode.tag.length)
-                    entityParams.put(nodeParamName,refChildNode)
-                  }
-                })
-                Template.fromXmlFile(n.attrs("src")) match {
-                  case Left(err) => println(s"load Ref error:$err")
-                  case Right(value) => createEntityByXml(value.xmlNode,Some(newEntity),getData,Some(constData),entityParams)
-                }
+              case "Ref" => handleRef(n,parent)
               case s if s.startsWith("UseParam.") =>
                 val nodeParamName = s.slice(9,s.length)
-                val paramXmlNode = entityParams.get(nodeParamName)
-                println(paramXmlNode)
-                println(nodeParamName)
+                val paramXmlNodes = entityParams.get(nodeParamName)
+                if(paramXmlNodes.isDefined) {
+                  for(node <- paramXmlNodes.get) {
+                    createEntityByXml(node,Some(newEntity),data,parentConst,entityParams);
+                  }
+                }
                 None
               case _ => None
             }
           }
         }
         Some(newEntity)
-      case "Ref" => Some(Entity.New())
+      case "Ref" => handleRef(node,parent)
       case _ => None
     }
   }
