@@ -22,8 +22,11 @@ class DemoGame extends IGame {
     Template.registerComponent(new TextRenderTmpl)
     Template.registerComponent(new ImageRenderTmpl)
     Template.registerComponent(new SpriteRenderTmpl)
-    
 
+    val root = Entity.New()
+    root.info.name = "Root"
+    println(root.info.name)
+    /*
     var eTmpl = Template.fromXmlFile("/panel.xml");
     println("font:"+font.toString);
     println("texture:"+tex.toString);
@@ -38,8 +41,7 @@ class DemoGame extends IGame {
         )
       ))
       println(entity)
-
-    }
+    }*/
 
 
 

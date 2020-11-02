@@ -4,7 +4,7 @@ use deno_core::{v8,OpState};
 use seija::common::Transform;
 use seija::window::ViewPortSize;
 use seija::render::{Camera,ActiveCamera};
-use seija::module_bundle::{S2DLoader};
+use seija::s2d::{S2DLoader};
 use seija::event::cb_event::CABEventRoot;
 use std::rc::Rc;
 use std::cell::RefCell;

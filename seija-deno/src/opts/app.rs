@@ -3,7 +3,7 @@ use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::*;
 use serde_json::Value;
-use seija::module_bundle::Simple2d;
+use seija::s2d::Simple2d;
 use seija::win::{window::WindowBuilder,dpi::{LogicalSize,Size}};
 use seija::app::AppBuilder;
 use seija::core::LimitSetting;

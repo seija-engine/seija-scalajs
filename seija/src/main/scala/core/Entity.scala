@@ -2,16 +2,25 @@ package core
 import scala.collection.mutable
 import scala.scalajs.js
 
+
 class Entity(val id:Int) {
   private var _parent:Option[Entity] = None;
   private var components:mutable.HashMap[Int,BaseComponent] = mutable.HashMap()
   private var _childrens:js.Array[Entity] = js.Array()
+  private var _info:Option[EntityInfo] = None
 
   override def toString: String = s"Entity($id)"
 
+  def info:EntityInfo = {
+    if(this._info.isEmpty) {
+      Foreign.addEntityInfo(World.id,id,"")
+      _info = Some(new EntityInfo(this))
+    }
+    this._info.get
+  }
+
 
   def isAlive:Boolean = Foreign.entityIsAlive(World.id,this.id)
-  
 
   def addComponent[T <: BaseComponent]()(implicit comp:Component[T]):T = {
     val t = comp.addToEntity(this)

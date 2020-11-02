@@ -2,11 +2,44 @@ console.log = function(v) {
   Deno.core.print(v.toString()+"\n")
 }
 Deno.core.ops();
+var worldId = 0;
+function newEntity() {
+  return Deno.core.jsonOpSync("newEntity",worldId);
+}
 
-var path = "src/tests/res/image.xml";
+function addEntityInfo(eid,eName) {
+  return Deno.core.jsonOpSync("addEntityInfo",[worldId,eid,eName]);
+}
+function getEntityName(eid) {
+  return Deno.core.jsonOpSync("getEntityName",[worldId,eid]);
+}
 
-let ret = Seija.parseXML(path);
-console.log(JSON.stringify(ret));
+function setEntityName(eid,name) {
+  return Deno.core.jsonOpSync("setEntityName",[worldId,eid,name]);
+}
 
-let ret2 = Seija.parseXMLString("<Root> </Root>");
-console.log(JSON.stringify(ret2));
+
+function game_start(world_rid) {
+  worldId = world_rid;
+  console.log(worldId);
+  var root = newEntity();
+  addEntityInfo(root,"NMB");
+  setEntityName(root,"呵呵呵");
+  var getName = getEntityName(root);
+  console.log(getName);
+}
+
+function game_update() {
+
+}
+
+function game_quit() {
+  console.log("game quit");
+}
+
+const _newline = new Uint8Array([10]);
+let s2d = Deno.core.jsonOpSync("newSimple2d",{
+window:{bg_color:[0.6,0.6,0.6,1],width:10,height:10 }
+});
+
+Seija.runApp(s2d,game_start,game_update,game_quit);

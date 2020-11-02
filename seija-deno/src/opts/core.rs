@@ -3,7 +3,8 @@ use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
 use seija::specs::{WorldExt,Entity,world::Builder,Join};
 use serde_json::Value;
-use seija::module_bundle::{S2DLoader,DefaultBackend};
+use seija::s2d::{S2DLoader,DefaultBackend};
+use seija::common::EntityInfo;
 use seija::common::transform::{component::ParentHierarchy,Parent,transform::Transform};
 use seija::rendy::texture::image::ImageTextureConfig;
 use seija::assets::{TextuteLoaderInfo,AssetLoadError,SpriteSheetLoaderInfo,FontAssetLoaderInfo};
@@ -25,6 +26,9 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "loadSync", load_sync);
     reg_json_op_sync(rt, "setAssetRootPath", set_asset_root_path);
   
+    reg_json_op_sync(rt, "addEntityInfo",add_entity_info);
+    reg_json_op_sync(rt, "getEntityName",get_entity_name);
+    reg_json_op_sync(rt, "setEntityName",set_entity_name);
     reg_json_op_sync(rt, "addTransform", add_transform);
     reg_json_op_sync(rt, "getTransformPosition", get_transform_position);
     reg_json_op_sync(rt, "getTransformScale", get_transform_scale);
@@ -234,6 +238,22 @@ fn set_asset_root_path(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) ->
     Ok(Value::String(path.to_string()))
 }
 
+fn add_entity_info(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let name = arr[2].as_str().unwrap_or("");
+    let mut storage = world.write_storage::<EntityInfo>();
+    if !storage.contains(entity) {
+        let mut info = EntityInfo::default();
+        info.name = name.to_string();
+        storage.insert(entity,info).unwrap();
+        return Ok(Value::Bool(true));
+    }
+
+    Ok(Value::Bool(false))
+}
+
 fn  add_transform(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
@@ -270,6 +290,30 @@ fn get_transform_attr(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn
     };
     Ok(Value::Array(pos))
 }
+
+
+fn  get_entity_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let storage = world.read_storage::<EntityInfo>();
+    if let Some(t) = storage.get(entity) {
+      return  Ok(Value::String(t.name.to_string()));
+    };
+    Ok(Value::Bool(false))
+}
+
+fn  set_entity_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let mut storage = world.write_storage::<EntityInfo>();
+    if let Some(t) = storage.get_mut(entity) {
+        t.name = arr[2].as_str().unwrap_or("").to_string()
+    };
+    Ok(Value::Bool(false))
+}
+
 
 fn  get_transform_position(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     get_transform_attr(state,value,z,|t| {

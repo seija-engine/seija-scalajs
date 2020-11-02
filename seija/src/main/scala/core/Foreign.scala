@@ -150,6 +150,15 @@ object Foreign {
 
   def setTextAnchor(world:Int,entity: Int,anchorType:Int):Unit =
     Deno.core.jsonOpSync("setTextAnchor",js.Array(world,entity,anchorType))
+
+  def addEntityInfo(world: Int,entity: Int,name:String):Unit =
+    Deno.core.jsonOpSync("addEntityInfo",js.Array(world,entity,name))
+
+  def setEntityName(world: Int,entity:Int,name:String):Unit =
+    Deno.core.jsonOpSync("setEntityName",js.Array(world,entity,name))
+
+  def getEntityName(world: Int,entity:Int):String =
+    Deno.core.jsonOpSync("getEntityName",js.Array(world,entity)).asInstanceOf[String]
 }
 
 @js.native
