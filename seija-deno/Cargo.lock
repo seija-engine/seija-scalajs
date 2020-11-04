@@ -2382,6 +2382,7 @@ dependencies = [
  "byteorder",
  "clap",
  "deno_core",
+ "once_cell",
  "quick-xml",
  "seija",
  "serde_json",

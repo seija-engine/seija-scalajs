@@ -27,9 +27,17 @@ function game_start(world_rid) {
   setEntityName(root,"呵呵呵");
   var getName = getEntityName(root);
   console.log(getName);
+
+  Seija.addGlobalEvent(worldId,root);
 }
 
 function game_update() {
+  if(arguments.length > 0) {
+  
+    console.log(arguments[0] +" ----"+arguments.length);
+  }
+ 
+  
 
 }
 

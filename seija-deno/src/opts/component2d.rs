@@ -1,12 +1,16 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
-use crate::opts::{reg_json_op_sync,get_mut_world};
+use crate::opts::{reg_json_op_sync,get_mut_world,reg_v8_func};
 use serde_json::Value;
 use seija::specs::{WorldExt,Entity,World};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
 use seija::common::{Rect2D,AnchorAlign};
+use seija::event::global::GlobalEventNode;
 use byteorder::{ByteOrder,NativeEndian};
+use deno_core::v8;
+use std::convert::TryFrom;
+use crate::core::event::JSEventCallback;
 
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "addImageRender", add_image_render);
@@ -42,6 +46,29 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "getRect2DAnchorRef", get_rect2d_anchor);
 
     reg_json_op_sync(rt, "setTransparent", set_transparent);
+}
+
+pub fn init_v8_func(scope: &mut v8::HandleScope,object:v8::Local<v8::Object>) {
+    reg_v8_func(scope, object, "addGlobalEvent", add_global_event);
+}
+
+fn add_global_event(scope: &mut v8::HandleScope,args: v8::FunctionCallbackArguments,_: v8::ReturnValue) {
+    let world_rid = v8::Local::<v8::Int32>::try_from(args.get(0)).unwrap().value() as u32;
+    let entity_id = v8::Local::<v8::Int32>::try_from(args.get(1)).unwrap().value() as u32;
+   
+    let world:&mut World = unsafe {
+        std::mem::transmute(*JsRuntime::state(scope).borrow_mut().op_state.borrow_mut().resource_table.get::<*mut World>(world_rid).unwrap())
+    };
+    let entity = world.entities().entity(entity_id);
+    let mut global_storage = world.write_storage::<GlobalEventNode>();
+    if !global_storage.contains(entity) {
+        let mut global_node = GlobalEventNode::default();
+        let callback = JSEventCallback{};
+        global_node.insert(seija::event::GameEventType::KeyBoard, Box::new(callback));
+        global_storage.insert(entity, global_node).unwrap();
+    }
+
+    
 }
 
 fn add_image_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {

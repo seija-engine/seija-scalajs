@@ -29,6 +29,7 @@ pub fn init(rt:&mut JsRuntime) {
 
     app::init_v8_func(scope,seija_val);
     libs::init_v8_func(scope, seija_val);
+    component2d::init_v8_func(scope, seija_val);
 }
 
 pub fn reg_json_op_sync<F>(rt:&mut JsRuntime,name:&str,op_fn:F) -> OpId 
