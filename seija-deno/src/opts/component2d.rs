@@ -49,31 +49,12 @@ pub fn init_json_func(rt:&mut JsRuntime) {
 }
 
 pub fn init_v8_func(scope: &mut v8::HandleScope,object:v8::Local<v8::Object>) {
-    reg_v8_func(scope, object, "addGlobalEvent", add_global_event);
-}
-
-fn add_global_event(scope: &mut v8::HandleScope,args: v8::FunctionCallbackArguments,_: v8::ReturnValue) {
-    let world_rid = v8::Local::<v8::Int32>::try_from(args.get(0)).unwrap().value() as u32;
-    let entity_id = v8::Local::<v8::Int32>::try_from(args.get(1)).unwrap().value() as u32;
-   
-    let world:&mut World = unsafe {
-        std::mem::transmute(*JsRuntime::state(scope).borrow_mut().op_state.borrow_mut().resource_table.get::<*mut World>(world_rid).unwrap())
-    };
-    let entity = world.entities().entity(entity_id);
-    let mut global_storage = world.write_storage::<GlobalEventNode>();
-    if !global_storage.contains(entity) {
-        let mut global_node = GlobalEventNode::default();
-        let callback = JSEventCallback{};
-        global_node.insert(seija::event::GameEventType::KeyBoard, Box::new(callback));
-        global_storage.insert(entity, global_node).unwrap();
-    }
-
     
 }
 
 fn add_image_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let tex_id = arr[2].as_i64().map(|v| Handle::new(v as u32));
 
@@ -92,7 +73,7 @@ fn add_image_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
 
 fn set_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let bytes =  &mut *buffer[0];
     let r  = NativeEndian::read_f32(bytes);
@@ -111,7 +92,7 @@ fn set_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -
 
 fn get_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let bytes =  &mut *buffer[0];
     
@@ -127,7 +108,7 @@ fn get_image_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -
 
 fn set_image_texture(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let tex_id = arr[2].as_i64().unwrap() as u32;
     let mut image_storage = world.write_storage::<ImageRender>();
@@ -141,7 +122,7 @@ fn set_image_texture(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> R
 
 fn set_image_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut image_storage = world.write_storage::<ImageRender>();
     let mimage = image_storage.get_mut(entity);
@@ -154,7 +135,7 @@ fn set_image_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resu
 
 fn set_image_filled_value(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let value = arr[2].as_f64().unwrap() as f32;
 
@@ -192,7 +173,7 @@ fn json_to_image_type(value:&Value) -> ImageType {
 
 fn add_text_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let font_id = arr[2].as_i64().map(|v| Handle::new(v as u32));
     
@@ -209,7 +190,7 @@ fn add_text_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn set_text_string(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let string = arr[2].as_str().unwrap();
     let mut storage = world.write_storage::<TextRender>();
@@ -221,7 +202,7 @@ fn set_text_string(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn set_text_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     
     let mut storage = world.write_storage::<TextRender>();
@@ -234,7 +215,7 @@ fn set_text_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) ->
 
 fn set_text_font_size(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let font_size = arr[2].as_i64().unwrap() as i32;
     let mut storage = world.write_storage::<TextRender>();
@@ -246,7 +227,7 @@ fn set_text_font_size(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> 
 
 fn set_text_font(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let font_id = arr[2].as_i64().unwrap() as u32;
     let mut storage = world.write_storage::<TextRender>();
@@ -258,7 +239,7 @@ fn set_text_font(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resul
 
 fn set_text_anchor(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let anchor:AnchorAlign = (arr[2].as_i64().unwrap() as u32).into();
     let mut storage = world.write_storage::<TextRender>();
@@ -270,7 +251,7 @@ fn set_text_anchor(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn set_text_line_mode(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let line_mode:LineMode = (arr[2].as_i64().unwrap() as u32).into();
     let mut storage = world.write_storage::<TextRender>();
@@ -282,7 +263,7 @@ fn set_text_line_mode(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> 
 
 fn add_sprite_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<SpriteRender>();
     if storage.contains(entity) {
@@ -299,7 +280,7 @@ fn add_sprite_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> R
 
 fn set_sprite_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let name = arr[2].as_str();
     let mut storage = world.write_storage::<SpriteRender>();
@@ -312,7 +293,7 @@ fn set_sprite_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn set_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
@@ -329,7 +310,7 @@ fn set_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) 
 
 fn get_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
@@ -342,7 +323,7 @@ fn get_sprite_color(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) 
 
 fn set_sprite_sheet(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let sheet = arr[2].as_i64().map(|v| Handle::new(v as u32));
     let mut storage = world.write_storage::<SpriteRender>();
@@ -355,7 +336,7 @@ fn set_sprite_sheet(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
 
 fn set_sprite_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<SpriteRender>();
     if let Some(sprite) = storage.get_mut(entity) {
@@ -366,7 +347,7 @@ fn set_sprite_type(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn set_sprite_filled_value(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let value = arr[2].as_f64().unwrap() as f32;
     let mut storage = world.write_storage::<SpriteRender>();
@@ -379,7 +360,7 @@ fn set_sprite_filled_value(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]
 
 fn set_sprite_slice_by_config(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let value = arr[2].as_i64().unwrap() as usize;
     let mut storage = world.write_storage::<SpriteRender>();
@@ -393,7 +374,7 @@ fn set_sprite_slice_by_config(state: &mut OpState,value: Value,_:&mut [ZeroCopyB
 
 fn add_rect_2d(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<Rect2D>();
     if storage.contains(entity) {
@@ -411,7 +392,7 @@ fn add_rect_2d(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<
 
 fn set_transparent(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
     let b = arr[2].as_bool().unwrap();
     let mut storage = world.write_storage::<Transparent>();
@@ -430,7 +411,7 @@ fn set_transparent(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
 
 fn opt_rect_attr_ref(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Rect2D,bytes:&mut [u8])) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
-    let world = get_mut_world(arr[0].as_i64().unwrap() as u32,state);
+    let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);
    
     let mut storage = world.write_storage::<Rect2D>();

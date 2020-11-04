@@ -5,12 +5,13 @@ use seija::common::Transform;
 use seija::window::ViewPortSize;
 use seija::render::{Camera,ActiveCamera};
 use seija::s2d::{S2DLoader};
-use seija::event::cb_event::CABEventRoot;
+use seija::event::{cb_event::CABEventRoot,GameEventType};
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use once_cell::sync::Lazy;
 use crate::core::ToJsValue;
+use crate::core::event::GameMessage;
 pub struct JSGame<'a> {
     start_func:v8::Local<'a,v8::Function>,
     update_func:v8::Local<'a,v8::Function>,
@@ -21,7 +22,8 @@ pub struct JSGame<'a> {
     events:Vec<v8::Local<'a,v8::Value>>
 }
 
-pub static mut MESSAGES: Lazy<VecDeque<Box<dyn ToJsValue>>> = Lazy::new(|| { VecDeque::default() });
+pub static mut MESSAGES: Lazy<VecDeque<GameMessage>> = Lazy::new(|| { VecDeque::default() });
+pub static mut WORLD:Option<*mut World> = None;
 
 impl<'a> JSGame<'a> {
     pub fn new(start_func:v8::Local<'a,v8::Function>,
@@ -45,6 +47,7 @@ impl<'a> JSGame<'a> {
 
 impl<'a> IGame for JSGame<'a> {
     fn start(&mut self, world:&mut World) {
+        unsafe { WORLD = Some( world as *mut World ) } ;
         let camera_transform = Transform::default();
         let (w,h) = {
             let view_port = world.fetch::<ViewPortSize>();
@@ -55,6 +58,8 @@ impl<'a> IGame for JSGame<'a> {
                                   .with(Camera::standard_2d(w, h))
                                   .with(CABEventRoot {}).build();
         world.insert(ActiveCamera {entity : Some(entity) });
+        let ev_typ_id = GameEventType::KeyBoard as u32;
+        crate::opts::core::add_global_event_(entity.id(), ev_typ_id);
         world.fetch::<S2DLoader>().env().set_fs_root("./res/");
         
         let box_world = Box::new(world as *mut World);
@@ -71,7 +76,8 @@ impl<'a> IGame for JSGame<'a> {
             }
             MESSAGES.clear();
         };
-        self.update_func.call(&mut self.scope, self.local_value, self.events.as_slice());
+        let event_arr = v8::Array::new_with_elements(&mut self.scope, self.events.as_slice());
+        self.update_func.call(&mut self.scope, self.local_value, &[event_arr.into()]);
         self.events.clear();
     }
 

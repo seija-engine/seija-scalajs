@@ -10,6 +10,7 @@ use v8::MapFnTo;
 use seija::specs::{World};
 use seija::math::Vector3;
 use byteorder::{ByteOrder,NativeEndian};
+use crate::core::game::WORLD;
 
 pub fn init(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "op_close", deno_core::op_close);
@@ -59,9 +60,8 @@ pub fn json_to_vec3(val:&Value) -> Vector3<f32> {
     Vector3::new(arr[0].as_f64().unwrap() as f32,arr[1].as_f64().unwrap() as f32,arr[2].as_f64().unwrap() as f32)
 }
 
-pub fn get_mut_world(rid:u32,state:&mut OpState) -> &mut World {
-    let world:*mut World = *state.resource_table.get(rid as u32).unwrap();
-    unsafe {std::mem::transmute(world)}
+pub fn get_mut_world() -> &'static mut World {
+    unsafe {std::mem::transmute(*WORLD.as_mut().unwrap())}
 }
 
 pub fn write_vec3_to_buffer(&vec:&Vector3<f32>,buffer:&mut [u8]) {

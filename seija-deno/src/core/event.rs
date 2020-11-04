@@ -3,7 +3,25 @@ use seija::event::{GameEventCallBack,GameEvent};
 use crate::core::game::MESSAGES;
 use crate::core::ToJsValue;
 
-pub struct JSEventCallback {}
+pub struct GameMessage {
+    type_id:u32,
+    entity_id:u32,
+    event:GameEvent
+}
+
+impl ToJsValue for GameMessage {
+    fn to<'a>(&self, scope:&mut v8::HandleScope<'a>) -> v8::Local<v8::Value> {
+        let v8_type = v8::Integer::new(scope, self.type_id as i32).into();
+        let v8_entity = v8::Integer::new(scope, self.entity_id as i32).into();
+        let v8_ev = self.event.to(scope);
+        let arr:v8::Local<v8::Value> = v8::Array::new_with_elements(scope, &[v8_type ,v8_entity,v8_ev]).into();
+        unsafe {std::mem::transmute(arr) } 
+    }
+}
+
+pub struct JSEventCallback {
+    pub eid:u32
+}
 
 unsafe impl Send for JSEventCallback {}
 unsafe impl Sync for JSEventCallback {}
@@ -28,8 +46,7 @@ impl ToJsValue for GameEvent {
 }
 
 impl GameEventCallBack for JSEventCallback {
-    fn run(&self, ev:&GameEvent) { 
-      let c = ev.clone();
-       unsafe { MESSAGES.push_back(Box::new(c) ) };
+    fn run(&self, ev:&GameEvent) {
+        unsafe { MESSAGES.push_back(GameMessage { type_id:0, entity_id:self.eid, event:ev.clone()})};
     }
 }

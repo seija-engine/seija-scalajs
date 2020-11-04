@@ -28,7 +28,7 @@ function game_start(world_rid) {
   var getName = getEntityName(root);
   console.log(getName);
 
-  Seija.addGlobalEvent(worldId,root);
+ 
 }
 
 function game_update() {
@@ -47,7 +47,7 @@ function game_quit() {
 
 const _newline = new Uint8Array([10]);
 let s2d = Deno.core.jsonOpSync("newSimple2d",{
-window:{bg_color:[0.6,0.6,0.6,1],width:10,height:10 }
+window:{bg_color:[0.6,0.6,0.6,1],width:1024,height:768 }
 });
 
 Seija.runApp(s2d,game_start,game_update,game_quit);

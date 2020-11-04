@@ -26,6 +26,9 @@ class DemoGame extends IGame {
     val root = Entity.New()
     root.info.name = "Root"
     println(root.info.name)
+
+    core.EventSystem.regKeyBoard(() => {
+    });
     /*
     var eTmpl = Template.fromXmlFile("/panel.xml");
     println("font:"+font.toString);

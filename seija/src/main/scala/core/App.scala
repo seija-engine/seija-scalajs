@@ -1,6 +1,8 @@
 package core
 import scala.scalajs.js;
 import s2d.Simple2d
+import scala.scalajs.js.annotation._
+
 trait IGame {
   def onStart()
   def onUpdate()
@@ -19,8 +21,13 @@ class App(val game:IGame,val simple2d: Simple2d) {
     this.game.onStart()
   }
 
-  def onUpdate:js.Function0[Unit] = () => {
-    this.game.onUpdate()
+  def onUpdate:js.Function = (events:js.Array[js.Any]) => {
+    if(events.length > 0) {
+      for(ev <- events) {
+         EventSystem.handleEvent(ev.asInstanceOf[js.Array[js.Any]])
+      }
+    }
+    this.game.onUpdate();
   }
 
   def onQuit:js.Function0[Unit] = () => {
