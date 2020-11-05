@@ -34,7 +34,7 @@ class TextRender(override val entity:Entity) extends BaseComponent(entity) {
 
 object TextRender {
   implicit val textRenderComp: Component[TextRender] = new Component[TextRender] {
-    override val key: Int = 4
+    override val key: String = "TextRender"
     override def addToEntity(e: Entity): TextRender = {
       Foreign.addTextRender(World.id,e.id,None)
       new TextRender(e)

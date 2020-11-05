@@ -52,7 +52,7 @@ object Transform {
       Foreign.addTransform(World.id,e.id);
       new Transform(e)
     }
-    override val key:Int = 0
+    override val key:String = "Transform"
   }
 }
 

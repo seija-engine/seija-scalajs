@@ -1,11 +1,11 @@
 package core
 import scala.collection.mutable
 import scala.scalajs.js
-
+import core.event.EventSystem;
 
 class Entity(val id:Int) {
   private var _parent:Option[Entity] = None;
-  private var components:mutable.HashMap[Int,BaseComponent] = mutable.HashMap()
+  private var components:mutable.HashMap[String,BaseComponent] = mutable.HashMap()
   private var _childrens:js.Array[Entity] = js.Array()
   private var _info:Option[EntityInfo] = None
 
@@ -18,6 +18,8 @@ class Entity(val id:Int) {
     }
     this._info.get
   }
+
+  def parent:Option[Entity] = this._parent
 
 
   def isAlive:Boolean = Foreign.entityIsAlive(World.id,this.id)
@@ -58,7 +60,10 @@ class Entity(val id:Int) {
   }
 
   def destory():Unit = {
-    this.removeFromParent();
+    if(this._parent.isEmpty) {
+      EventSystem.unRegEventNode(this.id)
+    }
+    this.removeFromParent()
     Foreign.deleteEntity(World.id,this.id)
   }
 }

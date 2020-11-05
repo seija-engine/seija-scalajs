@@ -1,6 +1,9 @@
 package core
-import scala.scalajs.js;
+import core.event.EventSystem
+
+import scala.scalajs.js
 import s2d.Simple2d
+
 import scala.scalajs.js.annotation._
 
 trait IGame {

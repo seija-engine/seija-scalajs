@@ -32,7 +32,7 @@ class SpriteRender(override val entity:Entity) extends BaseComponent(entity) wit
 
 object SpriteRender {
   implicit val spriteRenderComp: Component[SpriteRender] = new Component[SpriteRender] {
-    override val key: Int = 3
+    override val key: String = "SpriteRender"
     override def addToEntity(e: Entity): SpriteRender = {
       Foreign.addSpriteRender(World.id,e.id)
       new SpriteRender(e)

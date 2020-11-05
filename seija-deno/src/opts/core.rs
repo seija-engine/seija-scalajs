@@ -12,8 +12,9 @@ use seija::math::Vector3;
 use seija::core::Time;
 use byteorder::{ByteOrder,NativeEndian};
 use seija::rendy::hal::image::{SamplerDesc,Filter,WrapMode};
-use seija::event::{global::GlobalEventNode,GameEventType};
-use crate::core::event::JSEventCallback;
+use seija::event::{global::GlobalEventNode,GameEventType,EventNode,cb_event::CABEventRoot};
+use crate::core::event::{JSEventCallback,GameMessage};
+use crate::core::game::MESSAGES;
 
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "newEntity", new_entity);
@@ -53,7 +54,8 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     
     reg_json_op_sync(rt, "updateWorld", update_world);
 
-    //reg_json_op_sync(rt, "addGlobalEvent", add_global_event);
+    reg_json_op_sync(rt, "addEventNode", add_event_node);
+    reg_json_op_sync(rt, "addCABEventRoot", add_cabevent_root);
 }
 
 fn new_entity(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
@@ -62,11 +64,40 @@ fn new_entity(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, An
     Ok(Value::from(e.id() as i64)) 
 }
 
-fn add_global_event(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn add_cabevent_root(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let eid = value.as_u64().unwrap() as u32;
+    let entity = world.entities().entity(eid);
+    let mut storage = world.write_storage::<CABEventRoot>();
+    if !storage.contains(entity) {
+        storage.insert(entity , CABEventRoot{}).unwrap();
+    }
+    Ok(Value::Null) 
+}
+
+fn add_event_node(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
     let arr = value.as_array().unwrap();
-    let eid = arr[0].as_i64().unwrap() as u32;
-    let ev_type = arr[1].as_i64().unwrap() as u32;
-    Ok(Value::Bool(add_global_event_(eid,ev_type)))
+    let eid = arr[0].as_u64().unwrap() as u32;
+    let entity = world.entities().entity(eid);
+    let mut event_storage = world.write_storage::<EventNode>();
+    if !event_storage.contains(entity) {
+        let event = EventNode::default();
+        event_storage.insert(entity, event).unwrap();
+        if arr.len() == 1 {
+            return Ok(Value::Bool(true));
+        }
+    }
+    let ev_type_id = arr[1].as_u64().unwrap() as u32;
+    let is_capture = arr[2].as_bool().unwrap();
+    let event_node = event_storage.get_mut(entity).unwrap();
+    if let Some(event_type) = GameEventType::from(ev_type_id) {
+        event_node.register(is_capture, event_type, move |e,_| {
+           let msg = GameMessage {type_id :1,entity_id:e.id(),ev_type:ev_type_id,event:None,ex0:is_capture.into() };
+           unsafe { MESSAGES.push_back(msg); }
+        });
+    }
+    Ok(Value::Bool(false))
 }
 
 pub fn add_global_event_(eid:u32,ev_type:u32) -> bool {

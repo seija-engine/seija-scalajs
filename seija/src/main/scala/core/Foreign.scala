@@ -159,6 +159,14 @@ object Foreign {
 
   def getEntityName(world: Int,entity:Int):String =
     Deno.core.jsonOpSync("getEntityName",js.Array(world,entity)).asInstanceOf[String]
+
+  def addCABEventRoot(entity:Int):Unit =
+    Deno.core.jsonOpSync("addCABEventRoot",entity)
+
+  def addEventNode(entity:Int):Boolean =
+    Deno.core.jsonOpSync("addEventNode",js.Array(entity)).asInstanceOf[Boolean]
+  def regEventNodeEvent(entity:Int,evType:Int,isCapture:Boolean): Boolean =
+    Deno.core.jsonOpSync("addEventNode",js.Array(entity,evType,isCapture)).asInstanceOf[Boolean]
 }
 
 @js.native

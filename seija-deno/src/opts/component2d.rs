@@ -48,11 +48,8 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "setTransparent", set_transparent);
 }
 
-pub fn init_v8_func(scope: &mut v8::HandleScope,object:v8::Local<v8::Object>) {
-    
-}
 
-fn add_image_render(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn add_image_render(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let entity = world.entities().entity( arr[1].as_i64().unwrap() as u32);

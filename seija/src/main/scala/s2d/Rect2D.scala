@@ -41,7 +41,7 @@ object Rect2D {
       Foreign.addRect2D(World.id,e.id);
       new Rect2D(e)
     }
-    override val key:Int = 1
+    override val key:String = "Rect2D"
   }
 }
 

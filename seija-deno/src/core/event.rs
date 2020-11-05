@@ -1,20 +1,28 @@
-use deno_core::{v8::{self},JsRuntime};
+use deno_core::v8;
 use seija::event::{GameEventCallBack,GameEvent};
 use crate::core::game::MESSAGES;
 use crate::core::ToJsValue;
 
 pub struct GameMessage {
-    type_id:u32,
-    entity_id:u32,
-    event:GameEvent
+   pub type_id:u32,
+   pub entity_id:u32,
+   pub ev_type:u32,
+   pub ex0:u32,
+   pub event:Option<GameEvent>
 }
 
 impl ToJsValue for GameMessage {
     fn to<'a>(&self, scope:&mut v8::HandleScope<'a>) -> v8::Local<v8::Value> {
         let v8_type = v8::Integer::new(scope, self.type_id as i32).into();
+        let v8_ev_type = v8::Integer::new(scope, self.ev_type as i32).into();
         let v8_entity = v8::Integer::new(scope, self.entity_id as i32).into();
-        let v8_ev = self.event.to(scope);
-        let arr:v8::Local<v8::Value> = v8::Array::new_with_elements(scope, &[v8_type ,v8_entity,v8_ev]).into();
+        let v8_ex0 = v8::Integer::new(scope, self.ex0 as i32).into();
+        let arr:v8::Local<v8::Value> = if let Some(gev) = self.event.as_ref() {
+            let v8_ev = gev.to(scope);
+            v8::Array::new_with_elements(scope, &[v8_type ,v8_entity,v8_ev_type,v8_ex0,v8_ev.into()]).into()
+        } else {
+            v8::Array::new_with_elements(scope, &[v8_type ,v8_entity,v8_ev_type,v8_ex0]).into()
+        };
         unsafe {std::mem::transmute(arr) } 
     }
 }
@@ -47,6 +55,7 @@ impl ToJsValue for GameEvent {
 
 impl GameEventCallBack for JSEventCallback {
     fn run(&self, ev:&GameEvent) {
-        unsafe { MESSAGES.push_back(GameMessage { type_id:0, entity_id:self.eid, event:ev.clone()})};
+        let ev_type = ev.to_type() as u32;
+        unsafe { MESSAGES.push_back(GameMessage {ev_type, type_id:0, entity_id:self.eid,ex0:0, event:Some(ev.clone())})};
     }
 }
