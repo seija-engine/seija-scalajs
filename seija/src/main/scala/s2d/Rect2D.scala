@@ -9,12 +9,12 @@ class Rect2D(override val entity:Entity) extends BaseComponent(entity) {
   private var _anchor:Vector2 = Vector2.defaultByCB(this.anchorToRust,0.5f,0.5f);
 
   def size:Vector2 = {
-    Foreign.getRect2DSizeRef(World.id,this.entity.id,_size.inner())
+    Foreign.getRect2DSizeRef(this.entity.id,_size.inner())
     _size
   }
 
   def anchor:Vector2 = {
-    Foreign.getRect2DAnchorRef(World.id,this.entity.id,_anchor.inner())
+    Foreign.getRect2DAnchorRef(this.entity.id,_anchor.inner())
     _anchor
   }
 
@@ -30,15 +30,15 @@ class Rect2D(override val entity:Entity) extends BaseComponent(entity) {
     this.anchorToRust()
   }
 
-  private def sizeToRust():Unit = Foreign.setRect2DSizeRef(World.id,this.entity.id,this._size.inner())
-  private def anchorToRust():Unit = Foreign.setRect2DAnchorRef(World.id,this.entity.id,this._anchor.inner())
+  private def sizeToRust():Unit = Foreign.setRect2DSizeRef(this.entity.id,this._size.inner())
+  private def anchorToRust():Unit = Foreign.setRect2DAnchorRef(this.entity.id,this._anchor.inner())
 }
 
 
 object Rect2D {
   implicit val rect2dComp: Component[Rect2D] = new Component[Rect2D] {
     override def addToEntity(e: Entity): Rect2D = {
-      Foreign.addRect2D(World.id,e.id);
+      Foreign.addRect2D(e.id);
       new Rect2D(e)
     }
     override val key:String = "Rect2D"

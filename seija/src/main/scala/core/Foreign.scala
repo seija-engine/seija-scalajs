@@ -9,7 +9,7 @@ trait ToJSValue {
 }
 
 object Foreign {
-  def init_deno(): Unit = {
+  def initDeno(): Unit = {
     console.log = (v:js.Any) => {
       Deno.core.print(v.toString +"\n")
     }
@@ -18,147 +18,147 @@ object Foreign {
 
   def newSimple2d(dict:js.Dictionary[js.Any]):Int = Deno.core.jsonOpSync("newSimple2d",dict).asInstanceOf[Int]
 
-  def getAbsoluteTime(w:Int):Float = Deno.core.jsonOpSync("getAbsoluteTime",w).asInstanceOf[Float]
+  def getAbsoluteTime:Float = Deno.core.jsonOpSync("getAbsoluteTime").asInstanceOf[Float]
 
-  def getTimeDelta(world:Int):Float = Deno.core.jsonOpSync("getTimeDelta",world).asInstanceOf[Float]
+  def getTimeDelta:Float = Deno.core.jsonOpSync("getTimeDelta").asInstanceOf[Float]
 
-  def getTimeScale(world:Int):Float = Deno.core.jsonOpSync("getTimeScale",world).asInstanceOf[Float]
+  def getTimeScale:Float = Deno.core.jsonOpSync("getTimeScale").asInstanceOf[Float]
 
-  def closeApp(w:Int):Unit = Deno.core.jsonOpSync("closeApp",w)
+  def closeApp():Unit = Deno.core.jsonOpSync("closeApp")
 
-  def newEntity(w:Int):Int = Deno.core.jsonOpSync("newEntity",w).asInstanceOf[Int]
+  def newEntity:Int = Deno.core.jsonOpSync("newEntity").asInstanceOf[Int]
 
-  def entitySetParent(world: Int,entity:Int,parent:Int):Unit =
-    Deno.core.jsonOpSync("entitySetParent",js.Array(world,entity,parent))
+  def entitySetParent(entity:Int,parent:Int):Unit =
+    Deno.core.jsonOpSync("entitySetParent",js.Array(entity,parent))
 
-  def entityAll(world: Int):js.Array[Int] =
-    Deno.core.jsonOpSync("entityAll",world).asInstanceOf[js.Array[Int]]
+  def entityAll:js.Array[Int] =
+    Deno.core.jsonOpSync("entityAll").asInstanceOf[js.Array[Int]]
 
-  def deleteEntity(world: Int,entity: Int):Unit =
-    Deno.core.jsonOpSync("deleteEntity",js.Array(world,entity))
+  def deleteEntity(entity: Int):Unit =
+    Deno.core.jsonOpSync("deleteEntity",entity)
 
 
-  def entityIsAlive(world:Int,entity:Int):Boolean = 
-    Deno.core.jsonOpSync("entityIsAlive",js.Array(world,entity)).asInstanceOf[Boolean]
+  def entityIsAlive(entity:Int):Boolean =
+    Deno.core.jsonOpSync("entityIsAlive",entity).asInstanceOf[Boolean]
 
-  def addTransform(world:Int,entity:Int):Unit = Deno.core.jsonOpSync("addTransform",js.Array(world,entity))
+  def addTransform(entity:Int):Unit = Deno.core.jsonOpSync("addTransform",entity)
 
-  def getTransformPosition(world:Int,entity: Int):js.Array[Float] =
-    Deno.core.jsonOpSync("getTransformPosition",js.Array(world,entity)).asInstanceOf[js.Array[Float]];
+  def getTransformPosition(entity: Int):js.Array[Float] =
+    Deno.core.jsonOpSync("getTransformPosition",entity).asInstanceOf[js.Array[Float]]
 
-  def setTransformPositionRef(world:Int,entity: Int,pos:Float32Array):Unit =
-    Deno.core.jsonOpSync("setTransformPositionRef",js.Array(world,entity),pos)
+  def setTransformPositionRef(entity: Int,pos:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformPositionRef",entity,pos)
 
-  def writeTransformPositionRef(world:Int,entity: Int,pos:Float32Array):Unit =
-    Deno.core.jsonOpSync("getTransformPositionRef",js.Array(world,entity),pos)
+  def writeTransformPositionRef(entity: Int,pos:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformPositionRef",entity,pos)
 
-  def writeTransformScaleRef(world:Int,entity: Int,scale:Float32Array):Unit =
-    Deno.core.jsonOpSync("getTransformScaleRef",js.Array(world,entity),scale)
+  def writeTransformScaleRef(entity: Int,scale:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformScaleRef",entity,scale)
 
-  def setTransformScaleRef(world:Int,entity: Int,scale:Float32Array):Unit =
-    Deno.core.jsonOpSync("setTransformScaleRef",js.Array(world,entity),scale)
+  def setTransformScaleRef(entity: Int,scale:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformScaleRef",entity,scale)
 
-  def writeTransformRotationRef(world: Int,entity: Int,r:Float32Array):Unit =
-    Deno.core.jsonOpSync("getTransformRotationRef",js.Array(world,entity),r)
+  def writeTransformRotationRef(entity: Int,r:Float32Array):Unit =
+    Deno.core.jsonOpSync("getTransformRotationRef",entity,r)
 
-  def setTransformRotationRef(world: Int,entity: Int,r:Float32Array):Unit =
-    Deno.core.jsonOpSync("setTransformRotationRef",js.Array(world,entity),r)
+  def setTransformRotationRef(entity: Int,r:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTransformRotationRef",entity,r)
 
-  def addRect2D(world: Int,entity: Int):Unit =
-    Deno.core.jsonOpSync("addRect2D",js.Array(world,entity,0,0,0.5,0.5))
+  def addRect2D(entity: Int):Unit =
+    Deno.core.jsonOpSync("addRect2D",js.Array(entity,0,0,0.5,0.5))
 
-  def setRect2DSizeRef(world: Int,entity: Int,buffer:Float32Array):Unit =
-    Deno.core.jsonOpSync("setRect2DSizeRef",js.Array(world,entity),buffer)
+  def setRect2DSizeRef(entity: Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setRect2DSizeRef",entity,buffer)
 
-  def getRect2DSizeRef(world: Int,entity: Int,buffer:Float32Array):js.Any =
-    Deno.core.jsonOpSync("getRect2DSizeRef",js.Array(world,entity),buffer)
+  def getRect2DSizeRef(entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getRect2DSizeRef",entity,buffer)
 
-  def setRect2DAnchorRef(world: Int,entity: Int,buffer:Float32Array):Unit =
-    Deno.core.jsonOpSync("setRect2DAnchorRef",js.Array(world,entity),buffer)
+  def setRect2DAnchorRef(entity: Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setRect2DAnchorRef",entity,buffer)
 
-  def getRect2DAnchorRef(world:Int,entity: Int,buffer:Float32Array):js.Any =
-    Deno.core.jsonOpSync("getRect2DAnchorRef",js.Array(world,entity),buffer)
+  def getRect2DAnchorRef(entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getRect2DAnchorRef",entity,buffer)
 
-  def setTransparent(world: Int,entity:Int,isTransparent:Boolean):Unit =
-    Deno.core.jsonOpSync("setTransparent",js.Array(world,entity,isTransparent))
+  def setTransparent(entity:Int,isTransparent:Boolean):Unit =
+    Deno.core.jsonOpSync("setTransparent",js.Array(entity,isTransparent))
 
-  def loadSync(world:Int,path:String,assetType:Int,config:js.Any):js.Any =
-    Deno.core.jsonOpSync("loadSync",js.Array(world,assetType,path,config))
+  def loadSync(path:String,assetType:Int,config:js.Any):js.Any =
+    Deno.core.jsonOpSync("loadSync",js.Array(assetType,path,config))
 
-  def setAssetRootPath(world: Int,path:String):Unit =
-    Deno.core.jsonOpSync("setAssetRootPath",js.Array(world,path))
+  def setAssetRootPath(path:String):Unit =
+    Deno.core.jsonOpSync("setAssetRootPath",path)
 
-  def addImageRender(world:Int,entity: Int,textureId:Option[Int]):Unit =
-    Deno.core.jsonOpSync("addImageRender",js.Array(world,entity,textureId))
+  def addImageRender(entity: Int,textureId:Option[Int]):Unit =
+    Deno.core.jsonOpSync("addImageRender",js.Array(entity,textureId))
 
-  def setImageTexture(world:Int,entity: Int,textureId:Int):Unit =
-    Deno.core.jsonOpSync("setImageTexture",js.Array(world,entity,textureId))
+  def setImageTexture(entity: Int,textureId:Int):Unit =
+    Deno.core.jsonOpSync("setImageTexture",js.Array(entity,textureId))
 
-  def getImageColor(world:Int,entity:Int,buffer:Float32Array):js.Any = 
-    Deno.core.jsonOpSync("getImageColorRef",js.Array(world,entity),buffer)
+  def getImageColor(entity:Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getImageColorRef",entity,buffer)
 
-  def setImageColor(world:Int,entity:Int,buffer:Float32Array):Unit = 
-    Deno.core.jsonOpSync("setImageColorRef",js.Array(world,entity),buffer)
+  def setImageColor(entity:Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setImageColorRef",entity,buffer)
 
-  def addSpriteRender(world:Int,entity: Int):Unit =
-    Deno.core.jsonOpSync("addSpriteRender",js.Array(world,entity,null,null))
+  def addSpriteRender(entity: Int):Unit =
+    Deno.core.jsonOpSync("addSpriteRender",js.Array(entity,null,null))
 
-  def setSpriteSheet(world: Int,entity: Int,sheet:Int):Unit =
-    Deno.core.jsonOpSync("setSpriteSheet",js.Array(world,entity,sheet))
+  def setSpriteSheet(entity: Int,sheet:Int):Unit =
+    Deno.core.jsonOpSync("setSpriteSheet",js.Array(entity,sheet))
 
-  def setSpriteName(world: Int,entity: Int,name:String):Unit =
-    Deno.core.jsonOpSync("setSpriteName",js.Array(world,entity,name))
+  def setSpriteName(entity: Int,name:String):Unit =
+    Deno.core.jsonOpSync("setSpriteName",js.Array(entity,name))
 
-  def setSpriteColor(world: Int,entity:Int,buffer:Float32Array):Unit =
-    Deno.core.jsonOpSync("setSpriteColorRef",js.Array(world,entity),buffer)
+  def setSpriteColor(entity:Int,buffer:Float32Array):Unit =
+    Deno.core.jsonOpSync("setSpriteColorRef",entity,buffer)
 
-  def getSpriteColor(world:Int,entity: Int,buffer:Float32Array):js.Any =
-    Deno.core.jsonOpSync("getSpriteColorRef",js.Array(world,entity),buffer)
+  def getSpriteColor(entity: Int,buffer:Float32Array):js.Any =
+    Deno.core.jsonOpSync("getSpriteColorRef",entity,buffer)
 
-  def setImageType(world:Int,entity: Int,value:js.Any):Unit =
-    Deno.core.jsonOpSync("setImageType",js.Array(world,entity,value))
+  def setImageType(entity: Int,value:js.Any):Unit =
+    Deno.core.jsonOpSync("setImageType",js.Array(entity,value))
 
-  def setSpriteType(world:Int,entity: Int,value:js.Any):Unit =
-    Deno.core.jsonOpSync("setSpriteType",js.Array(world,entity,value))
+  def setSpriteType(entity: Int,value:js.Any):Unit =
+    Deno.core.jsonOpSync("setSpriteType",js.Array(entity,value))
 
-  def setImageFilledValue(world: Int,entity: Int,value:Float):Unit =
-    Deno.core.jsonOpSync("setImageFilledValue",js.Array(world,entity,value))
+  def setImageFilledValue(entity: Int,value:Float):Unit =
+    Deno.core.jsonOpSync("setImageFilledValue",js.Array(entity,value))
 
-  def setSpriteFilledValue(world: Int,entity: Int,value:Float):Unit =
-    Deno.core.jsonOpSync("setSpriteFilledValue",js.Array(world,entity,value))
+  def setSpriteFilledValue(entity: Int,value:Float):Unit =
+    Deno.core.jsonOpSync("setSpriteFilledValue",js.Array(entity,value))
 
-  def setSpriteSliceByConfig(world: Int,entity: Int,value:Int):Unit =
-    Deno.core.jsonOpSync("setSpriteSliceByConfig",js.Array(world,entity,value))
+  def setSpriteSliceByConfig(entity: Int,value:Int):Unit =
+    Deno.core.jsonOpSync("setSpriteSliceByConfig",js.Array(entity,value))
 
-  def addTextRender(world: Int,entity: Int,fontId:Option[Int]):Unit =
-    Deno.core.jsonOpSync("addTextRender",js.Array(world,entity,fontId.getOrElse(false)))
+  def addTextRender(entity: Int,fontId:Option[Int]):Unit =
+    Deno.core.jsonOpSync("addTextRender",js.Array(entity,fontId.getOrElse(false)))
 
-  def setTextFont(world: Int,entity: Int,fontId:Int):Unit =
-    Deno.core.jsonOpSync("setTextFont",js.Array(world,entity,fontId))
+  def setTextFont(entity: Int,fontId:Int):Unit =
+    Deno.core.jsonOpSync("setTextFont",js.Array(entity,fontId))
 
-  def setTextString(world:Int,entity: Int,str:String):Unit =
-    Deno.core.jsonOpSync("setTextString",js.Array(world,entity,str))
+  def setTextString(entity: Int,str:String):Unit =
+    Deno.core.jsonOpSync("setTextString",js.Array(entity,str))
 
-  def setTextFontSize(world: Int,entity: Int,fontSize:Int):Unit =
-    Deno.core.jsonOpSync("setTextFontSize",js.Array(world,entity,fontSize))
+  def setTextFontSize(entity: Int,fontSize:Int):Unit =
+    Deno.core.jsonOpSync("setTextFontSize",js.Array(entity,fontSize))
 
-  def setTextColor(world:Int,entity: Int,color:Float32Array):Unit =
-    Deno.core.jsonOpSync("setTextColorRef",js.Array(world,entity),color)
+  def setTextColor(entity: Int,color:Float32Array):Unit =
+    Deno.core.jsonOpSync("setTextColorRef",entity,color)
 
-  def setTextLineMode(world:Int,entity:Int,lineMode:Int):Unit =
-    Deno.core.jsonOpSync("setTextLineMode",js.Array(world,entity,lineMode))
+  def setTextLineMode(entity:Int,lineMode:Int):Unit =
+    Deno.core.jsonOpSync("setTextLineMode",js.Array(entity,lineMode))
 
-  def setTextAnchor(world:Int,entity: Int,anchorType:Int):Unit =
-    Deno.core.jsonOpSync("setTextAnchor",js.Array(world,entity,anchorType))
+  def setTextAnchor(entity: Int,anchorType:Int):Unit =
+    Deno.core.jsonOpSync("setTextAnchor",js.Array(entity,anchorType))
 
-  def addEntityInfo(world: Int,entity: Int,name:String):Unit =
-    Deno.core.jsonOpSync("addEntityInfo",js.Array(world,entity,name))
+  def addEntityInfo(entity: Int,name:String):Unit =
+    Deno.core.jsonOpSync("addEntityInfo",js.Array(entity,name))
 
-  def setEntityName(world: Int,entity:Int,name:String):Unit =
-    Deno.core.jsonOpSync("setEntityName",js.Array(world,entity,name))
+  def setEntityName(entity:Int,name:String):Unit =
+    Deno.core.jsonOpSync("setEntityName",js.Array(entity,name))
 
-  def getEntityName(world: Int,entity:Int):String =
-    Deno.core.jsonOpSync("getEntityName",js.Array(world,entity)).asInstanceOf[String]
+  def getEntityName(entity:Int):String =
+    Deno.core.jsonOpSync("getEntityName",entity).asInstanceOf[String]
 
   def addCABEventRoot(entity:Int):Unit =
     Deno.core.jsonOpSync("addCABEventRoot",entity)
@@ -185,7 +185,7 @@ object Deno extends js.Object {
 trait DenoCore extends js.Object {
   def print(v:js.Any):Unit
   def ops():Unit
-  def jsonOpSync(name:String,value:js.Any,buffer:js.Any = js.native):js.Any
+  def jsonOpSync(name:String,value:js.Any = null,buffer:js.Any = js.native):js.Any
 }
 
 @js.native

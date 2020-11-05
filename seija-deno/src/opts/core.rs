@@ -131,11 +131,11 @@ fn entity_childrens(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result
     Ok(Value::Array(arr))
 }
 
-fn entity_set_parent(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn entity_set_parent(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
-    let e:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-    let pe:Entity = world.entities().entity(arr[2].as_i64().unwrap() as u32);
+    let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
+    let pe:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<Parent>();
     if !storage.contains(e) {
         let p = Parent {entity:pe };
@@ -147,24 +147,24 @@ fn entity_set_parent(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> R
     Ok(Value::from(e.id() as i64)) 
 }
 
-fn update_world(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn update_world(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     world.maintain();
     Ok(Value::Null)
 }
 
-fn get_time_delta(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn get_time_delta(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let delta_time = world.read_resource::<Time>().delta_seconds();
     Ok(Value::from(delta_time))
 }
 
-fn get_time_scale(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn get_time_scale(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let scale_time = world.read_resource::<Time>().time_scale();
     Ok(Value::from(scale_time))
 }
-fn set_time_scale(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn set_time_scale(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let scale = arr[1].as_f64().unwrap();
@@ -172,36 +172,33 @@ fn set_time_scale(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resu
     Ok(Value::Null)
 }
 
-fn get_absolute_time(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn get_absolute_time(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let absolute_time = world.read_resource::<Time>().absolute_time_seconds();
     Ok(Value::from(absolute_time))
 }
 
-fn delete_entity(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn delete_entity(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     let is_ok = world.delete_entity(entity).is_ok();
     Ok(Value::Bool(is_ok))
 }
 
-fn entity_is_alive(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn entity_is_alive(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-    
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     Ok(Value::Bool(world.is_alive(entity)))
 }
 
-fn entity_all(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn entity_all(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let arr:Vec<Value> = world.entities().join().map(|e| e.id().into()).collect();
     
     Ok(Value::Array(arr))
 }
 
-fn delete_all_children(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn delete_all_children(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
@@ -218,20 +215,20 @@ fn delete_all_children(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) ->
 }
 
 
-fn load_sync(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn load_sync(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let loader = world.fetch_mut::<S2DLoader>();
-    let asset_type:i64 = arr[1].as_i64().unwrap();
-    let asset_path = arr[2].as_str().unwrap();
+    let asset_type:i64 = arr[0].as_i64().unwrap();
+    let asset_path = arr[1].as_str().unwrap();
     let assert_id = match asset_type {
         1 => {
-            let mut tex_config = parse_image_config(&arr[3]);
+            let mut tex_config = parse_image_config(&arr[2]);
             tex_config.premultiply_alpha = true;
             loader.load_sync::<_, DefaultBackend>(TextuteLoaderInfo::new(asset_path,tex_config), world).map(|h| h.id())
         },
         2 => {
-            let mut tex_config = parse_image_config(&arr[3]);
+            let mut tex_config = parse_image_config(&arr[2]);
             tex_config.premultiply_alpha = true;
             loader.load_sync::<_, DefaultBackend>(SpriteSheetLoaderInfo::new(&asset_path,tex_config), world).map(|h| h.id())
         },
@@ -287,20 +284,19 @@ fn parse_image_config(value:&Value) -> ImageTextureConfig {
     config
 }
 
-fn set_asset_root_path(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn set_asset_root_path(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let path = arr[1].as_str().unwrap();
+    let path = value.as_str().unwrap();
 
     world.fetch::<S2DLoader>().env().set_fs_root(path);
     Ok(Value::String(path.to_string()))
 }
 
-fn add_entity_info(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn add_entity_info(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-    let name = arr[2].as_str().unwrap_or("");
+    let entity:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
+    let name = arr[1].as_str().unwrap_or("");
     let mut storage = world.write_storage::<EntityInfo>();
     if !storage.contains(entity) {
         let mut info = EntityInfo::default();
@@ -312,35 +308,20 @@ fn add_entity_info(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     Ok(Value::Bool(false))
 }
 
-fn  add_transform(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn  add_transform(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<Transform>();
     if !storage.contains(entity) {
             storage.insert(entity,Transform::default()).unwrap();
     }
-    let trans:&mut Transform = storage.get_mut(entity).unwrap();
-    if arr.len() > 2 && arr[2].is_array() {
-        let arr = arr[2].as_array().unwrap();
-        let pos = json_to_vec3(&arr[0]);
-        let scale = json_to_vec3(&arr[1]);
-        let rotation = json_to_vec3(&arr[2]);
-        trans.set_position(pos);
-        trans.set_scale(scale);
-        trans.set_rotation_euler(rotation.x,rotation.y,rotation.z);
-    }
     Ok(Value::Null)
 }
 
-fn get_transform_attr(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn(&Transform) -> Vec<Value>) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn get_transform_attr(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn(&Transform) -> Vec<Value>) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     let storage = world.read_storage::<Transform>();
-    
     let pos:Vec<Value> = if let Some(t) = storage.get(entity) {
         f(t)
     } else {
@@ -350,10 +331,9 @@ fn get_transform_attr(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn
 }
 
 
-fn  get_entity_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn  get_entity_name(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     let storage = world.read_storage::<EntityInfo>();
     if let Some(t) = storage.get(entity) {
       return  Ok(Value::String(t.name.to_string()));
@@ -361,13 +341,13 @@ fn  get_entity_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Re
     Ok(Value::Bool(false))
 }
 
-fn  set_entity_name(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn  set_entity_name(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let entity:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<EntityInfo>();
     if let Some(t) = storage.get_mut(entity) {
-        t.name = arr[2].as_str().unwrap_or("").to_string()
+        t.name = arr[1].as_str().unwrap_or("").to_string()
     };
     Ok(Value::Bool(false))
 }
@@ -380,10 +360,9 @@ fn  get_transform_position(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]
     })
 }
 
-fn get_transform_attr_ref(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn get_transform_attr_ref(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
 
     let storage = world.read_storage::<Transform>();
     if let Some(t) = storage.get(entity) {
@@ -427,7 +406,7 @@ fn  get_transform_rotation(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]
     })
 }
 
-fn set_transform_attr(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn(&mut Transform,Vector3<f32>)) -> Result<Value, AnyError> {
+fn set_transform_attr(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf],f:fn(&mut Transform,Vector3<f32>)) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
@@ -458,10 +437,9 @@ fn set_transform_rotation(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf])
 }
 
 
-fn set_transform_attr_ref(state: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
+fn set_transform_attr_ref(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Transform,buffer:&mut [u8])) -> Result<Value, AnyError> {
     let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let entity:Entity = world.entities().entity(value.as_i64().unwrap() as u32);
     let mut storage = world.write_storage::<Transform>();
     if let Some(t) = storage.get_mut(entity) {
         f(t,&mut *buffer[0])

@@ -14,7 +14,7 @@ trait IGame {
 
 class App(val game:IGame,val simple2d: Simple2d) {
   def run(): Unit = {
-    Foreign.init_deno()
+    Foreign.initDeno()
     val s = Foreign.newSimple2d(simple2d.toJS);
     Seija.runApp(s,this.onStart,this.onUpdate,this.onQuit);
   }
@@ -40,6 +40,6 @@ class App(val game:IGame,val simple2d: Simple2d) {
 
 object App {
   def close():Unit = {
-    Foreign.closeApp(World.id)
+    Foreign.closeApp()
   }
 }

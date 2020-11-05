@@ -9,7 +9,7 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
 
 
   def localPosition:Vector3 = {
-    Foreign.writeTransformPositionRef(World.id,this.entity.id,this._localPosition.inner())
+    Foreign.writeTransformPositionRef(this.entity.id,this._localPosition.inner())
     this._localPosition
   }
 
@@ -20,7 +20,7 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
   }
 
   def scale:Vector3 = {
-    Foreign.writeTransformScaleRef(World.id,this.entity.id,this._scale.inner())
+    Foreign.writeTransformScaleRef(this.entity.id,this._scale.inner())
     this._scale
   }
 
@@ -31,7 +31,7 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
   }
 
   def rotation:Vector3 = {
-    Foreign.writeTransformRotationRef(World.id,this.entity.id,this._rotation.inner())
+    Foreign.writeTransformRotationRef(this.entity.id,this._rotation.inner())
     this._rotation
   }
 
@@ -41,15 +41,15 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
     this.rotationToRust();
   }
 
-  private def positionToRust():Unit = Foreign.setTransformPositionRef(World.id,this.entity.id,this._localPosition.inner());
-  private def scaleToRust():Unit = Foreign.setTransformScaleRef(World.id,this.entity.id,this._scale.inner())
-  private def rotationToRust():Unit = Foreign.setTransformRotationRef(World.id,this.entity.id,this._rotation.inner())
+  private def positionToRust():Unit = Foreign.setTransformPositionRef(this.entity.id,this._localPosition.inner());
+  private def scaleToRust():Unit = Foreign.setTransformScaleRef(this.entity.id,this._scale.inner())
+  private def rotationToRust():Unit = Foreign.setTransformRotationRef(this.entity.id,this._rotation.inner())
 }
 
 object Transform {
   implicit val transformComp: Component[Transform] = new Component[Transform] {
     override def addToEntity(e: Entity): Transform = {
-      Foreign.addTransform(World.id,e.id);
+      Foreign.addTransform(e.id);
       new Transform(e)
     }
     override val key:String = "Transform"

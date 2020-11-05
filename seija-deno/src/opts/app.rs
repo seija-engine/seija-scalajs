@@ -58,10 +58,8 @@ fn new_simple2d(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result
     Ok(Value::from(rid))
 }
 
-fn close_app(state: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let world_rid = value.as_i64().unwrap();
-    let world:*mut World = *state.resource_table.get(world_rid as u32).unwrap();
-    let world_ref:&mut World = unsafe { std::mem::transmute(world) };
+fn close_app(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world_ref:&mut World = get_mut_world();
     world_ref.write_resource::<EventChannel<AppControlFlow>>().single_write(AppControlFlow::Quit);
     Ok(Value::Null)
 }

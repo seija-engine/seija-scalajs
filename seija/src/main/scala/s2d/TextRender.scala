@@ -19,24 +19,24 @@ class TextRender(override val entity:Entity) extends BaseComponent(entity) {
     _color.setCallback(this.colorToRust)
   }
 
-  def setFont(font:Font):Unit = Foreign.setTextFont(World.id,entity.id,font.id)
+  def setFont(font:Font):Unit = Foreign.setTextFont(entity.id,font.id)
 
-  def setText(str:String):Unit = Foreign.setTextString(World.id,entity.id,str)
+  def setText(str:String):Unit = Foreign.setTextString(entity.id,str)
 
-  def setLineMode(lineMode: LineMode.LineMode):Unit = Foreign.setTextLineMode(World.id,entity.id,lineMode.id)
+  def setLineMode(lineMode: LineMode.LineMode):Unit = Foreign.setTextLineMode(entity.id,lineMode.id)
 
-  def setAnchor(anchor:AnchorAlign):Unit = Foreign.setTextAnchor(World.id,entity.id,anchor.id)
+  def setAnchor(anchor:AnchorAlign):Unit = Foreign.setTextAnchor(entity.id,anchor.id)
 
-  def setFontSize(size:Int):Unit = Foreign.setTextFontSize(World.id,entity.id,size)
+  def setFontSize(size:Int):Unit = Foreign.setTextFontSize(entity.id,size)
 
-  def colorToRust():Unit = Foreign.setTextColor(World.id,entity.id,_color.inner())
+  def colorToRust():Unit = Foreign.setTextColor(entity.id,_color.inner())
 }
 
 object TextRender {
   implicit val textRenderComp: Component[TextRender] = new Component[TextRender] {
     override val key: String = "TextRender"
     override def addToEntity(e: Entity): TextRender = {
-      Foreign.addTextRender(World.id,e.id,None)
+      Foreign.addTextRender(e.id,None)
       new TextRender(e)
     }
   }

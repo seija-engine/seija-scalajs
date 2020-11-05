@@ -13,7 +13,7 @@ class Entity(val id:Int) {
 
   def info:EntityInfo = {
     if(this._info.isEmpty) {
-      Foreign.addEntityInfo(World.id,id,"")
+      Foreign.addEntityInfo(id,"")
       _info = Some(new EntityInfo(this))
     }
     this._info.get
@@ -22,7 +22,7 @@ class Entity(val id:Int) {
   def parent:Option[Entity] = this._parent
 
 
-  def isAlive:Boolean = Foreign.entityIsAlive(World.id,this.id)
+  def isAlive:Boolean = Foreign.entityIsAlive(this.id)
 
   def addComponent[T <: BaseComponent]()(implicit comp:Component[T]):T = {
     val t = comp.addToEntity(this)
@@ -45,7 +45,7 @@ class Entity(val id:Int) {
       if(parent.isDefined) {
         this._parent = Some(parent.get)
         parent.get._childrens.push(this)
-        Foreign.entitySetParent(World.id,this.id,parent.get.id);
+        Foreign.entitySetParent(this.id,parent.get.id);
       }
     }
   }
@@ -64,14 +64,14 @@ class Entity(val id:Int) {
       EventSystem.unRegEventNode(this.id)
     }
     this.removeFromParent()
-    Foreign.deleteEntity(World.id,this.id)
+    Foreign.deleteEntity(this.id)
   }
 }
 
 object Entity {
-  def New():Entity = new Entity(Foreign.newEntity(World.id))
+  def New():Entity = new Entity(Foreign.newEntity)
 
   def all():js.Array[Int] = {
-    Foreign.entityAll(World.id)
+    Foreign.entityAll
   }
 }

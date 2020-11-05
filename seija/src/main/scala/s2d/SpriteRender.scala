@@ -11,22 +11,22 @@ class SpriteRender(override val entity:Entity) extends BaseComponent(entity) wit
   def spriteName:String = _spriteName
 
   def setSpriteSheet(sheet:SpriteSheet):Unit = {
-    Foreign.setSpriteSheet(World.id,this.entity.id,sheet.id)
+    Foreign.setSpriteSheet(this.entity.id,sheet.id)
   }
 
   def setSpriteName(name:String):Unit = {
-    Foreign.setSpriteName(World.id,this.entity.id,name)
+    Foreign.setSpriteName(this.entity.id,name)
     _spriteName = name;
   }
 
   def setSliceByConfig(idx:Int):Unit =
-    Foreign.setSpriteSliceByConfig(World.id,entity.id,idx)
+    Foreign.setSpriteSliceByConfig(entity.id,idx)
 
-  override def colorToRust(): Unit = Foreign.setSpriteColor(World.id,entity.id,this._color.inner())
-  override def colorFromRust(): Unit = Foreign.getSpriteColor(World.id,entity.id,this._color.inner())
+  override def colorToRust(): Unit = Foreign.setSpriteColor(entity.id,this._color.inner())
+  override def colorFromRust(): Unit = Foreign.getSpriteColor(entity.id,this._color.inner())
 
-  override def setImageType(typ: ImageType): Unit = Foreign.setSpriteType(World.id,entity.id,typ.toJsValue)
-  override def setFilledValue(v: Float): Unit = Foreign.setSpriteFilledValue(World.id,entity.id,v)
+  override def setImageType(typ: ImageType): Unit = Foreign.setSpriteType(entity.id,typ.toJsValue)
+  override def setFilledValue(v: Float): Unit = Foreign.setSpriteFilledValue(entity.id,v)
 }
 
 
@@ -34,7 +34,7 @@ object SpriteRender {
   implicit val spriteRenderComp: Component[SpriteRender] = new Component[SpriteRender] {
     override val key: String = "SpriteRender"
     override def addToEntity(e: Entity): SpriteRender = {
-      Foreign.addSpriteRender(World.id,e.id)
+      Foreign.addSpriteRender(e.id)
       new SpriteRender(e)
     }
   }
