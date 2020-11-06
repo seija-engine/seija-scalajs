@@ -1,4 +1,4 @@
-<Entity>
+<Entity id="text">
     <Components>
         <Transform scale="1,1,1" position="{params.position} | 0,0,0" />
         <Rect2D size="200,300"/>

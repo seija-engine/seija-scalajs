@@ -43,8 +43,7 @@ object SpriteRender {
 class SpriteRenderTmpl extends TemplateComponent {
   override val name: String = "SpriteRender"
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
-      println("attach SpriteRender")
-      var spriteRender = entity.addComponent[SpriteRender]();
+      val spriteRender = entity.addComponent[SpriteRender]();
       TemplateParam.setValueByAttrDic[String](attrs,"spriteName",spriteRender.setSpriteName(_),data,parentConst)
                    .left.foreach(v => println(s"SpriteRender.spriteName error: $v"))
       TemplateParam.setValueByAttrDic[Int](attrs,"sheet",id => spriteRender.setSpriteSheet(new SpriteSheet(id)),data,parentConst)

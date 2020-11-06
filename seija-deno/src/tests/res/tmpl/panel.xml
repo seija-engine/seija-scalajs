@@ -1,17 +1,17 @@
-<Entity>
+<Entity id="root">
     <Components>
         <Transform />
         <Rect2D  width="1024" height="768" />
     </Components>
     
-    <Ref src="/label.xml" position="-100,0,0" font="{params.font}" text="左" />
-    <Ref src="/label.xml" position="100,0,0" font="{params.font}" text="右" />
+    <Ref id="left" src="/label.xml" position="-100,0,0" font="{params.font}" text="左" />
+    <Ref id="right" src="/label.xml" position="100,0,0" font="{params.font}" text="右" />
 
-    <Ref src="/image.xml"  texture="{params.res.star}" font="{params.font}" position="100,0,10" >
+    <Ref id="center" src="/image.xml"  texture="{params.res.star}" font="{params.font}" position="100,0,10" >
         <Param.Children>
-            <Ref src="/image.xml" texture="{params.texture}" size="50,50" font="{params.font}">
+            <Ref id="img1" src="/image.xml" texture="{params.texture}" size="50,50" font="{params.font}">
                 <Param.Children>
-                    <Ref src="/label.xml" color="#ff0000" position="0,0,0" font="{params.font}" text="中" />
+                    <Ref id="img2" src="/label.xml" color="#ff0000" position="0,0,0" font="{params.font}" text="中" />
                 </Param.Children>
             </Ref>
         </Param.Children>

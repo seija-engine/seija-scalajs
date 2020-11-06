@@ -8,15 +8,43 @@ import data.Read
 import scala.collection.mutable
 import scala.scalajs.js
 
+class TemplateIDRef(private var dic:js.Dictionary[Entity],private var children:js.Dictionary[TemplateIDRef]) {
+  def set(id:String,e:Entity):Unit = {
+    this.dic.put(id,e)
+  }
+  def setChild(id:String,ref:TemplateIDRef):Unit = children.put(id,ref)
+
+  def find(string: String):Option[Entity] = {
+    val arr = string.split('.')
+    println("len:" + arr.length+" s:"+string)
+    if(arr.length == 0) return dic.get(string)
+    var curRef = this;
+    for(idx <- 0 to arr.length - 2) {
+      val s = arr(idx)
+      curRef.children.get(s) match {
+        case Some(r) =>
+          curRef = r
+        case None =>
+          return None
+      }
+    }
+    curRef.dic.get(arr.last)
+  }
+}
 
 case class Template(private val xmlNode: XmlNode) {
-  def call(data:js.Dictionary[Any]):Entity = {
-    this.createEntityByXml(xmlNode,None,data,None,js.Dictionary()).get
+  def call(data:js.Dictionary[Any]):(Entity,TemplateIDRef) = {
+    val templateIDRef = new TemplateIDRef(js.Dictionary(),js.Dictionary())
+    val entity = this.createEntityByXml(xmlNode,None,data,None,js.Dictionary(),Some(templateIDRef)).get
+    (entity,templateIDRef)
   }
 
   private def createEntityByXml(node:XmlNode, parent:Option[Entity], data:js.Dictionary[Any],
-                                parentConst:Option[js.Dictionary[String]], entityParams:js.Dictionary[js.Array[XmlNode]]):Option[Entity] = {
-    def handleRef(refNode:XmlNode,refParent:Option[Entity]):Option[Entity] = {
+                                parentConst:Option[js.Dictionary[String]],
+                                entityParams:js.Dictionary[js.Array[XmlNode]],
+                                idRef:Option[TemplateIDRef]):Option[Entity] = {
+
+    def handleRef(refNode:XmlNode,refParent:Option[Entity],parentRef:Option[TemplateIDRef]):Option[Entity] = {
       val (getData,constData) = this.attrsToData(refNode.attrs,data)
       val entityParams:js.Dictionary[js.Array[XmlNode]] = js.Dictionary();
       refNode.children.foreach(childes => {
@@ -32,32 +60,47 @@ case class Template(private val xmlNode: XmlNode) {
           println(s"load Ref error:$err")
           None
         case Right(tmpl) =>
-          println(tmpl.xmlNode.toJsonString)
-          println(parent)
-          println(constData.keys.toString)
-          println(getData.keys.toString)
-          createEntityByXml(tmpl.xmlNode,refParent,getData,Some(constData),entityParams)
+          val needSet = refNode.attrs.contains("id") && parentRef.isDefined
+          val newIdRef = if(needSet) {
+            val newValue = new TemplateIDRef(js.Dictionary(),js.Dictionary())
+            parentRef.get.setChild(refNode.attrs("id"),newValue)
+            Some(newValue)
+          } else {
+            None
+          }
+          val e = createEntityByXml(tmpl.xmlNode,refParent,getData,Some(constData),entityParams,newIdRef)
+          if(needSet) {
+            parentRef.get.set(refNode.attrs("id"),e.get)
+          }
+          e
       }
     }
-
 
     node.tag match {
       case "Entity" =>
         var newEntity = Entity.New()
         newEntity.setParent(parent)
+        if(node.attrs.contains("id")) {
+          idRef.foreach(_.set(node.attrs("id"),newEntity))
+        }
         if(node.children.isDefined) {
           for(n <- node.children.get) {
             n.tag match {
               case "Components" =>
                 n.children.map(_.foreach(attachComponent(newEntity,_,data,parentConst)))
-              case "Entity" => createEntityByXml(n,Some(newEntity),data,None,js.Dictionary())
-              case "Ref" => handleRef(n,parent)
+              case "Entity" =>
+                var e = createEntityByXml(n,Some(newEntity),data,None,js.Dictionary(),idRef)
+                if(node.attrs.contains("id")) {
+                  idRef.foreach(_.set(node.attrs("id"),e.get))
+                }
+              case "Ref" =>
+                handleRef(n,parent,idRef)
               case s if s.startsWith("UseParam.") =>
                 val nodeParamName = s.slice(9,s.length)
                 val paramXmlNodes = entityParams.get(nodeParamName)
                 if(paramXmlNodes.isDefined) {
                   for(node <- paramXmlNodes.get) {
-                    createEntityByXml(node,Some(newEntity),data,parentConst,entityParams);
+                    createEntityByXml(node,Some(newEntity),data,parentConst,entityParams,idRef);
                   }
                 }
                 None
@@ -66,7 +109,7 @@ case class Template(private val xmlNode: XmlNode) {
           }
         }
         Some(newEntity)
-      case "Ref" => handleRef(node,parent)
+      case "Ref" => handleRef(node,parent,idRef)
       case _ => None
     }
   }

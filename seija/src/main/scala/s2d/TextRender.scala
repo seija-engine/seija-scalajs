@@ -58,7 +58,6 @@ object LineMode extends Enumeration {
 class TextRenderTmpl extends TemplateComponent {
   override val name: String = "TextRender"
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
-    println("attach TextRender");
     val textRender = entity.addComponent[TextRender]()
     TemplateParam.setValueByAttrDic[Int](attrs,"font", fontId => textRender.setFont(new Font(fontId)),data,parentConst)
                  .left.foreach(v => println(s"error TextRender.font:$v"))

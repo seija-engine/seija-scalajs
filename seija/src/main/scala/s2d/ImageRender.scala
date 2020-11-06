@@ -36,7 +36,6 @@ object ImageRender {
 class ImageRenderTmpl extends TemplateComponent {
   override val name: String = "ImageRender"
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
-    println("attach ImageRender")
     var imageRender = entity.addComponent[ImageRender]();
     TemplateParam.setValueByAttrDic[Int](attrs,"texture",id => imageRender.setTexture(new Image(id)),data,parentConst)
                  .left.foreach(v => println(s"ImageRender.texture error:$v"))

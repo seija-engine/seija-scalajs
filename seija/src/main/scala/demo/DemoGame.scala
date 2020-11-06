@@ -45,10 +45,10 @@ class DemoGame extends IGame {
     val event2 = e2.addComponent[EventNode]();
     var rect2 = e2.addComponent[Rect2D]()
     rect2.size.set(100,100)
-    event2.register(GameEventType.Click,true,() => {
+    event2.register(GameEventType.Click,isCapture = true, () => {
       println("click e2");
     })
-    /*
+
         var eTmpl = Template.fromXmlFile("/panel.xml");
         println("font:"+font.toString);
         println("texture:"+tex.toString);
@@ -62,8 +62,9 @@ class DemoGame extends IGame {
               "star" -> tex.id
             )
           ))
-          println(entity)
-        } */
+          val ref = entity._2;
+          println(ref.find("center.img1.img2"))
+        } /**/
 
 
 
