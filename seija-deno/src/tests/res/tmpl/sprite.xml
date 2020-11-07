@@ -1,0 +1,9 @@
+<Entity>
+    <Components>
+        <Transform positon="{params.position} | 0,0,0" />
+        <Rect2D size="{params.size} | 100,100" />
+        <Transparent />
+        <SpriteRender sheet="{params.sheet}" spriteName="{params.spriteName} |none" color = "{params.color} | #ffffff" />
+    </Components>
+    <UseParam.Children />
+</Entity>

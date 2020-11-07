@@ -1,0 +1,8 @@
+<Entity>
+    <Components>
+        <Transform />
+        <Rect2D  size="24,24" />
+    </Components>
+    <Ref id="checkSprite" src="/sprite.xml" size="24,24" sheet="{env.res.sheet}" spriteName="checkbox-unchecked" />
+  
+</Entity>

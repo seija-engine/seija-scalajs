@@ -1,9 +1,11 @@
 package demo
 
-import assets.Loader
-import core.{Entity, Transform}
-import s2d.{ImageRender, Rect2D, SpriteRender, TextRender, Transparent}
-import s2d.assets.{Font, Image, SpriteSheet}
+import seija.assets.Loader
+import seija.core.{Entity, Transform}
+import seija.data
+import seija.data.AnchorAlign
+import seija.s2d.assets.{Font, Image, SpriteSheet}
+import seija.s2d.{ImageFilled, ImageFilledType, ImageRender, ImageSliced, LineMode, Rect2D, SpriteRender, TextRender, Transparent}
 
 object BaseRenderComps {
   def show():Unit = {
@@ -19,16 +21,16 @@ object BaseRenderComps {
 
     var sprite = this.createSprite(paperSheet,"BlueButton",660,176,100,300)
     this.createLabel(font,"Slice Sprite",100,230)
-    sprite.setImageType(s2d.ImageSliced(170,50,10,10))
+    sprite.setImageType(ImageSliced(170,50,10,10))
 
     var sprite2 = this.createSprite(paperSheet,"StarIcon",176,176,400,300)
     this.createLabel(font,"Filled Sprite",400,230)
-    sprite2.setImageType(s2d.ImageFilled(s2d.ImageFilledType.HorizontalLeft,0.6f))
+    sprite2.setImageType(ImageFilled(ImageFilledType.HorizontalLeft,0.6f))
 
 
     this.createLabel(font,"Single LineText",0,100)
     var text = this.createLabel(font,"Single LineText Anchor Left",0,50,300)
-    text.setAnchor(data.AnchorAlign.Left)
+    text.setAnchor(AnchorAlign.Left)
 
     this.createLabel(font,"Single LineText",0,100)
     var text2 = this.createLabel(font,"Single LineText Anchor Right",0,0,300)
@@ -39,7 +41,7 @@ object BaseRenderComps {
     this.createLabel(font,"Single LineText",0,100)
     var text3 = this.createLabel(font,"多行文本自动换行\r\r"+longText,-400,-100,800,16)
     text3.setAnchor(data.AnchorAlign.TopLeft)
-    text3.setLineMode(s2d.LineMode.Wrap)
+    text3.setLineMode(LineMode.Wrap)
   }
 
 
