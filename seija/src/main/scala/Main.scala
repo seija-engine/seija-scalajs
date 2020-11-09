@@ -12,7 +12,11 @@ object Main {
       height = 240
     )));
     app.run()*/
-    SExprParser.parse("(add 1 2)")
+    val ret = SExprParser.parse("[false true 1 3.0001 nil {:a 123 'a' false }]")
+    val ret2 = SExprParser.parse("#(do %1 (+ 1 1) #(fuck 1 2 %1))")
+
+    println(ret)
+    println(ret2)
   }
   
 }
