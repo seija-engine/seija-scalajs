@@ -3,8 +3,7 @@ package seija.data
 import seija.core.Seija
 
 import scala.scalajs.js
-import scala.collection.mutable
-import scala.scalajs.js.Object.getOwnPropertyNames;
+
 
 trait XmlNode extends js.Object {
   val tag:String

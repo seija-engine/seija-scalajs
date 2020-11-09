@@ -1,7 +1,7 @@
 package seija.s2d
 
 import seija.core.{BaseComponent, Component, Entity, Foreign, TemplateComponent}
-import seija.math.Vector2
+
 
 import scala.scalajs.js
 
