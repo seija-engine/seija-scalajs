@@ -1,55 +1,31 @@
-<!--
-  Model
-  isLSP::Bool
-  data Event = UpdateLSP Bool
-
-ViewModel
-  IsCheck::Bool
-  IsDisable::Bool
-  StringList::Array String
-  data ViewEvent = ClickCheck | UpdateCheck Bool | UpdateEnable Bool | UpdateList (ListEvent String) | SetEnable Bool
- 
-
-View
-  属性Update, 属性转换Update ==> 属性lisp
-  Template Update ==> TemplateTrigger(嵌套？) or TemplateTrigger也是控件
--->
-<Entity>
-  <Components>
-      <Transform />
-      <Rect2D size="50,50" />
-      <EventNode onClick="(emit ClickCheck)" />
-  </Components>
-  <Ref src="/image.xml" texture="(data env.res.defpack.checkbg)" color="(event-bind 'UpdateEnable' #(if % (color '#ffffff')  (color '#666666')))" />
-  <Ref src="/image.xml" texture="(data env.res.defpack.check)" activeSelf="(event-bind 'UpdateCheck')" />
-  
-  <ListTemplate event="(event-bind 'UpdateList')">
-    <ItemTemplate>
-      <Ref src="/label.xml" text="(data params.value)" />
-      <Ref src="/image.xml" text="Delete" onClick="(emit (UpdateList RemoveIndex params.index))" />
-    </ItemTemplate>
-    <ItemWrapper>
+<Control>
+    <ContentTemplate>
+        <Param.initAction>
+            (emit [:QueryState])
+            (var clickCount 0)
+        </Param.initAction>
         <Entity>
-          <Components>
-            <StackLayout />
-          </Components>
-          <UseParam.Children />
+            <Components>
+                <Transform />
+                <Rect2D size="50,50" />
+                <EventNode onClick="#(do (emit [:ClickCheck]) (set clickCount (inc clickCount)))" />
+            </Components>
+            <Ref id="checkSprite" src="/sprite.xml" size="24,24" sheet="(env res.sheet)">
+                <!-- spriteName不能动态Update，需要持有里面的SpriteRender  -->
+                <Param.spriteName>                   
+                    (ev-bind :UpdateState
+                        #(if (> 5 clickCount)
+                            (match [% %2]
+                                [true true] "checkbox-checked"
+                                [true false] "checkbox-checked-disabled"
+                                [false true] "checkbox-unchecked"
+                                [false false] "checkbox-unchecked-disabled"
+                            )
+                            "checkbox-unchecked-disabled"
+                        )
+                    )
+                </Param.spriteName>
+            </Ref>
         </Entity>
-    </ItemWrapper>
-  </ListTemplate>
-
-  <TemplateShow event="(event-bind 'UpdateEnable')" >
-     <BagPanel model="(bind-model 'BagModel')"/>
-  </TemplateShow>
-</Entity>
-
-<!--
-  BagModel
-  Items:Array GameItem
-  data Event = DeleteItem | AddItem
- 
-ViewModel
-  data Event = UpdateList (ListEvent GameItem)
-View
-  
--->
+    </ContentTemplate>
+</Control>
