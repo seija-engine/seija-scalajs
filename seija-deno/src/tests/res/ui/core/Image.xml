@@ -1,0 +1,11 @@
+<Control>
+    <ContentTemplate>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D size="100,100" />
+                <ImageRender texture = "(data a.c.b)" color = "#ffffff" />
+            </Components>
+        </Entity>
+    </ContentTemplate>
+</Control>

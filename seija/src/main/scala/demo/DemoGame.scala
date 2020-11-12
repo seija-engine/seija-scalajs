@@ -10,9 +10,8 @@ import seija.data.Color
 import seija.math.Vector3
 import seija.s2d.assets.{Font, Image, SpriteSheet}
 import seija.s2d.{ImageRenderTmpl, Rect2D, Rect2DTmpl, SpriteRenderTmpl, TextRenderTmpl, TransparentTmpl}
-import seija.ui.CheckBox
-
-import scala.scalajs.js;
+import seija.ui
+import seija.ui.Control;
 
 class DemoGame extends IGame {
 
@@ -20,19 +19,15 @@ class DemoGame extends IGame {
   override def onStart(): Unit = {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
     Template.setRootPath("../seija-deno/src/tests/res/tmpl")
-    Tests.registerAllTemplate()
+    seija.ui.Control.setRootPath("../seija-deno/src/tests/res/ui")
+
     val font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
     val tex = Loader.loadSync[Image]("StarIcon.png").toOption.get;
     val materialSheet = Loader.loadSync[SpriteSheet]("material.json").toOption.get;
-    Template.env.put("res",js.Dictionary("sheet" -> materialSheet.id));
 
-    val root = Entity.New();
-    root.addComponent[CABEventRoot]();
-    root.addComponent[Transform]();
-    val rect2D = root.addComponent[Rect2D]();
-    rect2D.size.set(320,240)
-    val checkBox = new CheckBox();
-    checkBox.onStart(root)
+   val imageControl = Control.create("/core/Image.xml")
+    imageControl.foreach(_.Enter())
+
   }
 
 

@@ -1,4 +1,4 @@
-<Control>
+<Control xmlns:core="/control/core">
     <ContentTemplate>
         <Param.initAction>
             (emit [:QueryState])
