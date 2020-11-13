@@ -2,7 +2,7 @@
     <ContentTemplate>
         <Entity>
             <Components>
-                <Transform />
+                <Transform position="(env config.res)" scale="1,1,1" />
                 <Rect2D size="100,100" />
                 <ImageRender texture = "(data a.c.b)" color = "#ffffff" />
             </Components>

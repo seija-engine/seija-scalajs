@@ -64,7 +64,7 @@ class TransformTmpl extends TemplateComponent {
   def attachComponent(entity: Entity,attrs:js.Dictionary[String],data:js.Dictionary[Any],parentConst:Option[js.Dictionary[String]]):Unit = {
     val trans = entity.addComponent[Transform]();
     TemplateParam.setValueByAttrDic[Vector3](attrs,"position", trans.localPosition = _,data,parentConst)
-                 .left.foreach(v => println(s"Transform.positon error: $v"))
+                 .left.foreach(v => println(s"Transform.position error: $v"))
     TemplateParam.setValueByAttrDic[Vector3](attrs,"scale", trans.scale = _,data,parentConst)
                  .left.foreach(v => println(s"Transform.scale error: $v"))
     TemplateParam.setValueByAttrDic[Vector3](attrs,"rotation", trans.rotation = _,data,parentConst)

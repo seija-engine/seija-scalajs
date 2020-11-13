@@ -176,7 +176,7 @@ object Template {
   }
 
   def scanDepFiles(tmpl:Template): js.Array[String] = {
-    var refs:js.Array[XmlNode] = tmpl.xmlNode.searchTagNode("Ref")
+    val refs:js.Array[XmlNode] = tmpl.xmlNode.searchTagNode("Ref")
     refs.map(_.attrs.get("src").getOrElse("")).filter( _ != "")
   }
 
@@ -215,7 +215,7 @@ sealed trait TemplateParam {
             return value
           }
         }
-        return Left(s"not find data ${seq.toString}")
+        Left(s"not find data ${seq.toString}")
     }
   }
 }

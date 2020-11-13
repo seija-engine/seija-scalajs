@@ -3,24 +3,51 @@ import scala.scalajs.js
 import scala.collection.immutable.{HashSet}
 import scala.collection.mutable
 import scala.util.control.Breaks._
-sealed trait SExpr
+sealed trait SExpr {
+    def isFloat:Boolean
+}
 
-case class SSymbol(value:String) extends SExpr
-case class SList(list:js.Array[SExpr]) extends SExpr
-case class SBool(value:Boolean) extends SExpr
-case object SNil extends SExpr
-case class SString(value:String) extends SExpr
-case class SVector(list:js.Array[SExpr]) extends SExpr
-case class SInt(value:Int) extends SExpr
-case class SFloat(value:Float) extends SExpr
-case class SKeyword(value:String) extends SExpr
+case class SSymbol(value:String) extends SExpr {
+    def isFloat = false
+}
+case class SList(list:js.Array[SExpr]) extends SExpr {
+    def isFloat = false
+}
+case class SBool(value:Boolean) extends SExpr {
+    def isFloat = false
+}
+case object SNil extends SExpr {
+    def isFloat = false
+}
+case class SString(value:String) extends SExpr {
+    def isFloat = false
+}
+case class SVector(list:js.Array[SExpr]) extends SExpr {
+    def isFloat = false
+}
+case class SInt(value:Int) extends SExpr {
+    def isFloat = false
+}
+case class SFloat(value:Float) extends SExpr {
+    def isFloat = true
+}
+case class SKeyword(value:String) extends SExpr {
+    def isFloat = false
+}
 case class SFunc(args:js.Dictionary[SExpr],list:js.Array[SExpr]) extends SExpr {
     override def toString: String = {
         val argsString = if(args.isEmpty) "" else args.keys.reduce((a,b) => a + b)
         s"SFunc([$argsString],${list.toString})"
     }
+    def isFloat = false
 }
-case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr
+case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr {
+    def isFloat = false
+}
+
+case class SNFunc(val callFn:(js.Array[SExpr]) => SExpr) extends SExpr {
+    def isFloat = false
+}
 
 class SExprParser(string:String) {
     var parseString:ParseString = new ParseString(string)
