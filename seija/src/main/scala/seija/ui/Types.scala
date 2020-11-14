@@ -8,15 +8,15 @@ trait UIControl {
 }
 
 trait UIComponent {
-  def attach(entity: Entity,xmlNode:XmlNode):Unit
+  def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
 }
 
 object UIComponent {
   private var comps:js.Dictionary[UIComponent] = js.Dictionary()
 
-  def attach(entity: Entity, xmlNode: XmlNode):Unit = {
+  def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate):Unit = {
     this.comps.get(xmlNode.tag) match {
-      case Some(value) => value.attach(entity,xmlNode)
+      case Some(value) => value.attach(entity,xmlNode,tmpl)
       case None => println("not register " + xmlNode.tag)
     }
   }

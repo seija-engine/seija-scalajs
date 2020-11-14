@@ -1,26 +1,28 @@
 package seija.ui
 
 import seija.core.Entity
-import seija.data.{SExpr, SExprParser, XmlNode}
+import seija.data.{SExpr, SExprParser,SExprInterp, XmlNode,SContent}
 
-class UITemplate {
+class UITemplate(val parent:SContent) {
+  val sContext:SContent = new SContent(Some(parent))
 }
 
 
 object UITemplate {
   def create(xmlNode:XmlNode):UITemplate = {
+    val newTemplate = new UITemplate(SExprInterp.rootContent)
     if(xmlNode.children.isEmpty) {
-      return new UITemplate
+      return newTemplate
     }
     xmlNode.children.get.head match {
       case node if node.tag == "Entity" =>
-        this.parseEntity(node)
+        this.parseEntity(node,newTemplate)
       case node =>
     }
-    new UITemplate
+    newTemplate
   }
 
-  def parseEntity(xmlNode: XmlNode):Entity = {
+  def parseEntity(xmlNode: XmlNode,tmpl:UITemplate):Entity = {
     val newEntity = Entity.New()
     if(xmlNode.children.isDefined) {
       for(node <- xmlNode.children.get) {
@@ -28,7 +30,7 @@ object UITemplate {
           case "Components" =>
             node.children.foreach(arr => {
               for(compNode <- arr) {
-                UIComponent.attach(newEntity,compNode)
+                UIComponent.attach(newEntity,compNode,tmpl)
               }
             })
           case nodeTagName =>
@@ -38,19 +40,5 @@ object UITemplate {
     newEntity
   }
 
-  def parseParam(string: String):Either[String,SExpr] = {
-    if(string.length  == 0) {
-      return Left("")
-    }
-    string.head match {
-      case '(' =>
-        SExprParser.parse(string) match {
-          case Left(value) =>
-            println(value)
-            Left("error")
-          case Right(value) => Right(value)
-        }
-      case str => Left(string.tail)
-    }
-  }
+
 }
