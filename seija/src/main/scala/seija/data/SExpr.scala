@@ -1,8 +1,9 @@
 package seija.data
 import scala.scalajs.js
-import scala.collection.immutable.{HashSet}
+import scala.collection.immutable.HashSet
 import scala.collection.mutable
 import scala.util.control.Breaks._
+import seija.data.SContent
 sealed trait SExpr {
     def isFloat:Boolean
 }
@@ -45,7 +46,7 @@ case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr {
     def isFloat = false
 }
 
-case class SNFunc(val callFn:(js.Array[SExpr]) => SExpr) extends SExpr {
+case class SNFunc(val callFn:(js.Array[SExpr],SContent) => SExpr) extends SExpr {
     def isFloat = false
 }
 

@@ -1,7 +1,7 @@
 package seija.ui
 
-import seija.data.{SExpr, SExprParser, Xml, XmlNode}
-
+import seija.data.{SContent, SExpr, SExprInterp, SExprParser, SNFunc, Xml, XmlNode}
+import seija.data.SNil
 import scalajs.js;
 
 class Control(private val tmplDic: js.Dictionary[XmlNode]) {
@@ -17,10 +17,9 @@ class Control(private val tmplDic: js.Dictionary[XmlNode]) {
 }
 
 object Control {
+  val sContent = new SContent(Some(SExprInterp.rootContent))
   private var _rootPath: String = "";
-
   def rootPath: String = _rootPath
-
   def setRootPath(path: String): Unit = _rootPath = path
 
   def create(controlPath: String): Either[String, Control] = {
@@ -58,5 +57,16 @@ object Control {
         }
       case str => Left(string.tail)
     }
+  }
+
+  def init():Unit = {
+    this.sContent.set("env",SNFunc(ControlSFunc.env))
+  }
+}
+
+private object ControlSFunc {
+  def env (args:js.Array[SExpr],content: SContent):SExpr = {
+    println("run this fuck")
+    SNil
   }
 }

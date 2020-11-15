@@ -39,7 +39,7 @@ object SExprInterp {
           case SNil =>
             println("not found "+ list.head + " in content")
             SNil
-          case sFn: SNFunc => sFn.callFn(list.tail)
+          case sFn: SNFunc => sFn.callFn(list.tail,curContent)
           case _ =>
             println("list head must is function")
             SNil
@@ -93,7 +93,7 @@ object SExprInterp {
 }
 
 private object InterpCoreFunction {
-  def add(args:js.Array[SExpr]):SExpr = {
+  def add(args:js.Array[SExpr],content: SContent):SExpr = {
     var retNumber:Float = 0;
     var allInt:Boolean = true;
     for(numExpr <- args) {

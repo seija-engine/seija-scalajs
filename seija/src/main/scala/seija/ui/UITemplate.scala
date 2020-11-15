@@ -10,7 +10,7 @@ class UITemplate(val parent:SContent) {
 
 object UITemplate {
   def create(xmlNode:XmlNode):UITemplate = {
-    val newTemplate = new UITemplate(SExprInterp.rootContent)
+    val newTemplate = new UITemplate(Control.sContent)
     if(xmlNode.children.isEmpty) {
       return newTemplate
     }
