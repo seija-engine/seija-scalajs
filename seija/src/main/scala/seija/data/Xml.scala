@@ -9,6 +9,7 @@ trait XmlNode extends js.Object {
   val tag:String
   val attrs:js.Dictionary[String];
   val children:js.UndefOr[js.Array[XmlNode]];
+  val text:js.UndefOr[String]
 }
 
 object Xml {

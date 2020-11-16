@@ -1,16 +1,26 @@
 package seija.ui
-
+import scalajs.js
 import seija.core.Entity
-import seija.data.{SExpr, SExprParser,SExprInterp, XmlNode,SContent}
+import seija.data.XmlExt.RichXmlNode
+import seija.data.{Read, SBool, SContent, SExpr, SExprInterp, SExprParser, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SUserData, SVector, XmlNode}
 
 class UITemplate(val parent:SContent) {
   val sContext:SContent = new SContent(Some(parent))
+
+  def handleEvent():Unit = {
+  }
+
+  def registerEvent(key:String):Unit = {
+
+  }
 }
 
 
 object UITemplate {
-  def create(xmlNode:XmlNode):UITemplate = {
-    val newTemplate = new UITemplate(Control.sContent)
+  def create(xmlNode:XmlNode,content: SContent):UITemplate = {
+    val newTemplate = new UITemplate(content)
+    newTemplate.sContext.set("tmpl",SUserData(newTemplate))
+
     if(xmlNode.children.isEmpty) {
       return newTemplate
     }
@@ -40,5 +50,29 @@ object UITemplate {
     newEntity
   }
 
+
+  def getXmlNodeParam(xmlNode:XmlNode):js.Dictionary[String] = {
+    if(xmlNode.children.isDefined) {
+      for(item <- xmlNode.children.get) {
+        if(item.tag.startsWith("Param.")) {
+          xmlNode.attrs.put(item.tag.drop(6),item.text.getOrElse(""))
+        }
+      }
+    }
+    xmlNode.attrs
+  }
+
+  def initParam[T](name:String,dic:js.Dictionary[String],setFunc:(T) => Unit,content: SContent)(implicit readT:Read[T]):Unit = {
+    dic.get(name).map(Control.parseParam).foreach {
+      case Left(value) => readT.read(value).foreach(setFunc)
+      case Right(value) =>
+        SExprInterp.eval(value, Some(content)) match {
+          case SUserData(value) =>
+            setFunc(value.asInstanceOf[T])
+          case _ => ()
+        }
+
+    }
+  }
 
 }

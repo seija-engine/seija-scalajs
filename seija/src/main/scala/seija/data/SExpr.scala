@@ -49,6 +49,9 @@ case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr {
 case class SNFunc(val callFn:(js.Array[SExpr],SContent) => SExpr) extends SExpr {
     def isFloat = false
 }
+case class SUserData(val value:Any) extends SExpr {
+    def isFloat = false
+}
 
 class SExprParser(string:String) {
     var parseString:ParseString = new ParseString(string)

@@ -2,9 +2,13 @@
     <ContentTemplate>
         <Entity>
             <Components>
-                <Transform position="(env config.res)" scale="1,1,1" />
+                <Transform position="(env zeroVec)" scale="1,1,1" />
                 <Rect2D size="100,100" />
-                <ImageRender texture = "(data a.c.b)" color = "#ffffff" />
+                <ImageRender texture = "(data a.c.b)">
+                    <Param.color>
+                       (ev-bind :Color)
+                    </Param.color>
+                </ImageRender>
             </Components>
         </Entity>
     </ContentTemplate>

@@ -1,30 +1,16 @@
 package seija.ui
 
 import seija.core.Entity
-import seija.data.{SBool, SExprInterp, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SVector, XmlNode}
+import seija.data.{Color, XmlNode}
 import seija.math.Vector3
 import seija.core.Transform
+import seija.s2d.ImageRender
 
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
+    val dic = UITemplate.getXmlNodeParam(xmlNode)
     val trans = entity.addComponent[Transform]();
-    val position = xmlNode.attrs.get("position").map(Control.parseParam)
-    if(position.isDefined) {
-      position.get match {
-        case Left(value) =>
-          val pos = Vector3.vector3Read.read(value)
-          if(pos.isDefined) {
-            trans.localPosition = pos.get
-          }
-        case Right(value) =>
-          val evalValue = SExprInterp.exprToValue(SExprInterp.eval(value,Some(tmpl.sContext)))
-          if(evalValue.isInstanceOf[SFunc]) {
-
-          }
-          println(value)
-      }
-    }
-
+    UITemplate.initParam[Vector3]("position",dic, trans.localPosition = _,tmpl.sContext)
   }
 }
 
@@ -36,6 +22,8 @@ class Rect2DUIComp extends UIComponent {
 
 class ImageRenderUIComp extends UIComponent {
   override def attach(entity: Entity,xmlNode: XmlNode,tmpl:UITemplate): Unit = {
-
+    val image = entity.addComponent[ImageRender]();
+    val dic = UITemplate.getXmlNodeParam(xmlNode)
+    UITemplate.initParam[Color]("color",dic,image.color = _,tmpl.sContext)
   }
 }

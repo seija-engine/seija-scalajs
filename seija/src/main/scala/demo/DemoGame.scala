@@ -20,6 +20,7 @@ class DemoGame extends IGame {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
     Template.setRootPath("../seija-deno/src/tests/res/tmpl")
     seija.ui.Control.setRootPath("../seija-deno/src/tests/res/ui")
+    Control.env.put("zeroVec",Vector3.New(0,0,0))
 
     val font = Loader.loadSync[Font]("WenQuanYiMicroHei.ttf").toOption.get;
     val tex = Loader.loadSync[Image]("StarIcon.png").toOption.get;
@@ -31,6 +32,7 @@ class DemoGame extends IGame {
 
     val imageControl = Control.create("/core/Image.xml")
     imageControl.foreach(_.Enter())
+
 
   }
 

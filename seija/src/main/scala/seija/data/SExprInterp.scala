@@ -62,6 +62,7 @@ object SExprInterp {
         }
         SObject(retMap)
       case v@SNFunc(_) => v
+      case v@SUserData(_) => v
     }
   }
 
@@ -88,7 +89,13 @@ object SExprInterp {
         }
         retMap
       case v@SNFunc(callFn) => v
+      case SUserData(d) => d
     }
+  }
+
+  def evalToValue(expr:SExpr,context:Option[SContent]):Any = {
+    val evalExpr = eval(expr, context)
+    exprToValue(evalExpr)
   }
 }
 
