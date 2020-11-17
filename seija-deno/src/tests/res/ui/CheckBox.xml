@@ -1,31 +1,5 @@
 <Control xmlns:core="/control/core">
     <ContentTemplate>
-        <Param.initAction>
-            (emit [:QueryState])
-            (var clickCount 0)
-        </Param.initAction>
-        <Entity>
-            <Components>
-                <Transform />
-                <Rect2D size="50,50" />
-                <EventNode onClick="#(do (emit [:ClickCheck]) (set clickCount (inc clickCount)))" />
-            </Components>
-            <Ref id="checkSprite" src="/sprite.xml" size="24,24" sheet="(env res.sheet)">
-                <!-- spriteName不能动态Update，需要持有里面的SpriteRender  -->
-                <Param.spriteName>                   
-                    (ev-bind :UpdateState
-                        #(if (> 5 clickCount)
-                            (match [% %2]
-                                [true true] "checkbox-checked"
-                                [true false] "checkbox-checked-disabled"
-                                [false true] "checkbox-unchecked"
-                                [false false] "checkbox-unchecked-disabled"
-                            )
-                            "checkbox-unchecked-disabled"
-                        )
-                    )
-                </Param.spriteName>
-            </Ref>
-        </Entity>
+        <Image position="0,0,0" scale="0,0,0" texture="(env res.star)" color="#ff0000" />
     </ContentTemplate>
 </Control>
