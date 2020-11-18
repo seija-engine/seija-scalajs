@@ -8,8 +8,6 @@ import seija.ui.Control
 object Main {
   def main(args: Array[String]): Unit = {
     SExprInterp.init()
-    Control.init()
-
     val app = new App(new DemoGame,new Simple2d(new SWindow(
       bgColor = Color.New(0.9f,0.9f,0.9f,1f),
       width = 320,

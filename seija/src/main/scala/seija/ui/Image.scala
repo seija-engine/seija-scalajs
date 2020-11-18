@@ -3,6 +3,14 @@ import seija.data.XmlNode
 
 import scala.scalajs.js
 
-class Image(private val tmplDic:js.Dictionary[XmlNode]) extends Control(tmplDic) {
+class Image(private val xmlNode: XmlNode) extends Control(xmlNode) {
 
+}
+
+object Image {
+  def create(xmlNode: XmlNode):Image = {
+    val img = new Image(xmlNode)
+    img.init()
+    img
+  }
 }

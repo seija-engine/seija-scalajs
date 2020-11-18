@@ -1,8 +1,7 @@
 package seija.ui
 import scalajs.js
 import seija.core.Entity
-import seija.data.XmlExt.RichXmlNode
-import seija.data.{Read, SBool, SContent, SExpr, SExprInterp, SExprParser, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SUserData, SVector, XmlNode}
+import seija.data._
 
 class UITemplate(val parent:SContent) {
   val sContext:SContent = new SContent(Some(parent))
@@ -63,7 +62,7 @@ object UITemplate {
   }
 
   def initParam[T](name:String,dic:js.Dictionary[String],setFunc:(T) => Unit,content: SContent)(implicit readT:Read[T]):Unit = {
-    dic.get(name).map(Control.parseParam).foreach {
+    dic.get(name).map(Utils.parseParam).foreach {
       case Left(value) => readT.read(value).foreach(setFunc)
       case Right(value) =>
         SExprInterp.eval(value, Some(content)) match {

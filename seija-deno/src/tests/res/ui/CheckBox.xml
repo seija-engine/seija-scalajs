@@ -1,5 +1,5 @@
 <Control xmlns:core="/control/core">
     <ContentTemplate>
-        <Image position="0,0,0" scale="0,0,0" texture="(env res.star)" color="#ff0000" />
+        <core:Image position="0,0,0" scale="0,0,0" texture="(env res.star)" color="#ff0000" />
     </ContentTemplate>
 </Control>

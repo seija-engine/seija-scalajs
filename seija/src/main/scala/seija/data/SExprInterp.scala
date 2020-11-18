@@ -1,4 +1,6 @@
 package seija.data
+import seija.math.Vector2
+
 import scala.collection.mutable
 import scalajs.js
 
@@ -23,6 +25,7 @@ object SExprInterp {
   def init():Unit = {
     this.rootContent.set("pi",SFloat(3.14159f))
     this.rootContent.set("+", SNFunc(InterpCoreFunction.add))
+    this.rootContent.set("vec2",SNFunc(InterpCoreFunction.vec2))
   }
 
   def eval(expr:SExpr,context: Option[SContent] = None):SExpr = {
@@ -39,7 +42,8 @@ object SExprInterp {
           case SNil =>
             println("not found "+ list.head + " in content")
             SNil
-          case sFn: SNFunc => sFn.callFn(list.tail,curContent)
+          case sFn: SNFunc =>
+            sFn.callFn(list.tail.map(e => eval(e,context)),curContent)
           case _ =>
             println("list head must is function")
             SNil
@@ -97,6 +101,11 @@ object SExprInterp {
     val evalExpr = eval(expr, context)
     exprToValue(evalExpr)
   }
+
+  def evalStringToValue(string: String,context: Option[SContent] = None):Any = {
+    val eExpr = evalString(string,context)
+    eExpr.map((expr) => evalToValue(expr,context)).getOrElse(null)
+  }
 }
 
 private object InterpCoreFunction {
@@ -117,4 +126,23 @@ private object InterpCoreFunction {
     }
     if(allInt) SInt(retNumber.asInstanceOf[Int]) else SFloat(retNumber)
   }
+
+  def vec2(args:js.Array[SExpr],content: SContent):SExpr = {
+    val x = args(0).castFloat()
+    val y = args(1).castFloat()
+    SUserData(Vector2.New(x, y))
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

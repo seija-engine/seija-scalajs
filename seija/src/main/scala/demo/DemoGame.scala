@@ -9,9 +9,7 @@ import seija.core.{Entity, IGame, Template, Transform, TransformTmpl}
 import seija.data.Color
 import seija.math.Vector3
 import seija.s2d.assets.{Font, Image, SpriteSheet}
-import seija.s2d.{ImageRenderTmpl,Rect2D, Rect2DTmpl, SpriteRenderTmpl, TextRenderTmpl, TransparentTmpl}
-import seija.ui
-import seija.ui.{Control, Rect2DUIComp, ImageRenderUIComp,TransformUIComp, UIComponent, UITemplate};
+import seija.ui.Control
 
 class DemoGame extends IGame {
 
@@ -26,14 +24,12 @@ class DemoGame extends IGame {
     val tex = Loader.loadSync[Image]("StarIcon.png").toOption.get;
     val materialSheet = Loader.loadSync[SpriteSheet]("material.json").toOption.get;
 
-    UIComponent.register("Transform",new TransformUIComp)
-    UIComponent.register("Rect2D",new Rect2DUIComp)
-    UIComponent.register("ImageRender",new ImageRenderUIComp)
-
-    val imageControl = Control.create("/core/Image.xml")
-    imageControl.foreach(_.Enter())
-
-
+    seija.ui.UISystem.init()
+    val imageControl = Control.create("/core/Image.xml","Image")
+    imageControl match {
+      case Left(value) => println(value)
+      case Right(value) => value.Enter()
+    }
   }
 
 

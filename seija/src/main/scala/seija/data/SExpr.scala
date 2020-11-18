@@ -6,6 +6,15 @@ import scala.util.control.Breaks._
 import seija.data.SContent
 sealed trait SExpr {
     def isFloat:Boolean
+    def castFloat():Float = {
+        this match {
+            case SInt(value) => value
+            case SFloat(value) => value
+            case _ =>
+                println(s"$this cast float error")
+                0
+        }
+    }
 }
 
 case class SSymbol(value:String) extends SExpr {
