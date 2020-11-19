@@ -1,40 +1,63 @@
 ## 结构梳理
-先放两个例子
-```
-<Control xmlns:core="/control/core">
-    <ContentTemplate>
-        <Image scale="0,0,0" texture="(env res.star)" color="#ff0000" />
-    </ContentTemplate>
-</Control>
-```
+
+####  
+1. 一个Control可以使用不同的Template，但是一个Control同时只能有一个Template
+2. Control对应FRP里面的Behavior
+3. Control组成树，由于只有一个Template没有大问题
+5. 属性和dataContent:T == Behavior<MyControl<T>>
+6. Event 如何传递？ eventRecv属性从父Control接受事件（可过滤和转换）
+                   Control 可以导出任意名称的属性在特殊时候触发，然后通过(emit )给父控件
+7. 路径和名称如何对应？ 还是通过xmlns
+UISystem
+  controls
+  create(xxxPath:String)
+
+IBehavior
+  handleEvent(data:SExpr):Unit
+
+Control
+ Property:Map<String,Any>
+ dataContent:Any
+ template
+
+ImageControl
+  init():Unit = {
+      this.property("position")
+      this.property("scale")
+      this.property("rotation")
+  }
+
+  handleEvent(data:SList):Unit = {
+      data.first()
+
+      this.emit([:UpdateColor v])
+  }
+
+
+ListControl
+  init():Unit = {
+      this.property("dataSource",[])
+
+  }
 
 ```
-<!--Image.xml-->
-<Control>
-    <ContentTemplate>
-        <Entity>
-            <Components>
-                <Transform position="(param position)" scale="(param scale)" />
-                <Rect2D size="(param size)" />
-                <ImageRender texture = "(data a.c.b)" color="(ev-bind :Color)" />
-            </Components>
-        </Entity>
-    </ContentTemplate>
-</Control>
+<ImageControl>
+    <Template>
+       <Entity>
+         <Components>
+            <Transform />
+            <EventNode click="(emit [:Click])" />
+            <Rect2D size="(attr :position)" />
+            <ImageRender color="(bind-p :color :UpdateColor)" />
+         </Conponents>
+       </Entity>
+    </Template>
+</ImageControl>
+
+
+<XXXPanel>
+   <TextList dataSource="[]" eventRecv="(filter :xx)"  />
+
+   <Button onClick="(emit :AddOne)" >
+</XXXPanel>
 ```
-
-* 首先放弃了使用&lt;Ref src="xxx.xml"&gt;这种填路径的方式,以xmlns:xx="/a/b/c"这种方式，xx表示命名空间，"/a/b/c"是文件夹路径。
-
-* Control的显示必须由Template提供。ContentTemplate是每个Control默认的Template。
-
-### 几个问题：
-#### 1. Control如何映射到Scala的类  
-这个问题粗暴一点可以通过注册"core.Image" => ImageCreater 这种方式解决
-
-#### 2. Template如何使用Control的属性  
-这个问题比较复杂,还涉及到自定义Control的属性如何声明和处理  
-
-真的应该允许Template访问Control的属性吗？
-如果按照Template和Control完全事件通信的话，应该是通过事件绑定
-
-或者假如说有一个CheckBox,

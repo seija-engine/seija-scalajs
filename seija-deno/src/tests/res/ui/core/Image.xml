@@ -1,11 +1,11 @@
-<Control attrs="[:position :scale :size :anchor :color :texture]">
-    <ContentTemplate>
+<ImageControl>
+    <Template>
         <Entity>
             <Components>
-                <Transform position="(bind :position)" scale="(bind :scale)" />
-                <Rect2D size="(bind-or :size (vec2 120 25))" />
-                <ImageRender texture = "(bind :texture)" color="(bind :color)" />
+                <Transform position="(attr 'position')" scale="(attr 'scale')" />
+                <Rect2D size="200,200" />
+                <ImageRender texture="0"/>
             </Components>
         </Entity>
-    </ContentTemplate>
-</Control>
+    </Template>
+</ImageControl>

@@ -4,7 +4,6 @@ import seija.core.App
 import seija.data.Color
 import seija.s2d.{SWindow, Simple2d}
 import seija.data.{SExprInterp,SContent}
-import seija.ui.Control
 object Main {
   def main(args: Array[String]): Unit = {
     SExprInterp.init()
