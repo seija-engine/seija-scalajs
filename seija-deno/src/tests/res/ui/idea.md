@@ -48,7 +48,7 @@ ListControl
             <Transform />
             <EventNode click="(emit [:Click])" />
             <Rect2D size="(attr :position)" />
-            <ImageRender color="(bind-p :color :UpdateColor)" />
+            <ImageRender color="(ev-bind :color)" />
          </Conponents>
        </Entity>
     </Template>

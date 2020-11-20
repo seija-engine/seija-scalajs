@@ -1,13 +1,11 @@
 package seija.ui2
 
+import seija.core.event.{EventNode, GameEventType}
 import seija.core.{Entity, Transform}
-import seija.data.{Color, XmlNode}
+import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SVector, XmlNode}
 import seija.math.{Vector2, Vector3}
-import seija.s2d.{ImageRender, Rect2D}
+import seija.s2d.{ImageRender, Rect2D, Transparent}
 import seija.s2d.assets.Image
-
-import scalajs.js
-import seija.ui2.Utils
 import seija.data.CoreRead._
 
 class TransformUIComp extends UIComponent {
@@ -35,5 +33,41 @@ class ImageRenderUIComp extends UIComponent {
     val dic = Utils.getXmlNodeParam(xmlNode)
     UIComponent.initParam[Int]("texture",dic,tex => image.setTexture(new Image(tex)),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,image.color = _,tmpl.control.sContent)
+  }
+}
+
+class TransparentUIComp extends UIComponent {
+  override def attach(entity: Entity,xmlNode: XmlNode,tmpl:UITemplate): Unit = {
+    entity.addComponent[Transparent]()
+  }
+}
+
+class EventNodeUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val eventNode = entity.addComponent[EventNode]()
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    for((k,v) <- dic) {
+      val (head,tail) = k.splitAt(2)
+      if(head == "On") {
+        val evType = GameEventType.gameEventTypeRead.read(tail)
+        if(evType.isDefined) {
+          SExprInterp.evalString(v, Some(tmpl.control.sContent)) match {
+            case Right(SVector(list)) =>
+              val isCapture = list(0).asInstanceOf[SBool].value
+              val f = list(1).asInstanceOf[SFunc]
+              eventNode.register(evType.get,isCapture,() => {
+                f.call(Some(tmpl.control.sContent))
+              })
+            case Right(f@SFunc(args, list)) =>
+              eventNode.register(evType.get,isCapture = false, () => {
+                f.call(Some(tmpl.control.sContent))
+              })
+              println(f)
+            case Left(value) => println(value)
+            case Right(_) => println("error event param")
+          }
+        }
+      }
+    }
   }
 }

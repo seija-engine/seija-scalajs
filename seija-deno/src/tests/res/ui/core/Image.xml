@@ -2,9 +2,17 @@
     <Template>
         <Entity>
             <Components>
-                <Transform position="(attr 'position')" scale="(attr 'scale')" />
-                <Rect2D size="200,200" />
-                <ImageRender texture="0"/>
+                <EventNode OnClick="#(emit :ClickImage)" />
+                <Transform position="(attr :position)" scale="(attr :scale)" />
+                <Rect2D size="(attr-bind :size)" />
+                <ImageRender texture="0">
+                    <Param.color>
+                        (ev-bind :UpdateInt color.red 
+                            #(if (odd? %) color.red color.green)
+                        )
+                    </Param.color>
+                </ImageRender>
+                <Transparent />
             </Components>
         </Entity>
     </Template>

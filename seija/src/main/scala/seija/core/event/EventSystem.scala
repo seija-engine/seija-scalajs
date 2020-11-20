@@ -1,6 +1,7 @@
 package seija.core.event
 
-import seija.core.Entity
+import seija.data.Read
+import seija.math.Vector3
 
 import scala.collection.mutable
 import scala.scalajs.js;
@@ -65,4 +66,15 @@ object GameEventType extends Enumeration {
   val MouseEnter: GameEventType = Value(4)
   val MouseLeave: GameEventType = Value(5)
   val KeyBoard: GameEventType = Value(6)
+
+  implicit val gameEventTypeRead: Read[GameEventType] = {
+    case "Click" => Some(GameEventType.Click)
+    case "TouchStart" => Some(GameEventType.TouchStart)
+    case "TouchEnd" => Some(GameEventType.TouchEnd)
+    case "MouseMove" => Some(GameEventType.MouseMove)
+    case "MouseEnter" => Some(GameEventType.MouseEnter)
+    case "MouseLeave" => Some(GameEventType.MouseLeave)
+    case "KeyBoard"   => Some(GameEventType.KeyBoard)
+    case _ => Some(GameEventType.Click)
+  }
 }

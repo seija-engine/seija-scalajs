@@ -7,9 +7,10 @@ import seija.assets.Loader
 import seija.core.event.{CABEventRoot, EventHandle, EventNode, GameEventType}
 import seija.core.{Entity, IGame, Template, Transform, TransformTmpl}
 import seija.data.Color
-import seija.math.Vector3
+import seija.math.{Vector2, Vector3}
+import seija.s2d.Rect2D
 import seija.s2d.assets.{Font, Image, SpriteSheet}
-import seija.ui2.UISystem
+import seija.ui2.{Control, UISystem}
 
 class DemoGame extends IGame {
 
@@ -23,9 +24,23 @@ class DemoGame extends IGame {
     println(tex)
     val materialSheet = Loader.loadSync[SpriteSheet]("material.json").toOption.get;
 
+    val rootEntity = Entity.New()
+    rootEntity.addComponent[Transform]()
+    val rect = rootEntity.addComponent[Rect2D]()
+    rect.size.set(200,200)
+    rootEntity.addComponent[CABEventRoot]()
+
     UISystem.initCore()
     UISystem.rootPath = "../seija-deno/src/tests/res/ui"
-    UISystem.create("/core/Image.xml").foreach(_.Enter())
+    val imageControl = UISystem.create("/core/Image.xml");
+    imageControl match {
+      case Left(value) => println(value)
+      case Right(value) =>
+
+        value.Enter()
+        value.entity.get.setParent(Some(rootEntity))
+        value.setProperty("size",Vector2.New(20,20))
+    }
   }
 
 

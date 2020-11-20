@@ -2,6 +2,7 @@ package seija.data
 import seija.math.Vector2
 
 import scala.collection.mutable
+import scala.scalajs.js.Error
 import scalajs.js
 
 class SContent(var parent:Option[SContent] = None) {
@@ -26,6 +27,12 @@ object SExprInterp {
     this.rootContent.set("pi",SFloat(3.14159f))
     this.rootContent.set("+", SNFunc(InterpCoreFunction.add))
     this.rootContent.set("vec2",SNFunc(InterpCoreFunction.vec2))
+    this.rootContent.set("color.red",SUserData(Color.New(1,0,0,1)))
+    this.rootContent.set("color.green",SUserData(Color.New(0,1,0,1)))
+    this.rootContent.set("color.blue",SUserData(Color.New(0,0,1,1)))
+    this.rootContent.set("odd?",SNFunc(InterpCoreFunction.isOdd))
+    this.rootContent.set("const",SNFunc(InterpCoreFunction.const))
+    this.rootContent.set("if",SNFunc(InterpCoreFunction.ifF))
   }
 
   def eval(expr:SExpr,context: Option[SContent] = None):SExpr = {
@@ -43,7 +50,7 @@ object SExprInterp {
             println("not found "+ list.head + " in content")
             SNil
           case sFn: SNFunc =>
-            sFn.callFn(list.tail.map(e => eval(e,context)),curContent)
+            sFn.callFn(list.tail,curContent)
           case _ =>
             println("list head must is function")
             SNil
@@ -110,9 +117,10 @@ object SExprInterp {
 
 private object InterpCoreFunction {
   def add(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     var retNumber:Float = 0;
     var allInt:Boolean = true;
-    for(numExpr <- args) {
+    for(numExpr <- evalArgs) {
       numExpr match {
         case SInt(value) =>
           retNumber = retNumber + value
@@ -128,9 +136,29 @@ private object InterpCoreFunction {
   }
 
   def vec2(args:js.Array[SExpr],content: SContent):SExpr = {
-    val x = args(0).castFloat()
-    val y = args(1).castFloat()
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    val x = evalArgs(0).castFloat()
+    val y = evalArgs(1).castFloat()
     SUserData(Vector2.New(x, y))
+  }
+
+  def isOdd(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    evalArgs(0) match {
+      case SInt(value) => SBool(value % 2 == 0)
+      case v => throw new Exception(s"$v not int number")
+    }
+  }
+
+  def const(args:js.Array[SExpr],content: SContent):SExpr =  SExprInterp.eval(args(0),Some(content))
+
+  def ifF(args:js.Array[SExpr],content: SContent):SExpr = {
+    val b = SExprInterp.eval(args(0),Some(content)).castBool()
+    if(b) {
+      SExprInterp.eval(args(1),Some(content))
+    } else {
+      SExprInterp.eval(args(2),Some(content))
+    }
   }
 }
 

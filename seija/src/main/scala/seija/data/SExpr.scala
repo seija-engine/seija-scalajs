@@ -15,6 +15,36 @@ sealed trait SExpr {
                 0
         }
     }
+    def castKeyword():String = {
+        this match {
+            case SKeyword(value) => value
+            case  _ =>
+                println(s"$this cast keyword error")
+                ""
+        }
+    }
+    def castSingleAny():Any = {
+        this match {
+            case SBool(value) => value
+            case SNil => null
+            case SString(value) => value
+            case SInt(value) => value
+            case SFloat(value) => value
+            case SKeyword(value) => value
+            case SUserData(value) => value
+            case _ =>
+                throw new Exception(s"$this cast castSingleAny error")
+                null
+        }
+    }
+    def castBool():Boolean = {
+        this match {
+            case SBool(value) => value
+            case _ =>
+                throw new Exception(s"$this cast castBool error")
+                false
+        }
+    }
 }
 
 case class SSymbol(value:String) extends SExpr {
@@ -50,6 +80,9 @@ case class SFunc(args:js.Dictionary[SExpr],list:js.Array[SExpr]) extends SExpr {
         s"SFunc([$argsString],${list.toString})"
     }
     def isFloat = false
+    def call(content: Option[SContent]):SExpr = {
+        SExprInterp.eval(SList(list),content)
+    }
 }
 case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr {
     def isFloat = false
