@@ -27,19 +27,18 @@ class DemoGame extends IGame {
     val rootEntity = Entity.New()
     rootEntity.addComponent[Transform]()
     val rect = rootEntity.addComponent[Rect2D]()
-    rect.size.set(200,200)
+    rect.size.set(1024,768)
     rootEntity.addComponent[CABEventRoot]()
 
     UISystem.initCore()
-    UISystem.rootPath = "../seija-deno/src/tests/res/ui"
-    val imageControl = UISystem.create("/core/Image.xml");
+    UISystem.rootPath = "src/Resource/UI"
+    UISystem.env.put("sheet",materialSheet.id)
+    val imageControl = UISystem.create("/CheckBox.xml");
     imageControl match {
       case Left(value) => println(value)
       case Right(value) =>
-
         value.Enter()
         value.entity.get.setParent(Some(rootEntity))
-        value.setProperty("size",Vector2.New(20,20))
     }
   }
 

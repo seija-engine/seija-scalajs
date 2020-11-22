@@ -9,8 +9,8 @@ object Main {
     SExprInterp.init()
     val app = new App(new DemoGame,new Simple2d(new SWindow(
       bgColor = Color.New(0.9f,0.9f,0.9f,1f),
-      width = 320,
-      height = 240
+      width = 1024,
+      height = 768
     )));
     app.run()
   }

@@ -1,0 +1,15 @@
+<CheckBox xmlns:core="/core/" >
+    <Template>
+        <Entity>
+            <Components>
+                <Transform position="0,50,0" />
+                <Rect2D size="200,200" />
+            </Components>
+            <core:Sprite size="24,24" sheet="(env sheet)" >
+                <Param.spriteName>
+                    (ev-bind :UpdateSprite "checkbox-unchecked")
+                </Param.spriteName>
+            </core:Sprite>
+        </Entity>
+    </Template>
+</CheckBox>

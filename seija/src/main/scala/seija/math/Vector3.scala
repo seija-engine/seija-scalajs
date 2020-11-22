@@ -57,6 +57,9 @@ object Vector3 {
     vec
   }
 
+  def zero:Vector3 = Vector3.New(0,0,0)
+  def one:Vector3 = Vector3.New(1,1,1)
+
   def New(x:Float,y:Float,z:Float) :Vector3 = {
     new Vector3(Float32Array.from(js.Array(x,y,z)))
   }

@@ -4,8 +4,8 @@ import seija.core.event.{EventNode, GameEventType}
 import seija.core.{Entity, Transform}
 import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SVector, XmlNode}
 import seija.math.{Vector2, Vector3}
-import seija.s2d.{ImageRender, Rect2D, Transparent}
-import seija.s2d.assets.Image
+import seija.s2d.{ImageRender, Rect2D, SpriteRender, Transparent}
+import seija.s2d.assets.{Image, SpriteSheet}
 import seija.data.CoreRead._
 
 class TransformUIComp extends UIComponent {
@@ -33,6 +33,16 @@ class ImageRenderUIComp extends UIComponent {
     val dic = Utils.getXmlNodeParam(xmlNode)
     UIComponent.initParam[Int]("texture",dic,tex => image.setTexture(new Image(tex)),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,image.color = _,tmpl.control.sContent)
+  }
+}
+
+class SpriteRenderUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val sprite = entity.addComponent[SpriteRender]()
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    UIComponent.initParam[String]("spriteName",dic,sName => sprite.setSpriteName(sName),tmpl.control.sContent)
+    UIComponent.initParam[Color]("color",dic,sprite.color = _,tmpl.control.sContent)
+    UIComponent.initParam[Int]("sheet",dic,sheet => sprite.setSpriteSheet(new SpriteSheet(sheet)),tmpl.control.sContent)
   }
 }
 

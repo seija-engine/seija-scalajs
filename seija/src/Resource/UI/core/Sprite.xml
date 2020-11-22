@@ -1,0 +1,13 @@
+<SpriteControl>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform position="(attr :position)" scale="(attr :scale)" />
+                <Rect2D size="(attr-bind :size)" />
+                <Transparent />
+                <SpriteRender spriteName="(attr-bind :spriteName)" sheet="(attr-bind :sheet)" />
+                <EventNode OnClick="#(emit :ClickSprite)" />
+            </Components>
+        </Entity>
+    </Template>
+</SpriteControl>

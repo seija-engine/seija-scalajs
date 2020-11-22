@@ -2,21 +2,28 @@ package seija.ui2
 
 import seija.core.Entity
 import seija.data.XmlNode
+import seija.math.Vector2
+import seija.data.XmlExt.RichXmlNode
 
 class UITemplate(val xmlNode: XmlNode,val control: Control) {
   def create():Either[String,Entity]  = {
     if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
-      return  Left("template need children")
+      return Left("template need children")
     }
     val firstNode = xmlNode.children.get(0)
-    xmlNode.children.get(0).tag match {
-      case "Entity" => Right(this.parseEntity(firstNode))
-      case _ => ???
+    this.parse(firstNode,None)
+  }
+
+  def parse(xmlNode: XmlNode,parent:Option[Entity]):Either[String,Entity] = {
+    xmlNode.tag match {
+      case "Entity" => this.parseEntity(xmlNode,parent)
+      case _ => this.parseControl(xmlNode,parent)
     }
   }
 
-  def parseEntity(xmlNode: XmlNode) :Entity = {
+  def parseEntity(xmlNode: XmlNode,parent:Option[Entity]) :Either[String,Entity] = {
     val newEntity = Entity.New()
+    newEntity.setParent(parent)
     if(xmlNode.children.isDefined) {
       for(node <- xmlNode.children.get) {
         node.tag match {
@@ -26,10 +33,32 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
                  UISystem.getUIComp(compNode.tag).foreach(_.attach(newEntity,compNode,this))
               }
             })
-          case _ =>
+          case _ => this.parse(node,Some(newEntity))
         }
       }
     }
-    newEntity
+    Right(newEntity)
+  }
+
+  def parseControl(xmlNode: XmlNode,parent:Option[Entity]):Either[String,Entity] = {
+    val arrName = xmlNode.tag.split(':')
+    val pathHead = if(arrName.length > 0) {
+      val nsPath = this.control.nsDic.get(arrName(0))
+      if(nsPath.isEmpty) {
+        throw new Exception(s"${arrName(0)} not found ns path")
+      }
+      nsPath.get
+    } else ""
+    val controlPath = pathHead + arrName(1) + ".xml"
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    val newControl = UISystem.create(controlPath,dic,Some(this.control))
+    newControl match {
+      case Left(value) => Left(value)
+      case Right(control) =>
+        control.Enter()
+        control.entity.get.setParent(parent)
+        println(s"setParent ${parent}")
+        Right(control.entity.get)
+    }
   }
 }
