@@ -1,0 +1,12 @@
+<ListView xmlns:core="/core/">
+    <Template>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D />
+            </Components>
+            <core:Label text="MyList" />
+            <Items />
+        </Entity>
+    </Template>
+</ListView>

@@ -1,0 +1,17 @@
+<Panel xmlns:c="/" xmlns:core="/core/">
+    <Template>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D size="120,120" />
+                <Transparent />
+                <SpriteRender sheet="(env paperSheet)" spriteName="SmallBackground" />
+            </Components>
+            <c:MyList>
+                <Param.ItemTemplate>
+                    <c:CheckBox />
+                </Param.ItemTemplate>
+            </c:MyList>
+        </Entity>
+    </Template>
+</Panel>

@@ -6,7 +6,7 @@
                 <Rect2D size="(attr-bind :size)" />
                 <Transparent />
                 <SpriteRender spriteName="(attr-bind :spriteName)" sheet="(attr-bind :sheet)" />
-                <EventNode OnClick="#(emit :ClickSprite)" />
+                <EventNode OnClick="(node-ev-bind :OnClick)" />
             </Components>
         </Entity>
     </Template>

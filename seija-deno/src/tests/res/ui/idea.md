@@ -8,6 +8,9 @@
 6. Event 如何传递？ eventRecv属性从父Control接受事件（可过滤和转换）
                    Control 可以导出任意名称的属性在特殊时候触发，然后通过(emit )给父控件
 7. 路径和名称如何对应？ 还是通过xmlns
+
+8. 父子控件之间，子控件事件默认传到上层控件，上层控件只能通过属性操作子控件
+9. 事件派发类的属性属于特殊属性，需要特殊处理，例如OnClick
 UISystem
   controls
   create(xxxPath:String)

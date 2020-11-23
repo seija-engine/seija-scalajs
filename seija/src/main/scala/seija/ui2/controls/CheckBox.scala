@@ -9,22 +9,28 @@ import scala.scalajs.js.Dictionary
 class CheckBox extends Control {
   override def init(): Unit = {
     super.init()
-    this.property.put("Checked",false)
   }
 
   def checked:Boolean = this.property.get("Checked").getOrElse(false).asInstanceOf[Boolean]
   def checked_= (newValue:Boolean):Unit = this.setProperty("Checked",newValue)
 
+  def enable:Boolean = this.property.get("Enable").getOrElse(true).asInstanceOf[Boolean]
+  def enable_= (newValue:Boolean):Unit = this.setProperty("Enable",newValue)
+
 
   override def setParams(params: Dictionary[String]): Unit = {
     this.setParam[Boolean]("Checked",params,Some(false))
-    this.setParam[Vector3]("position",params,Some(Vector3.New(0,100,0)))
+    this.setParam[Boolean]("Enable",params,Some(true))
+    this.setParam[Vector3]("position",params,Some(Vector3.zero))
   }
 
   override def handleEvent(evData: js.Array[SExpr]): Unit = {
-    super.handleEvent(evData)
-    this.checked = !this.checked
-    val spriteName = if(this.checked) "checkbox-checked" else "checkbox-unchecked"
-    this.emit(":UpdateSprite",SString(spriteName))
+    evData.head.castKeyword() match {
+      case ":ClickCheck" =>
+        if(this.enable) {
+          this.checked = !this.checked
+        }
+      case _ => super.handleEvent(evData)
+    }
   }
 }

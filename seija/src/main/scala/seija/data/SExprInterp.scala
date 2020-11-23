@@ -17,6 +17,10 @@ class SContent(var parent:Option[SContent] = None) {
     if(parent.isDefined) return parent.get.find(name)
     None
   }
+
+  def clear():Unit = {
+    this.symbols.clear()
+  }
 }
 
 
@@ -33,6 +37,11 @@ object SExprInterp {
     this.rootContent.set("odd?",SNFunc(InterpCoreFunction.isOdd))
     this.rootContent.set("const",SNFunc(InterpCoreFunction.const))
     this.rootContent.set("if",SNFunc(InterpCoreFunction.ifF))
+    this.rootContent.set("do",SNFunc(InterpCoreFunction.doF))
+    this.rootContent.set("let",SNFunc(InterpCoreFunction.letF))
+    this.rootContent.set("log",SNFunc(InterpCoreFunction.logF))
+    this.rootContent.set("str",SNFunc(InterpCoreFunction.strF))
+    this.rootContent.set("match",SNFunc(InterpCoreFunction.matchF))
   }
 
   def eval(expr:SExpr,context: Option[SContent] = None):SExpr = {
@@ -159,6 +168,78 @@ private object InterpCoreFunction {
     } else {
       SExprInterp.eval(args(2),Some(content))
     }
+  }
+
+  def doF(args:js.Array[SExpr],content: SContent):SExpr = {
+     for(idx <- 0 until args.length) {
+       val evalValue = SExprInterp.eval(args(idx),Some(content))
+       if(idx == args.length - 1) {
+         return evalValue
+       }
+     }
+     SNil
+  }
+
+  def letF(args:js.Array[SExpr],content: SContent):SExpr = {
+    val newContent = new SContent(Some(content))
+    val vecList = args(0).asInstanceOf[SVector].list
+    var idx:Int = 0
+    while(idx < vecList.length) {
+      val symName = vecList(idx).asInstanceOf[SSymbol].value
+      val symValue = SExprInterp.eval(vecList(idx + 1),Some(newContent))
+      newContent.set(symName,symValue)
+      idx += 2
+    }
+    idx = 1
+    while(idx < args.length) {
+      val evalValue = SExprInterp.eval(args(idx),Some(newContent))
+      idx += 1
+      if(idx == args.length) {
+        return evalValue
+      }
+    }
+    SNil
+  }
+
+  def logF(args:js.Array[SExpr],content: SContent):SExpr = {
+    val value = SExprInterp.evalToValue(args(0),Some(content))
+    println(value)
+    SNil
+  }
+
+  def strF(args:js.Array[SExpr],content: SContent):SExpr = {
+    if(args.length == 0) {
+      return SString("")
+    }
+    var retString = ""
+    for(arg <- args) {
+     val s = SExprInterp.eval(arg, Some(content)) match {
+        case SBool(value) => value.toString
+        case SNil => "nil"
+        case SString(value) => value
+        case SVector(list) => list.toString
+        case SInt(value) => value.toString
+        case SFloat(value) => value.toString
+        case SKeyword(value) => value
+        case SUserData(value) => value.toString
+        case v => v.toString
+      }
+      retString += s
+    }
+    SString(retString)
+  }
+
+  def matchF(args:js.Array[SExpr],content: SContent):SExpr = {
+    val matchArg = SExprInterp.eval(args(0),Some(content))
+    var idx = 1
+    while (idx < args.length) {
+      val curExpr = SExprInterp.eval(args(idx),Some(content))
+      if(curExpr.eq(matchArg)) {
+        return SExprInterp.eval(args(idx + 1),Some(content))
+      }
+      idx += 2
+    }
+    SNil
   }
 }
 

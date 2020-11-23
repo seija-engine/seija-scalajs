@@ -1,6 +1,6 @@
 package seija.ui2
 import seija.core.Entity
-import seija.data.{Read, SContent, SExpr, SExprInterp, SList, SUserData, SVector}
+import seija.data.{Read, SBool, SContent, SExpr, SExprInterp, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SUserData, SVector}
 import seija.math.Vector3
 import seija.ui2.UIComponent.cacheContent
 
@@ -17,6 +17,7 @@ class Control extends IBehavior {
     var template:Option[UITemplate] = None
     var dataContent:Option[Any] = None
     var evBindDic:Dictionary[js.Array[(SExpr => Unit)]] = js.Dictionary()
+    var evProperty:js.Dictionary[(Boolean,() => Unit)] = js.Dictionary()
 
 
     override def handleEvent(evData: js.Array[SExpr]): Unit = {
@@ -58,6 +59,26 @@ class Control extends IBehavior {
           case None => println(s"property error ${name}")
         }
         case Right(value) =>
+      }
+    }
+
+    protected def setEventParam(name:String,params:js.Dictionary[String]):Unit = {
+      val paramString = params.get(name)
+      if(paramString.isEmpty) return
+      val expr = Utils.parseParam(paramString.get)
+
+      if(expr.isLeft) return
+      val curContent = this.parent.map(_.sContent)
+      UIComponent.cacheContent.clear()
+      UIComponent.cacheContent.parent = curContent
+      SExprInterp.eval(expr.getOrElse(null)) match {
+        case SVector(list) =>
+          val isCapture = list(0).asInstanceOf[SBool].value
+          val f = list(1).asInstanceOf[SFunc]
+          this.evProperty.put(name,(isCapture,() => f.call(curContent)))
+        case f@SFunc(_, _) =>
+          this.evProperty.put(name,(false,() => f.call(curContent)))
+        case _ => ()
       }
     }
 

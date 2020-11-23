@@ -2,12 +2,22 @@
     <Template>
         <Entity>
             <Components>
-                <Transform position="0,50,0" />
-                <Rect2D size="200,200" />
+                <Transform position="(attr :position)" />
+                <Rect2D size="24,24" />
             </Components>
-            <core:Sprite size="24,24" sheet="(env sheet)" >
+            <core:Sprite size="24,24" sheet="(env sheet)" OnClick="#(emit :ClickCheck)" >
                 <Param.spriteName>
-                    (ev-bind :UpdateSprite "checkbox-unchecked")
+                      (let [f
+                              #(match [(attr :Checked) (attr :Enable)]
+                                  [true true]  "checkbox-checked"
+                                  [false true] "checkbox-unchecked"
+                                  [true false] "checkbox-checked-disabled"
+                                  [false false] "checkbox-unchecked-disabled"
+                               )
+                           ]
+                        (attr-bind :Checked f)
+                        (attr-bind :Enable f)
+                      )
                 </Param.spriteName>
             </core:Sprite>
         </Entity>

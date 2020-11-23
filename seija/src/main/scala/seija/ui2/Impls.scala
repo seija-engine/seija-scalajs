@@ -2,7 +2,7 @@ package seija.ui2
 
 import seija.core.event.{EventNode, GameEventType}
 import seija.core.{Entity, Transform}
-import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SVector, XmlNode}
+import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SNil, SUserData, SVector, XmlNode}
 import seija.math.{Vector2, Vector3}
 import seija.s2d.{ImageRender, Rect2D, SpriteRender, Transparent}
 import seija.s2d.assets.{Image, SpriteSheet}
@@ -61,7 +61,10 @@ class EventNodeUIComp extends UIComponent {
       if(head == "On") {
         val evType = GameEventType.gameEventTypeRead.read(tail)
         if(evType.isDefined) {
-          SExprInterp.evalString(v, Some(tmpl.control.sContent)) match {
+          UIComponent.cacheContent.clear()
+          UIComponent.cacheContent.parent = Some(tmpl.control.sContent)
+          UIComponent.cacheContent.set("event-node",SUserData(eventNode))
+          SExprInterp.evalString(v, Some(UIComponent.cacheContent)) match {
             case Right(SVector(list)) =>
               val isCapture = list(0).asInstanceOf[SBool].value
               val f = list(1).asInstanceOf[SFunc]
@@ -72,9 +75,9 @@ class EventNodeUIComp extends UIComponent {
               eventNode.register(evType.get,isCapture = false, () => {
                 f.call(Some(tmpl.control.sContent))
               })
-              println(f)
+            case Right(SNil) => ()
             case Left(value) => println(value)
-            case Right(_) => println("error event param")
+            case Right(_) => println(s"error event param: $k = $v")
           }
         }
       }

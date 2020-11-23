@@ -17,5 +17,7 @@ class SpriteControl extends Control {
     this.setParam[Color]("color",params,Some(Color.New(1,1,1,1)))
     this.setParam[String]("spriteName",params,None)
     this.setParam[Int]("sheet",params,None)
+
+    this.setEventParam("OnClick",params)
   }
 }

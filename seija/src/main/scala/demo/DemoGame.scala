@@ -23,6 +23,7 @@ class DemoGame extends IGame {
     val tex = Loader.loadSync[Image]("StarIcon.png").toOption.get;
     println(tex)
     val materialSheet = Loader.loadSync[SpriteSheet]("material.json").toOption.get;
+    val paperSheet = Loader.loadSync[SpriteSheet]("paper.json").toOption.get;
 
     val rootEntity = Entity.New()
     rootEntity.addComponent[Transform]()
@@ -33,12 +34,14 @@ class DemoGame extends IGame {
     UISystem.initCore()
     UISystem.rootPath = "src/Resource/UI"
     UISystem.env.put("sheet",materialSheet.id)
-    val imageControl = UISystem.create("/CheckBox.xml");
+    UISystem.env.put("paperSheet",paperSheet.id)
+    val imageControl = UISystem.create("/TestPanel.xml");
     imageControl match {
       case Left(value) => println(value)
       case Right(value) =>
         value.Enter()
         value.entity.get.setParent(Some(rootEntity))
+
     }
   }
 

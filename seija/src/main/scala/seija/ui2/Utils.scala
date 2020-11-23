@@ -10,7 +10,7 @@ object Utils {
       return Left("")
     }
     string.head match {
-      case '(' =>
+      case '(' | '#' =>
         SExprParser.parse(string) match {
           case Left(value) =>
             println(value)

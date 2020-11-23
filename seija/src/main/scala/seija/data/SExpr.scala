@@ -5,6 +5,7 @@ import scala.collection.mutable
 import scala.util.control.Breaks._
 import seija.data.SContent
 sealed trait SExpr {
+    val exprType:Int = 0
     def isFloat:Boolean
     def castFloat():Float = {
         this match {
@@ -45,36 +46,70 @@ sealed trait SExpr {
                 false
         }
     }
+
+    def eq(otherExpr: SExpr): Boolean = {
+        if(this.exprType != otherExpr.exprType) return false
+
+        this match {
+            case SBool(value) => otherExpr.asInstanceOf[SBool].value == value
+            case SNil => true
+            case SString(value) => otherExpr.asInstanceOf[SString].value == value
+            case SVector(list) =>
+                val otherList = otherExpr.asInstanceOf[SVector]
+                if(list.length != otherList.list.length) return false
+                for(idx <- 0 until list.length) {
+                    if(!list(idx).equals(otherList.list(idx))) {
+                        return false
+                    }
+                }
+                true
+            case SInt(value) => otherExpr.asInstanceOf[SInt].value == value
+            case SFloat(value) => otherExpr.asInstanceOf[SFloat].value == value
+            case SKeyword(value) => otherExpr.asInstanceOf[SKeyword].value == value
+            case SUserData(value) => otherExpr.asInstanceOf[SUserData].value == value
+            case _ => false
+        }
+    }
 }
 
 case class SSymbol(value:String) extends SExpr {
+    override val exprType: Int = 1
     def isFloat = false
 }
 case class SList(list:js.Array[SExpr]) extends SExpr {
+    override val exprType: Int = 2
     def isFloat = false
 }
 case class SBool(value:Boolean) extends SExpr {
+    override val exprType: Int = 3
     def isFloat = false
 }
 case object SNil extends SExpr {
+    override val exprType: Int = 4
     def isFloat = false
 }
 case class SString(value:String) extends SExpr {
+    override val exprType: Int = 5
     def isFloat = false
 }
 case class SVector(list:js.Array[SExpr]) extends SExpr {
+    override val exprType: Int = 6
     def isFloat = false
 }
 case class SInt(value:Int) extends SExpr {
+    override val exprType: Int = 7
     def isFloat = false
 }
 case class SFloat(value:Float) extends SExpr {
+    override val exprType: Int = 8
     def isFloat = true
 }
 case class SKeyword(value:String) extends SExpr {
+    override val exprType: Int = 9
     def isFloat = false
 }
 case class SFunc(args:js.Dictionary[SExpr],list:js.Array[SExpr]) extends SExpr {
+    override val exprType: Int = 10
     override def toString: String = {
         val argsString = if(args.isEmpty) "" else args.keys.reduce((a,b) => a + b)
         s"SFunc([$argsString],${list.toString})"
@@ -83,16 +118,40 @@ case class SFunc(args:js.Dictionary[SExpr],list:js.Array[SExpr]) extends SExpr {
     def call(content: Option[SContent]):SExpr = {
         SExprInterp.eval(SList(list),content)
     }
+    def callByArgs(args:js.Array[SExpr],content: Option[SContent]):SExpr = {
+        val callContext = new SContent(content)
+        var idx = 1
+        for(arg <- args) {
+            val key =  if(idx == 1) "%" else "%" + idx.toString
+            callContext.set(key,arg)
+        }
+        SExprInterp.eval(SList(list),Some(callContext))
+    }
 }
 case class SObject(value:mutable.HashMap[SExpr,SExpr]) extends SExpr {
+    override val exprType: Int = 11
     def isFloat = false
 }
 
 case class SNFunc(val callFn:(js.Array[SExpr],SContent) => SExpr) extends SExpr {
+    override val exprType: Int = 12
     def isFloat = false
 }
 case class SUserData(val value:Any) extends SExpr {
+    override val exprType: Int = 13
     def isFloat = false
+}
+
+object SExpr {
+    def fromAny(value:Any) :SExpr = {
+        value match {
+            case v: String => SString(v)
+            case v: Boolean => SBool(v)
+            case v:Int => SInt(v)
+            case v:Float => SFloat(v)
+            case v => SUserData(v)
+        }
+    }
 }
 
 class SExprParser(string:String) {

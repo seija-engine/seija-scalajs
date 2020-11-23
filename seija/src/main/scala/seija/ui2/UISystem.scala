@@ -1,8 +1,9 @@
 package seija.ui2
 import seija.core.Entity
+import seija.core.event.{EventNode, GameEventType}
 import seija.data.{Read, SBool, SContent, SExpr, SExprInterp, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SUserData, SVector, Xml, XmlNode}
 import seija.math.Vector2
-import seija.ui2.controls.{CheckBox, ImageControl, SpriteControl}
+import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl}
 
 import scalajs.js
 
@@ -23,6 +24,7 @@ object UISystem {
     this.registerControl("ImageControl",() => new ImageControl)
     this.registerControl("SpriteControl",() => new SpriteControl)
     this.registerControl("CheckBox",() => new CheckBox)
+    this.registerControl("Panel",() => new Panel)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -38,13 +40,15 @@ object UISystem {
     content.set("attr-bind",SNFunc(UISystemSFunc.attrBind))
     content.set("ev-bind",SNFunc(UISystemSFunc.evBind))
     content.set("env",SNFunc(UISystemSFunc.env))
+    content.set("node-ev-bind",SNFunc(UISystemSFunc.nodeEvBind))
   }
 
   def create(path:String,args:js.Dictionary[String] = js.Dictionary(),parent:Option[Control] = None):Either[String, Control] = {
+
     val filePath = rootPath + path
     println("load xml:" + filePath)
-    val createByXmlNode:(XmlNode,()=>Control)=> Either[String,Control] = (xmlNode,createF) => {
-      if(xmlNode.children.isEmpty) {
+    val createByXmlNode:(XmlNode,()=>Control) => Either[String,Control] = (xmlNode,createF) => {
+      if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
         return Left("need children")
       }
       val control = createF()
@@ -105,7 +109,7 @@ object UISystemSFunc {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val attrName = evalArgs(0).asInstanceOf[SKeyword].value.tail
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
-    val ret = control.property.get(attrName).map(SUserData).getOrElse(SNil)
+    val ret = control.property.get(attrName).map(SExpr.fromAny).getOrElse(SNil)
     ret
   }
 
@@ -119,10 +123,25 @@ object UISystemSFunc {
   def attrBind(args:js.Array[SExpr],content: SContent):SExpr = {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
-    val attrName = evalArgs(0).asInstanceOf[SKeyword].value.tail
     val setFunc = content.find("setFunc").get.asInstanceOf[SUserData].value.asInstanceOf[(Any) =>Unit]
-    control.property.get(attrName).foreach(v => setFunc(v))
-    control.addPropertyListener(attrName,setFunc)
+    val attrName = evalArgs(0).asInstanceOf[SKeyword].value.tail
+    if(evalArgs.length == 2) {
+      val sFunc = evalArgs(1).asInstanceOf[SFunc]
+      if(control.property.contains(attrName)) {
+        val callFn = (pValue:Any) => {
+           val arg = SExpr.fromAny(pValue)
+           val evalExpr = sFunc.callByArgs(js.Array(arg),Some(control.sContent))
+           val evalValue = SExprInterp.evalToValue(evalExpr,Some(control.sContent))
+           setFunc(evalValue)
+        }
+        callFn(control.property.get(attrName).get)
+        control.addPropertyListener(attrName,callFn)
+      }
+    } else {
+      control.property.get(attrName).foreach(v => setFunc(v))
+      control.addPropertyListener(attrName,setFunc)
+    }
+
     SNil
   }
 
@@ -157,6 +176,19 @@ object UISystemSFunc {
     val findValue = UISystem.findEnv(envName)
     SUserData(findValue)
   }
+
+  def nodeEvBind(args:js.Array[SExpr], content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
+    val eventNode:EventNode = content.find("event-node").get.asInstanceOf[SUserData].value.asInstanceOf[EventNode]
+    val evName = evalArgs(0).castKeyword().tail
+    val evValue = control.evProperty.get(evName)
+    if(evValue.isDefined) {
+      val evType = GameEventType.gameEventTypeRead.read(evName).get
+      eventNode.register(evType,evValue.get._1,evValue.get._2)
+    }
+    SNil
+  }
 }
 
 
@@ -167,6 +199,7 @@ object UIComponent {
       case Left(value) =>
         readT.read(value).foreach(setFunc)
       case Right(value) =>
+        cacheContent.clear()
         cacheContent.parent = Some(content)
         cacheContent.set("setFunc",SUserData(setFunc))
         SExprInterp.eval(value, Some(cacheContent)) match {
