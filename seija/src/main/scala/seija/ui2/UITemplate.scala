@@ -57,7 +57,6 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
       case Right(control) =>
         control.Enter()
         control.entity.get.setParent(parent)
-        println(s"setParent ${parent}")
         Right(control.entity.get)
     }
   }

@@ -56,6 +56,7 @@ class EventNodeUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val eventNode = entity.addComponent[EventNode]()
     val dic = Utils.getXmlNodeParam(xmlNode)
+
     for((k,v) <- dic) {
       val (head,tail) = k.splitAt(2)
       if(head == "On") {
@@ -64,6 +65,7 @@ class EventNodeUIComp extends UIComponent {
           UIComponent.cacheContent.clear()
           UIComponent.cacheContent.parent = Some(tmpl.control.sContent)
           UIComponent.cacheContent.set("event-node",SUserData(eventNode))
+
           SExprInterp.evalString(v, Some(UIComponent.cacheContent)) match {
             case Right(SVector(list)) =>
               val isCapture = list(0).asInstanceOf[SBool].value
@@ -82,5 +84,14 @@ class EventNodeUIComp extends UIComponent {
         }
       }
     }
+  }
+}
+
+class EventBoardUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    val eventBoard = entity.addComponent[EventBoardComponent]()
+    eventBoard.initBoard(dic.get("name").getOrElse(""))
+    tmpl.control.eventBoard = eventBoard.eventBoard
   }
 }

@@ -1,5 +1,6 @@
 package seija.core.event
 
+import seija.core.Entity
 import seija.data.Read
 import seija.math.Vector3
 
@@ -21,11 +22,12 @@ object EventSystem {
           val ex0:Boolean = if (event(3).asInstanceOf[Int] == 0)  false else true;
           nodeEvents(entityId).fireEvent(GameEventType(evTypeId),ex0);
         }
-      case 3 =>
+      case 3 => //delete Entity
         val eid = event(1).asInstanceOf[Int];
         if(nodeEvents.contains(eid) && nodeEvents(eid).entity.parent.isDefined) {
           this.unRegEventNode(eid)
         }
+        Entity.get(eid).foreach(_.destroy())
       case _ => ()
     }
 

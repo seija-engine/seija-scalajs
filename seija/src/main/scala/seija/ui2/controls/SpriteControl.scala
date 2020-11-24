@@ -20,4 +20,6 @@ class SpriteControl extends Control {
 
     this.setEventParam("OnClick",params)
   }
+
+
 }

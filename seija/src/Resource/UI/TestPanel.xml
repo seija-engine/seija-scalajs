@@ -2,16 +2,23 @@
     <Template>
         <Entity>
             <Components>
+                <EventBoard name="TestP" />
                 <Transform />
                 <Rect2D size="120,120" />
                 <Transparent />
-                <SpriteRender sheet="(env paperSheet)" spriteName="SmallBackground" />
+                <SpriteRender sheet="(env paperSheet)">
+                    <Param.spriteName>
+                        (ev-bind :OnClickSprite "TickBox"
+                          #(do
+                             (log "run lisp")
+                             "EmptyStar"
+                           )
+                        )
+                    </Param.spriteName>
+                </SpriteRender>
+
             </Components>
-            <c:MyList>
-                <Param.ItemTemplate>
-                    <c:CheckBox />
-                </Param.ItemTemplate>
-            </c:MyList>
+            <core:Sprite size="260,176" scale="0.3,0.3,1" sheet="(env paperSheet)" spriteName="BlueButton" />
         </Entity>
     </Template>
 </Panel>

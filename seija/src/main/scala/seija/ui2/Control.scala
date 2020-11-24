@@ -9,24 +9,37 @@ import scalajs.js
 
 class Control extends IBehavior {
     var nsDic:js.Dictionary[String] = js.Dictionary()
-    var parent:Option[Control] = None
+    private var _parent:Option[Control] = None
+    def parent: Option[Control] = _parent
     val sContent:SContent = new SContent(UISystem.cContent)
     var entity:Option[Entity] = None
     var property:js.Dictionary[Any] = js.Dictionary()
     val propertyListenerDic: Dictionary[js.Array[Any => Unit]] = js.Dictionary()
     var template:Option[UITemplate] = None
     var dataContent:Option[Any] = None
-    var evBindDic:Dictionary[js.Array[(SExpr => Unit)]] = js.Dictionary()
     var evProperty:js.Dictionary[(Boolean,() => Unit)] = js.Dictionary()
+    var eventBoard:Option[EventBoard] = None
 
-
-    override def handleEvent(evData: js.Array[SExpr]): Unit = {
-      parent.foreach(_.handleEvent(evData))
-      this.dispatchEvent(evData(0).castKeyword(),SVector(evData.tail))
-    }
 
     def init():Unit = {
       this.sContent.set("control",SUserData(this))
+      if(this.template.isDefined) {
+        this.template.get.create() match {
+          case Left(value) => println(value)
+          case Right(value) => this.entity = Some(value)
+        }
+      }
+    }
+
+    def Enter():Unit = {
+
+    }
+
+    def setParent(parent:Option[Control]):Unit = {
+      this._parent = parent
+      if(parent.isDefined && this.eventBoard.isEmpty) {
+        this.eventBoard = parent.get.eventBoard
+      }
     }
 
     def setParams(params:js.Dictionary[String]):Unit = {}
@@ -40,7 +53,7 @@ class Control extends IBehavior {
                 println(s"property error ${name}:${paramString}")
               }
             case Right(expr) =>
-              cacheContent.parent = Some(this.parent.get.sContent)
+              cacheContent.parent = Some(this._parent.get.sContent)
               cacheContent.set("setFunc",SUserData(v => this.setProperty(name,v) ))
               SExprInterp.eval(expr, Some(cacheContent)) match {
                 case SUserData(value) => this.setProperty(name,value)
@@ -66,9 +79,8 @@ class Control extends IBehavior {
       val paramString = params.get(name)
       if(paramString.isEmpty) return
       val expr = Utils.parseParam(paramString.get)
-
       if(expr.isLeft) return
-      val curContent = this.parent.map(_.sContent)
+      val curContent = this._parent.map(_.sContent)
       UIComponent.cacheContent.clear()
       UIComponent.cacheContent.parent = curContent
       SExprInterp.eval(expr.getOrElse(null)) match {
@@ -82,15 +94,6 @@ class Control extends IBehavior {
       }
     }
 
-    def Enter():Unit = {
-       if(this.template.isDefined) {
-           this.template.get.create() match {
-               case Left(value) => println(value)
-               case Right(value) => this.entity = Some(value)
-           }
-       }
-    }
-
     def setProperty(name:String,value:Any):Unit = {
       this.property.update(name,value)
       this.dispatchPropertyChange(name)
@@ -102,24 +105,6 @@ class Control extends IBehavior {
         val value = this.property(name)
         mayLst.get.foreach(_(value))
       }
-    }
-
-    override def emit(evKey:String,evData:SExpr): Unit = {
-      this.dispatchEvent(evKey,evData)
-    }
-
-    def dispatchEvent(evKey:String,evData:SExpr):Unit = {
-      val mayList = this.evBindDic.get(evKey)
-      mayList.foreach(arr => {
-        arr.foreach(f => f(evData))
-      })
-    }
-
-    def addEvent(evKey:String,f:SExpr => Unit):Unit = {
-      if(!this.evBindDic.contains(evKey)) {
-        this.evBindDic.put(evKey,js.Array())
-      }
-      this.evBindDic(evKey).push(f)
     }
 
     def addPropertyListener(propertyName:String,f:Any => Unit):Unit = {

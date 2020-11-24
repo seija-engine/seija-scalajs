@@ -1,11 +1,14 @@
 package seija.core
 
+import java.util.Dictionary
+
 import seija.core.event.EventSystem
 
 import scala.collection.mutable
 import scala.scalajs.js
 
 class Entity(val id:Int) {
+  var isDestroy:Boolean = false
   private var _parent:Option[Entity] = None;
   private var components:mutable.HashMap[String,BaseComponent] = mutable.HashMap()
   private var _childrens:js.Array[Entity] = js.Array()
@@ -61,17 +64,33 @@ class Entity(val id:Int) {
       }
   }
 
-  def destory():Unit = {
+  def destroy():Unit = {
+    if(this.isDestroy) return
     if(this._parent.isEmpty) {
       EventSystem.unRegEventNode(this.id)
     }
+    for((_,v) <- this.components) {
+      v.onDetach()
+    }
     this.removeFromParent()
     Foreign.deleteEntity(this.id)
+    isDestroy = true
+    Entity.entityDic.remove(this.id)
   }
 }
 
 object Entity {
-  def New():Entity = new Entity(Foreign.newEntity)
+  val entityDic:mutable.HashMap[Int,Entity] = mutable.HashMap()
+
+  def New():Entity = {
+    val newEntity = new Entity(Foreign.newEntity)
+    entityDic.put(newEntity.id,newEntity)
+    newEntity
+  }
+
+  def get(id:Int):Option[Entity] = {
+    entityDic.get(id)
+  }
 
   def all():js.Array[Int] = {
     Foreign.entityAll

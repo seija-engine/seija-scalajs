@@ -68,7 +68,7 @@ object Tests {
 
   def onClick():Unit = {
     println("OCCCCCC");
-    this.evNode.entity.destory()
+    this.evNode.entity.destroy()
   }
 
 }

@@ -32,6 +32,7 @@ object UISystem {
     this.registerComp("Transparent",new TransparentUIComp)
     this.registerComp("EventNode",new EventNodeUIComp)
     this.registerComp("SpriteRender",new SpriteRenderUIComp)
+    this.registerComp("EventBoard",new EventBoardUIComp)
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -44,7 +45,6 @@ object UISystem {
   }
 
   def create(path:String,args:js.Dictionary[String] = js.Dictionary(),parent:Option[Control] = None):Either[String, Control] = {
-
     val filePath = rootPath + path
     println("load xml:" + filePath)
     val createByXmlNode:(XmlNode,()=>Control) => Either[String,Control] = (xmlNode,createF) => {
@@ -52,7 +52,7 @@ object UISystem {
         return Left("need children")
       }
       val control = createF()
-      control.parent = parent
+      control.setParent(parent)
       for((k,nsPath) <- xmlNode.attrs) {
         if(k.startsWith("xmlns:")) {
           val nsName = k.drop(6)
@@ -64,8 +64,8 @@ object UISystem {
           control.template = Some(new UITemplate(node,control))
         }
       }
-      control.init()
       control.setParams(args)
+      control.init()
       Right(control)
     }
     for {
@@ -116,7 +116,8 @@ object UISystemSFunc {
   def emit(args:js.Array[SExpr],content: SContent):SExpr = {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
-    control.handleEvent(evalArgs)
+
+    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),SNil))
     SNil
   }
 
@@ -167,7 +168,10 @@ object UISystemSFunc {
         setFunc(setValue)
       }
     }
-    control.addEvent(evName,callFn)
+    control.eventBoard.foreach(board=> {
+      board.register(evName,callFn)
+    })
+
     SNil
   }
 

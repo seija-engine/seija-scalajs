@@ -4,7 +4,7 @@ package demo
 
 import seija.assets
 import seija.assets.Loader
-import seija.core.event.{CABEventRoot, EventHandle, EventNode, GameEventType}
+import seija.core.event.{CABEventRoot, EventHandle, EventNode, EventSystem, GameEventType}
 import seija.core.{Entity, IGame, Template, Transform, TransformTmpl}
 import seija.data.Color
 import seija.math.{Vector2, Vector3}
@@ -41,12 +41,8 @@ class DemoGame extends IGame {
       case Right(value) =>
         value.Enter()
         value.entity.get.setParent(Some(rootEntity))
-
     }
   }
-
-
-
 
 
   override def onUpdate(): Unit = {
