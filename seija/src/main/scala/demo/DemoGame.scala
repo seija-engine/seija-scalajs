@@ -1,19 +1,15 @@
 package demo
-
-
-
 import seija.assets
 import seija.assets.Loader
 import seija.core.event.{CABEventRoot, EventHandle, EventNode, EventSystem, GameEventType}
 import seija.core.{Entity, IGame, Template, Transform, TransformTmpl}
-import seija.data.Color
+import seija.data.{Color, DynClass, DynObject}
 import seija.math.{Vector2, Vector3}
 import seija.s2d.Rect2D
 import seija.s2d.assets.{Font, Image, SpriteSheet}
 import seija.ui2.{Control, UISystem}
 
 class DemoGame extends IGame {
-
 
   override def onStart(): Unit = {
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
