@@ -6,6 +6,8 @@ import seija.math.Vector2
 import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl}
 
 import scalajs.js
+import seija.ui2.controls.ListView
+import scala.collection.immutable.HashMap
 
 trait UIComponent {
   def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
@@ -25,6 +27,7 @@ object UISystem {
     this.registerControl("SpriteControl",() => new SpriteControl)
     this.registerControl("CheckBox",() => new CheckBox)
     this.registerControl("Panel",() => new Panel)
+    this.registerControl("ListView",() => new ListView)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -44,7 +47,9 @@ object UISystem {
     content.set("node-ev-bind",SNFunc(UISystemSFunc.nodeEvBind))
   }
 
-  def create(path:String,args:js.Dictionary[String] = js.Dictionary(),parent:Option[Control] = None):Either[String, Control] = {
+  def create(path:String,args:js.Dictionary[String] = js.Dictionary(),
+                         parent:Option[Control] = None,
+                         childNodes:js.Array[XmlNode] = js.Array()):Either[String, Control] = {
     val filePath = rootPath + path
     println("load xml:" + filePath)
     val createByXmlNode:(XmlNode,()=>Control) => Either[String,Control] = (xmlNode,createF) => {
@@ -64,10 +69,17 @@ object UISystem {
           control.template = Some(new UITemplate(node,control))
         }
       }
+      
+      val tmplDic = childNodes.filter(_.tag.endsWith("Template")).foldLeft[js.Dictionary[XmlNode]](js.Dictionary())((d,x) => {
+        d.put(x.tag,x)
+        d
+      })
       control.setParams(args)
+      control.setTemplates(tmplDic)
       control.init()
       Right(control)
     }
+    
     for {
       xmlNode <- Xml.fromFile(filePath)
       createFn <- this.controlCreators.get(xmlNode.tag).toRight(s"not found control creator ${xmlNode.tag}")

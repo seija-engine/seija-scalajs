@@ -1,8 +1,6 @@
 enablePlugins(ScalaJSPlugin)
 name := "seija"
-scalacOptions ++= Seq(
-  "-Ymacro-annotations"
-)
+
 version := "0.1"
 
 scalaVersion := "2.13.3"

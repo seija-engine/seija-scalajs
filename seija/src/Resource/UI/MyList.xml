@@ -5,8 +5,6 @@
                 <Transform />
                 <Rect2D />
             </Components>
-            <core:Label text="MyList" />
-            <Items />
         </Entity>
     </Template>
 </ListView>

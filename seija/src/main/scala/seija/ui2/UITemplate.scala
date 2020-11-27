@@ -1,5 +1,5 @@
 package seija.ui2
-
+import scala.scalajs.js
 import seija.core.Entity
 import seija.data.XmlNode
 import seija.math.Vector2
@@ -33,7 +33,8 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
                  UISystem.getUIComp(compNode.tag).foreach(_.attach(newEntity,compNode,this))
               }
             })
-          case _ => this.parse(node,Some(newEntity))
+          case _ => this.parse(node,Some(newEntity)).left.foreach(println)
+          
         }
       }
     }
@@ -51,11 +52,11 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     } else ""
     val controlPath = pathHead + arrName(1) + ".xml"
     val dic = Utils.getXmlNodeParam(xmlNode)
-    val newControl = UISystem.create(controlPath,dic,Some(this.control))
+    val childs = xmlNode.children.getOrElse(js.Array())
+    val newControl = UISystem.create(controlPath,dic,Some(this.control),childs)
     newControl match {
       case Left(value) => Left(value)
       case Right(control) =>
-        control.Enter()
         control.entity.get.setParent(parent)
         Right(control.entity.get)
     }

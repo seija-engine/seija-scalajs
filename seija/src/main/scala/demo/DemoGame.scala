@@ -31,12 +31,13 @@ class DemoGame extends IGame {
     UISystem.rootPath = "src/Resource/UI"
     UISystem.env.put("sheet",materialSheet.id)
     UISystem.env.put("paperSheet",paperSheet.id)
+    UISystem.env.put("star",tex.id)
     val imageControl = UISystem.create("/TestPanel.xml");
     imageControl match {
       case Left(value) => println(value)
       case Right(value) =>
-        value.Enter()
         value.entity.get.setParent(Some(rootEntity))
+        value.OnEnter()
     }
   }
 

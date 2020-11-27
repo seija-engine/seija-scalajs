@@ -6,19 +6,20 @@
                 <Transform />
                 <Rect2D size="120,120" />
                 <Transparent />
-                <SpriteRender sheet="(env paperSheet)">
-                    <Param.spriteName>
-                        (ev-bind :OnClickSprite "TickBox"
-                          #(do
-                             (log "run lisp")
-                             "EmptyStar"
-                           )
-                        )
-                    </Param.spriteName>
-                </SpriteRender>
-
             </Components>
-            <core:Sprite size="260,176" scale="0.3,0.3,1" sheet="(env paperSheet)" spriteName="BlueButton" />
+            
+            <c:MyList dataSource="(const [1,2,3])">
+                <ItemTemplate>
+                    <Entity>
+                        <Components>
+                            <Transform />
+                            <Rect2D size="50,50" />
+                            <Transparent />
+                            <ImageRender texture="(env star)" />
+                        </Components>
+                    </Entity>
+                </ItemTemplate>
+            </c:MyList>
         </Entity>
     </Template>
 </Panel>

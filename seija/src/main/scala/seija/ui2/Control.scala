@@ -6,6 +6,7 @@ import seija.ui2.UIComponent.cacheContent
 
 import scala.scalajs.js.Dictionary
 import scalajs.js
+import seija.data.XmlNode
 
 class Control extends IBehavior {
     var nsDic:js.Dictionary[String] = js.Dictionary()
@@ -20,6 +21,8 @@ class Control extends IBehavior {
     var evProperty:js.Dictionary[(Boolean,() => Unit)] = js.Dictionary()
     var eventBoard:Option[EventBoard] = None
 
+    val childs:js.Array[Control] = js.Array()
+
 
     def init():Unit = {
       this.sContent.set("control",SUserData(this))
@@ -31,18 +34,23 @@ class Control extends IBehavior {
       }
     }
 
-    def Enter():Unit = {
-
+    def OnEnter():Unit = {
+      this.childs.foreach(_.OnEnter())
     }
 
     def setParent(parent:Option[Control]):Unit = {
       this._parent = parent
-      if(parent.isDefined && this.eventBoard.isEmpty) {
-        this.eventBoard = parent.get.eventBoard
+      if(parent.isDefined) {
+        if(this.eventBoard.isEmpty) {
+            this.eventBoard = parent.get.eventBoard
+        }
+        parent.get.childs.push(this)
       }
+      
     }
 
     def setParams(params:js.Dictionary[String]):Unit = {}
+    def setTemplates(tmpls:js.Dictionary[XmlNode]):Unit = {}
 
     protected def setParam[T](name:String,dic:js.Dictionary[String],defValue:Option[T])(implicit readT:Read[T]):Unit = {
       dic.get(name) match {
@@ -52,26 +60,24 @@ class Control extends IBehavior {
               if(readT.read(paramString).map(v => this.property.put(name,v)).isEmpty) {
                 println(s"property error ${name}:${paramString}")
               }
-            case Right(expr) =>
-              cacheContent.parent = Some(this._parent.get.sContent)
-              cacheContent.set("setFunc",SUserData(v => this.setProperty(name,v) ))
-              SExprInterp.eval(expr, Some(cacheContent)) match {
-                case SUserData(value) => this.setProperty(name,value)
-                case _ => ()
-              }
+            case Right(expr) => this.setLispParam(name,dic,defValue)
           }
         case None =>
           if(defValue.isDefined) {
             this.property.put(name,defValue.get)
           }
       }
-      dic.get(name).map(Utils.parseParam).foreach {
-        case Left(value) =>
-          readT.read(value) match {
-          case Some(value) => this.property.put(name,value)
-          case None => println(s"property error ${name}")
-        }
-        case Right(value) =>
+    }
+
+    protected def setLispParam[T](name:String,dic:js.Dictionary[String],defValue:Option[T]):Unit = {
+      val paramString = dic.get(name)
+      if(paramString.isDefined) {
+        cacheContent.parent = Some(this._parent.get.sContent)
+        cacheContent.set("setFunc",SUserData(v => this.setProperty(name,v) ))
+        val retValue = SExprInterp.evalStringToValue(paramString.get, Some(cacheContent))
+        this.setProperty(name,retValue)
+      } else if(defValue.isDefined) {
+        this.property.put(name,defValue.get)
       }
     }
 

@@ -7,10 +7,7 @@ import seija.data.CoreRead._
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
 class CheckBox extends Control {
-  override def init(): Unit = {
-    super.init()
-  }
-
+ 
   def checked:Boolean = this.property.get("Checked").getOrElse(false).asInstanceOf[Boolean]
   def checked_= (newValue:Boolean):Unit = this.setProperty("Checked",newValue)
 
