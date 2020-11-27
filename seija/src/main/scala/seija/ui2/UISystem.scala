@@ -69,7 +69,6 @@ object UISystem {
           control.template = Some(new UITemplate(node,control))
         }
       }
-      
       val tmplDic = childNodes.filter(_.tag.endsWith("Template")).foldLeft[js.Dictionary[XmlNode]](js.Dictionary())((d,x) => {
         d.put(x.tag,x)
         d
@@ -77,6 +76,8 @@ object UISystem {
       control.setParams(args)
       control.setTemplates(tmplDic)
       control.init()
+      
+      control.OnEnter()
       Right(control)
     }
     
@@ -214,11 +215,11 @@ object UIComponent {
     dic.get(name).map(Utils.parseParam).foreach {
       case Left(value) =>
         readT.read(value).foreach(setFunc)
-      case Right(value) =>
+      case Right(expr) =>
         cacheContent.clear()
         cacheContent.parent = Some(content)
         cacheContent.set("setFunc",SUserData(setFunc))
-        SExprInterp.eval(value, Some(cacheContent)) match {
+        SExprInterp.eval(expr, Some(cacheContent)) match {
           case SUserData(value) => setFunc(value.asInstanceOf[T])
           case _ => ()
         }

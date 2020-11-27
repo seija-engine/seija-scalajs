@@ -57,7 +57,6 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     newControl match {
       case Left(value) => Left(value)
       case Right(control) =>
-        control.entity.get.setParent(parent)
         Right(control.entity.get)
     }
   }

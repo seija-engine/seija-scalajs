@@ -32,6 +32,9 @@ class Control extends IBehavior {
           case Right(value) => this.entity = Some(value)
         }
       }
+      if(this.parent.isDefined) {
+        this.entity.get.setParent(this.parent.get.entity)
+      }
     }
 
     def OnEnter():Unit = {

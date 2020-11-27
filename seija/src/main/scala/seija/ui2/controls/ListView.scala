@@ -28,13 +28,15 @@ class ListView extends Control {
        var idx = 0
        for(child <- this.childItems) {
           var itemControl = new ListItem()
+          itemControl.dataContent = Some(child)
           itemControl.template = Some(new UITemplate(this.itemTemplate.get,itemControl))
           itemControl.setParent(Some(this))
           itemControl.init()
-          itemControl.entity.get.setParent(this.entity)
+          
+         
           val trans = itemControl.entity.get.getComponent[Transform]().get;
           trans.localPosition.set(0,50 + idx * -50,0)
-          itemControl.dataContent = Some(child)
+          
           idx += 1
        }
     }

@@ -5,6 +5,9 @@
                 <Transform />
                 <Rect2D />
             </Components>
+            <core:StackLayout>
+                <Stub.Children /> 
+            </core:StackLayout>
         </Entity>
     </Template>
 </ListView>

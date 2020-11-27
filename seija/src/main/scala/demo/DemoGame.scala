@@ -37,7 +37,6 @@ class DemoGame extends IGame {
       case Left(value) => println(value)
       case Right(value) =>
         value.entity.get.setParent(Some(rootEntity))
-        value.OnEnter()
     }
   }
 
