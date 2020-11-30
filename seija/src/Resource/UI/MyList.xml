@@ -3,11 +3,9 @@
         <Entity>
             <Components>
                 <Transform />
-                <Rect2D />
+                <Rect2D size="(attr-bind :size)" />
             </Components>
-            <core:StackLayout>
-                <Stub.Children /> 
-            </core:StackLayout>
         </Entity>
+        
     </Template>
 </ListView>

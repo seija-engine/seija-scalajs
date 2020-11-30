@@ -100,8 +100,9 @@ object DynObject {
 
     def findValue(path:String,value:Any):Option[Any] = {
         val arr = path.split('.')
+        if(arr(0) != "data") return None
         var curValue = value
-        for(name <- arr) {
+        for(name <- arr.tail) {
            val typeName = curValue.getClass.getName
            this.dynMap.get(typeName) match {
                case Some(dynObject) => 

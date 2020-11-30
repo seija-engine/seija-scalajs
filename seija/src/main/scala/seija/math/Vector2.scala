@@ -55,4 +55,6 @@ object Vector2 {
       None
     }
   }
+
+  def zero:Vector2 = Vector2.New(0,0)
 }

@@ -32,9 +32,6 @@ class Control extends IBehavior {
           case Right(value) => this.entity = Some(value)
         }
       }
-      if(this.parent.isDefined) {
-        this.entity.get.setParent(this.parent.get.entity)
-      }
     }
 
     def OnEnter():Unit = {
@@ -96,9 +93,13 @@ class Control extends IBehavior {
         case SVector(list) =>
           val isCapture = list(0).asInstanceOf[SBool].value
           val f = list(1).asInstanceOf[SFunc]
-          this.evProperty.put(name,(isCapture,() => f.call(curContent)))
+          this.evProperty.put(name,(isCapture,() => {
+            f.call(curContent)
+          }))
         case f@SFunc(_, _) =>
-          this.evProperty.put(name,(false,() => f.call(curContent)))
+          this.evProperty.put(name,(false,() => {
+            f.call(curContent) 
+          }))
         case _ => ()
       }
     }

@@ -47,6 +47,7 @@ sealed trait SExpr {
         }
     }
 
+
     def eq(otherExpr: SExpr): Boolean = {
         if(this.exprType != otherExpr.exprType) return false
 

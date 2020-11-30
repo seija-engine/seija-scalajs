@@ -9,15 +9,15 @@ object Utils {
     if(string.length  == 0) {
       return Left("")
     }
-    string.head match {
-      case '(' | '#' =>
-        SExprParser.parse(string) match {
+    if(string.head == '(' || string.startsWith("#(")) {
+       SExprParser.parse(string) match {
           case Left(value) =>
             println(value)
             Left("error")
           case Right(value) => Right(value)
         }
-      case str => Left(string)
+    } else {
+      Left(string)
     }
   }
 

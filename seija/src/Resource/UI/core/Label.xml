@@ -1,0 +1,12 @@
+<LabelControl>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform position="(attr :position)" scale="1,1,1"/>
+                <Rect2D size="100,50" />
+                <TextRender text="(attr-bind :text)" font="(env font)" color="(attr :color)" />
+                <Transparent />
+            </Components>
+        </Entity>
+    </Template>
+</LabelControl>

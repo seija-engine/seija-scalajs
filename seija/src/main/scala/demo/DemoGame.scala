@@ -32,7 +32,10 @@ class DemoGame extends IGame {
     UISystem.env.put("sheet",materialSheet.id)
     UISystem.env.put("paperSheet",paperSheet.id)
     UISystem.env.put("star",tex.id)
-    val imageControl = UISystem.create("/TestPanel.xml");
+    UISystem.env.put("font",font.id)
+    val demoModel = new demo.TestModel()
+    demoModel.init()
+    val imageControl = UISystem.create("/TestPanel.xml",dataContent = Some(demoModel));
     imageControl match {
       case Left(value) => println(value)
       case Right(value) =>

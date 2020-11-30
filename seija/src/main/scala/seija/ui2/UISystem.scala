@@ -8,6 +8,8 @@ import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl}
 import scalajs.js
 import seija.ui2.controls.ListView
 import scala.collection.immutable.HashMap
+import seija.ui2.controls.LabelControl
+import seija.data.DynObject
 
 trait UIComponent {
   def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
@@ -28,6 +30,7 @@ object UISystem {
     this.registerControl("CheckBox",() => new CheckBox)
     this.registerControl("Panel",() => new Panel)
     this.registerControl("ListView",() => new ListView)
+    this.registerControl("LabelControl",() => new LabelControl)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -36,6 +39,8 @@ object UISystem {
     this.registerComp("EventNode",new EventNodeUIComp)
     this.registerComp("SpriteRender",new SpriteRenderUIComp)
     this.registerComp("EventBoard",new EventBoardUIComp)
+    this.registerComp("TextRender",new TextRenderUIComp)
+
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -45,13 +50,15 @@ object UISystem {
     content.set("ev-bind",SNFunc(UISystemSFunc.evBind))
     content.set("env",SNFunc(UISystemSFunc.env))
     content.set("node-ev-bind",SNFunc(UISystemSFunc.nodeEvBind))
+    content.set("ctx-data",SNFunc(UISystemSFunc.dataF))
   }
 
   def create(path:String,args:js.Dictionary[String] = js.Dictionary(),
                          parent:Option[Control] = None,
-                         childNodes:js.Array[XmlNode] = js.Array()):Either[String, Control] = {
+                         childNodes:js.Array[XmlNode] = js.Array(),
+                         dataContent:Option[Any] = None):Either[String, Control] = {
     val filePath = rootPath + path
-    println("load xml:" + filePath)
+    //println("load xml:" + filePath)
     val createByXmlNode:(XmlNode,()=>Control) => Either[String,Control] = (xmlNode,createF) => {
       if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
         return Left("need children")
@@ -73,6 +80,7 @@ object UISystem {
         d.put(x.tag,x)
         d
       })
+      control.dataContent = dataContent
       control.setParams(args)
       control.setTemplates(tmplDic)
       control.init()
@@ -130,7 +138,7 @@ object UISystemSFunc {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
 
-    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),SNil))
+    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),evalArgs. ))
     SNil
   }
 
@@ -205,6 +213,16 @@ object UISystemSFunc {
       eventNode.register(evType,evValue.get._1,evValue.get._2)
     }
     SNil
+  }
+
+  def dataF(args:js.Array[SExpr],content:SContent):SExpr = {
+    val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
+    if(control.dataContent.isEmpty) {
+      return SNil
+    }
+    val dataPath = args(0).asInstanceOf[SSymbol].value
+    val retValue = DynObject.findValue(dataPath,control.dataContent.get)
+    retValue.map(SUserData).getOrElse(SNil)
   }
 }
 

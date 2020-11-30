@@ -33,11 +33,12 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
                  UISystem.getUIComp(compNode.tag).foreach(_.attach(newEntity,compNode,this))
               }
             })
-          case _ => this.parse(node,Some(newEntity)).left.foreach(println)
-          
+          case _ =>
+            this.parse(node,Some(newEntity)).left.foreach(println)
         }
       }
     }
+    
     Right(newEntity)
   }
 
@@ -46,7 +47,7 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     val pathHead = if(arrName.length > 0) {
       val nsPath = this.control.nsDic.get(arrName(0))
       if(nsPath.isEmpty) {
-        throw new Exception(s"${arrName(0)} not found ns path")
+        throw new Exception(s"not found ns path: ${arrName(0)}")
       }
       nsPath.get
     } else ""
@@ -57,6 +58,7 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     newControl match {
       case Left(value) => Left(value)
       case Right(control) =>
+        control.entity.foreach(_.setParent(parent))
         Right(control.entity.get)
     }
   }

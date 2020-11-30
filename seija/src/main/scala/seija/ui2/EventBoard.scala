@@ -31,6 +31,7 @@ object EventBoardComponent {
 class EventBoard(val name:String) {
   val eventDic:js.Dictionary[js.Array[SExpr => Unit]] = js.Dictionary()
   def fire(key:String,eventData:SExpr):Unit = {
+    println(s"[EventBoard]:$key = $eventData")
     this.eventDic.get(key) match {
       case Some(value) => value.foreach(f => f(eventData))
       case None =>

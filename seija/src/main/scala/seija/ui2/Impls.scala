@@ -7,6 +7,8 @@ import seija.math.{Vector2, Vector3}
 import seija.s2d.{ImageRender, Rect2D, SpriteRender, Transparent}
 import seija.s2d.assets.{Image, SpriteSheet}
 import seija.data.CoreRead._
+import seija.s2d.TextRender
+import seija.s2d.assets.Font
 
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
@@ -65,8 +67,8 @@ class EventNodeUIComp extends UIComponent {
           UIComponent.cacheContent.clear()
           UIComponent.cacheContent.parent = Some(tmpl.control.sContent)
           UIComponent.cacheContent.set("event-node",SUserData(eventNode))
-
-          SExprInterp.evalString(v, Some(UIComponent.cacheContent)) match {
+          val evalValue = SExprInterp.evalString(v, Some(UIComponent.cacheContent))
+          evalValue match {
             case Right(SVector(list)) =>
               val isCapture = list(0).asInstanceOf[SBool].value
               val f = list(1).asInstanceOf[SFunc]
@@ -93,5 +95,15 @@ class EventBoardUIComp extends UIComponent {
     val eventBoard = entity.addComponent[EventBoardComponent]()
     eventBoard.initBoard(dic.get("name").getOrElse(""))
     tmpl.control.eventBoard = eventBoard.eventBoard
+  }
+}
+
+class TextRenderUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    val textRender = entity.addComponent[TextRender]()
+    UIComponent.initParam[String]("text",dic,sText => textRender.setText(sText),tmpl.control.sContent)
+    UIComponent.initParam[Color]("color",dic,textRender.color = _,tmpl.control.sContent)
+    UIComponent.initParam[Int]("font",dic,fontID => textRender.setFont(new Font(fontID)) ,tmpl.control.sContent)
   }
 }
