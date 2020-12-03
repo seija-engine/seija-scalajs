@@ -102,7 +102,10 @@ class TextRenderUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val dic = Utils.getXmlNodeParam(xmlNode)
     val textRender = entity.addComponent[TextRender]()
-    UIComponent.initParam[String]("text",dic,sText => textRender.setText(sText),tmpl.control.sContent)
+    UIComponent.initParam[String]("text",dic,sText => {
+      println("set SText:"+sText)
+      textRender.setText(sText)
+    },tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,textRender.color = _,tmpl.control.sContent)
     UIComponent.initParam[Int]("font",dic,fontID => textRender.setFont(new Font(fontID)) ,tmpl.control.sContent)
   }

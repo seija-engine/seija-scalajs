@@ -1,5 +1,7 @@
 package seija.ui2.controls
-import seija.ui2.{Control}
+import demo.TDemoItem
+import seija.ui2.Control
+
 import scala.scalajs.js.Dictionary
 import scala.scalajs.js
 import seija.data.XmlNode
@@ -39,20 +41,29 @@ class ListView extends Control {
        }
        println("ListView init:"+this.entity.get)
        this.Items.clear()
-       var idx = 0
        for(child <- this.childItems) {
-          var itemControl = new ListItem()
-          itemControl.dataContent = Some(child)
-          itemControl.template = Some(new UITemplate(this.itemTemplate.get,itemControl))
-          itemControl.setParent(Some(this))
-          itemControl.nsDic = this.nsDic
-          itemControl.init()
-          itemControl.entity.get.setParent(this.entity)
+          val itemControl = createItem(child)
           this.Items.push(itemControl)
-          val trans = itemControl.entity.get.getComponent[Transform]().get;
-          trans.localPosition.set(0,50 + idx * -50,0)
-          idx += 1
        }
+      this.testLayout()
+    }
+
+    def testLayout():Unit = {
+      for(index <- 0 until this.Items.length) {
+        val trans = this.Items(index).entity.get.getComponent[Transform]().get;
+        trans.localPosition.set(0, 50 + index * -50, 0)
+      }
+    }
+
+    def createItem(itemData:Any):ListItem = {
+      val itemControl = new ListItem()
+      itemControl.dataContent = Some(itemData)
+      itemControl.template = Some(new UITemplate(this.itemTemplate.get,itemControl))
+      itemControl.setParent(Some(this))
+      itemControl.nsDic = this.nsDic
+      itemControl.init()
+      itemControl.entity.get.setParent(this.entity)
+      itemControl
     }
 
     override def handleEvent(evKey: String, evData: scala.scalajs.js.Array[SExpr]): Unit = {
@@ -60,6 +71,22 @@ class ListView extends Control {
           case ":Delete" =>
             val deleteIndex = evData(1).caseInt()
             this.Items.remove(deleteIndex).destory()
+            this.testLayout()
+          case ":Add" =>
+            val addItem = evData(1).toValue[Any]
+            val newItem = this.createItem(addItem)
+            this.Items.push(newItem)
+            this.testLayout()
+          case ":Check" =>
+            val index = evData(1).caseInt()
+            val childs = this.Items(index).entity.get.childrens
+            for(c <- childs) {
+              val textRender = c.getComponent[TextRender]()
+              if(textRender.isDefined && textRender.get.text =="Q") {
+                println("set NMB")
+                textRender.get.setText("NMB")
+              }
+            }
           case str => 
             println(s"un do $str")
        }

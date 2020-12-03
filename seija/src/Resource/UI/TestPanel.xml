@@ -4,21 +4,25 @@
             <Components>
                 <EventBoard name="TestP" />
                 <Transform />
-                <Rect2D size="320,240" />
+                <Rect2D size="1024,768" />
                 <Transparent />
             </Components>
-            <core:Sprite OnClick="#(emit :AddItem 'Hehe')"  size="260,176" scale="0.2,0.2,1" position="0,55,0" sheet="(env paperSheet)" spriteName="BlueButton" />
-            <c:MyList position="0,-30,0" size="320,240" eventRecv=":UpdateItem" dataSource="(ctx-data data.itemList)">
+            <core:Sprite OnClick="#(emit :AddItem 'Q')"
+                         size="260,176" scale="0.2,0.2,1" position="0,55,0" sheet="(env paperSheet)" spriteName="BlueButton" />
+            <c:MyList position="0,-30,0" size="1024,768" eventRecv=":UpdateItem" dataSource="(ctx-data data.itemList)">
                 <ItemTemplate>
                     <Entity>
                         <Components>
                             <Transform />
                             <Rect2D size="300,50" />
                         </Components>
-                        <core:Label size="40,30" position="-50,0,0" text="(str (ctx-data data.itemId))" color="#ff0000" />
-                        <core:Label size="40,30" position="-10,0,0" text="(str (ctx-data data.itemName))" />
-                        <core:Sprite OnClick="#(emit :DeleteItem (ctx-data data.itemId))" 
+                        <core:Sprite OnClick="#(emit :DeleteItem (ctx-data data.itemId))"
                                      size="260,176" scale="0.2,0.2,1" position="50,0,0" sheet="(env paperSheet)" spriteName="BlueButton" />
+                        <core:Sprite OnClick="#(emit :CheckItem (ctx-data data.itemId))"
+                                     size="260,176" scale="0.2,0.2,1" position="100,0,0" sheet="(env paperSheet)" spriteName="BlueButton" />
+                        <core:Label size="40,30" position="-80,0,0" text="(str (ctx-data data.itemId))" color="#ff0000" />
+                        <core:Label size="20,30" position="-40,0,0" text="(str (ctx-data data.itemName))" />
+
                     </Entity>
                 </ItemTemplate>
             </c:MyList>

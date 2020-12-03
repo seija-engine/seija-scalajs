@@ -130,7 +130,6 @@ class Control extends IBehavior {
 
     def destory():Unit = {
       if(this.entity.isDefined) {
-        println(s"A: "+this.entity.get.isAlive)
         this.entity.get.destroy()
       }
     }

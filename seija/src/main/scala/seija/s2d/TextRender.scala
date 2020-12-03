@@ -10,8 +10,10 @@ import scala.scalajs.js
 
 class TextRender(override val entity:Entity) extends BaseComponent(entity) {
   private var _color:Color = Color.NewCB(1,1,1,1,this.colorToRust)
+  def text:String = _text
 
   def color:Color = _color
+  protected var _text:String = ""
 
   def color_= (newColor:Color):Unit = {
     _color = newColor
@@ -21,7 +23,11 @@ class TextRender(override val entity:Entity) extends BaseComponent(entity) {
 
   def setFont(font:Font):Unit = Foreign.setTextFont(entity.id,font.id)
 
-  def setText(str:String):Unit = Foreign.setTextString(entity.id,str)
+  def setText(str:String):Unit = {
+    this._text = str
+    Foreign.setTextString(entity.id,str)
+  }
+
 
   def setLineMode(lineMode: LineMode.LineMode):Unit = Foreign.setTextLineMode(entity.id,lineMode.id)
 

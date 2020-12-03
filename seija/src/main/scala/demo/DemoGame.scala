@@ -45,7 +45,7 @@ class DemoGame extends IGame {
         eventBoard.addEventRecv(demoModel)
         demoModel.addEventRecv(eventBoard)
         
-        //.attachBehavior(demoModel)
+
         value.entity.get.setParent(Some(rootEntity))
     }
   }

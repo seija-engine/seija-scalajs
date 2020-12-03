@@ -55,6 +55,7 @@ sealed trait SExpr {
         }
     }
 
+    def toValue[T]:T = SExprInterp.exprToValue(this).asInstanceOf[T]
 
     def eq(otherExpr: SExpr): Boolean = {
         if(this.exprType != otherExpr.exprType) return false

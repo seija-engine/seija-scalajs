@@ -10,7 +10,7 @@ import scala.scalajs.js
 class Entity(val id:Int) {
   var isDestroy:Boolean = false
   private var _parent:Option[Entity] = None;
-  private var components:mutable.HashMap[String,BaseComponent] = mutable.HashMap()
+  private val components:mutable.HashMap[String,BaseComponent] = mutable.HashMap()
   private var _childrens:js.Array[Entity] = js.Array()
   private var _info:Option[EntityInfo] = None
 
