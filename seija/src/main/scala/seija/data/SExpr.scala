@@ -12,8 +12,16 @@ sealed trait SExpr {
             case SInt(value) => value
             case SFloat(value) => value
             case _ =>
-                println(s"$this cast float error")
+                throw new ClassCastException(s"$this cast float error")
                 0
+        }
+    }
+    def caseInt():Int = {
+        this match {
+            case SInt(value) => value
+            case _ =>
+              throw new ClassCastException(s"$this case Int Error")
+              0
         }
     }
     def castKeyword():String = {

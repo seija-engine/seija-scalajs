@@ -20,13 +20,13 @@ class ImageControl extends Control {
     this.setParam[Int]("Int",params,Some(0))
   }
 
-  override def handleEvent(evData: js.Array[SExpr]): Unit = {
-    super.handleEvent(evData)
+  override def handleEvent(evKey:String,evData: js.Array[SExpr]): Unit = {
+    super.handleEvent(evKey,evData)
     evData.head.castKeyword() match {
       case ":ClickImage" =>
         val oldInt = this.property("Int").asInstanceOf[Int]
         this.setProperty("Int",oldInt + 1)
-        this.emit(":UpdateInt",SInt(oldInt + 1)  )
+        this.emit(":UpdateInt",js.Array(SInt(oldInt + 1)))
       case _ => ()
     }
   }

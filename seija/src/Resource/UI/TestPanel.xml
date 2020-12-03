@@ -7,8 +7,8 @@
                 <Rect2D size="320,240" />
                 <Transparent />
             </Components>
-            
-            <c:MyList size="320,240" dataSource="(ctx-data data.itemList)">
+            <core:Sprite OnClick="#(emit :AddItem 'Hehe')"  size="260,176" scale="0.2,0.2,1" position="0,55,0" sheet="(env paperSheet)" spriteName="BlueButton" />
+            <c:MyList position="0,-30,0" size="320,240" eventRecv=":UpdateItem" dataSource="(ctx-data data.itemList)">
                 <ItemTemplate>
                     <Entity>
                         <Components>

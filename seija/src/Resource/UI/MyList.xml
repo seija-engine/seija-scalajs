@@ -2,7 +2,7 @@
     <Template>
         <Entity>
             <Components>
-                <Transform />
+                <Transform  position="(attr-bind :position)" />
                 <Rect2D size="(attr-bind :size)" />
             </Components>
         </Entity>

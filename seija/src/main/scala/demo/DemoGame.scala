@@ -8,6 +8,8 @@ import seija.math.{Vector2, Vector3}
 import seija.s2d.Rect2D
 import seija.s2d.assets.{Font, Image, SpriteSheet}
 import seija.ui2.{Control, UISystem}
+import seija.ui2.EventBoard
+import seija.ui2.EventBoardComponent
 
 class DemoGame extends IGame {
 
@@ -35,10 +37,15 @@ class DemoGame extends IGame {
     UISystem.env.put("font",font.id)
     val demoModel = new demo.TestModel()
     demoModel.init()
-    val imageControl = UISystem.create("/TestPanel.xml",dataContent = Some(demoModel));
-    imageControl match {
+    val panelControl = UISystem.create("/TestPanel.xml",dataContent = Some(demoModel));
+    panelControl match {
       case Left(value) => println(value)
       case Right(value) =>
+        val eventBoard = EventBoard.boards("TestP")
+        eventBoard.addEventRecv(demoModel)
+        demoModel.addEventRecv(eventBoard)
+        
+        //.attachBehavior(demoModel)
         value.entity.get.setParent(Some(rootEntity))
     }
   }

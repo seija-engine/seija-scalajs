@@ -27,7 +27,7 @@ object EventSystem {
         if(nodeEvents.contains(eid) && nodeEvents(eid).entity.parent.isDefined) {
           this.unRegEventNode(eid)
         }
-        Entity.get(eid).foreach(_.destroy())
+        Entity.get(eid).foreach(_.clear())
       case _ => ()
     }
 

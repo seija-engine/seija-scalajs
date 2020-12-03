@@ -4,6 +4,7 @@ import seija.data.SExpr
 import seija.s2d.Rect2D
 
 import scala.scalajs.js
+import seija.data.SKeyword
 
 class EventBoardComponent(override val entity:Entity) extends BaseComponent(entity) {
   var eventBoard:Option[EventBoard] = None
@@ -28,21 +29,52 @@ object EventBoardComponent {
   }
 }
 
-class EventBoard(val name:String) {
-  val eventDic:js.Dictionary[js.Array[SExpr => Unit]] = js.Dictionary()
-  def fire(key:String,eventData:SExpr):Unit = {
-    println(s"[EventBoard]:$key = $eventData")
-    this.eventDic.get(key) match {
-      case Some(value) => value.foreach(f => f(eventData))
-      case None =>
-    }
+class EventBoard(val name:String) extends IEventReceive {
+  protected  val keyEventDic:js.Dictionary[js.Array[ (String,js.Array[SExpr]) => Unit]] = js.Dictionary()
+  protected  val allEventList:js.Array[(String,js.Array[SExpr]) => Unit] = js.Array()
+
+  override def handleEvent(evKey: String, evData:js.Array[SExpr]): Unit = {
+    this.fire(evKey,evData)
   }
 
-  def register(key:String,func:SExpr => Unit):Unit = {
-    if(!this.eventDic.contains(key)) {
-      this.eventDic.put(key,js.Array())
+  def fire(key:String,eventData:js.Array[SExpr]):Unit = {
+    println(s"[EventBoard] $key = $eventData")
+    this.keyEventDic.get(key) match {
+      case Some(value) => value.foreach(f => f(key,eventData))
+      case None => ()
     }
-    this.eventDic(key).push(func)
+    this.allEventList.foreach(f => {
+      f(key,eventData)
+    })
+    
+  }
+
+  def register(key:String,func:(String,js.Array[SExpr]) => Unit):Unit = {
+    if(!this.keyEventDic.contains(key)) {
+      this.keyEventDic.put(key,js.Array())
+    }
+    this.keyEventDic(key).push(func)
+  }
+
+  def addEventRecv(eventRecv:IEventReceive):Unit = {
+    this.registerAll(eventRecv.handleEvent);
+  }
+
+  def removeEventRecv(eventRecv:IEventReceive):Unit = {
+    this.unRegisterAll(eventRecv.handleEvent)
+  }
+
+  def registerAll(f:(String,js.Array[SExpr]) => Unit):Unit = {
+    this.allEventList.push(f)
+  }
+  
+  def unRegisterAll(f:(String,js.Array[SExpr]) => Unit):Unit = {
+    for(idx <- 0 to this.allEventList.length) {
+      if(f == this.allEventList(idx)) {
+        this.allEventList.remove(idx)
+        return
+      }
+    }
   }
 }
 

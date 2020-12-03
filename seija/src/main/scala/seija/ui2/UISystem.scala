@@ -137,8 +137,7 @@ object UISystemSFunc {
   def emit(args:js.Array[SExpr],content: SContent):SExpr = {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
-
-    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),evalArgs. ))
+    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),evalArgs.tail))
     SNil
   }
 
@@ -175,17 +174,15 @@ object UISystemSFunc {
     if(evalArgs.length >= 2) {
       setFunc(evalArgs(1).castSingleAny())
     }
-    val callFn:(SExpr => Unit) = if(evalArgs.length == 3) {
-      (evData:SExpr) => {
+    val callFn = if(evalArgs.length == 3) {
+      (k:String,evData:js.Array[SExpr]) => {
         val sFunc = evalArgs(2).asInstanceOf[SFunc]
-        val callContent = new SContent(Some(content))
-        callContent.set("%",evData)
-        val evalValue = SExprInterp.evalToValue(SList(sFunc.list),Some(callContent))
+        val evalValue = sFunc.callByArgs(evData,Some(content))
         setFunc(evalValue)
       }
     } else {
-      (evData:SExpr) => {
-        val setValue = SExprInterp.exprToValue(evData)
+      (k:String,evData:js.Array[SExpr]) => {
+        val setValue = SExprInterp.exprToValue(SVector(evData))
         setFunc(setValue)
       }
     }

@@ -66,15 +66,21 @@ class Entity(val id:Int) {
 
   def destroy():Unit = {
     if(this.isDestroy) return
+    this.removeFromParent()
+    this.clear()
+    Foreign.deleteEntity(this.id)
+    isDestroy = true
+    
+  }
+
+  def clear():Unit = {
+    if(this.isDestroy) return;
     if(this._parent.isEmpty) {
-      EventSystem.unRegEventNode(this.id)
+       EventSystem.unRegEventNode(this.id)
     }
     for((_,v) <- this.components) {
       v.onDetach()
     }
-    this.removeFromParent()
-    Foreign.deleteEntity(this.id)
-    isDestroy = true
     Entity.entityDic.remove(this.id)
   }
 }
