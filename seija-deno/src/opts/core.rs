@@ -137,9 +137,13 @@ fn tree_update(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Valu
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
-    let pe:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
+    let pe:Option<Entity> = if arr[1].is_null() {
+        None
+    } else {
+        Some(world.entities().entity(arr[1].as_i64().unwrap() as u32))
+    };
     
-    Tree::update(world, e, Some(pe));
+    Tree::update(world, e, pe);
     Ok(Value::from(e.id() as i64))
 }
 
@@ -161,7 +165,7 @@ fn tree_remove(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Valu
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
-    let is_destory:bool = arr[0].as_bool().unwrap();
+    let is_destory:bool = arr[1].as_bool().unwrap();
     Tree::remove_from_parent(world, e, is_destory);
     Ok(Value::from(e.id() as i64))
 }

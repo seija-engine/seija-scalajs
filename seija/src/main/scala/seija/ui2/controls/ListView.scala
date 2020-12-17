@@ -79,7 +79,7 @@ class ListView extends Control {
             this.testLayout()
           case ":Check" =>
             val index = evData(1).caseInt()
-            val childs = this.Items(index).entity.get.childrens
+            val childs = this.Items(index).entity.get.children
             for(c <- childs) {
               val textRender = c.getComponent[TextRender]()
               if(textRender.isDefined && textRender.get.text =="Q") {

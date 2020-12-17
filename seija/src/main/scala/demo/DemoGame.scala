@@ -23,6 +23,9 @@ class DemoGame extends IGame {
     val materialSheet = Loader.loadSync[SpriteSheet]("material.json").toOption.get;
     val paperSheet = Loader.loadSync[SpriteSheet]("paper.json").toOption.get;
 
+
+
+
     val rootEntity = Entity.New()
     rootEntity.addComponent[Transform]()
     val rect = rootEntity.addComponent[Rect2D]()

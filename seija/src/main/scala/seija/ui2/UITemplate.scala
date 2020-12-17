@@ -53,8 +53,8 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     } else ""
     val controlPath = pathHead + arrName(1) + ".xml"
     val dic = Utils.getXmlNodeParam(xmlNode)
-    val childs = xmlNode.children.getOrElse(js.Array())
-    val newControl = UISystem.create(controlPath,dic,Some(this.control),childs)
+    val children = xmlNode.children.getOrElse(js.Array())
+    val newControl = UISystem.create(controlPath,dic,Some(this.control),children)
     newControl match {
       case Left(value) => Left(value)
       case Right(control) =>

@@ -11,7 +11,7 @@ class Entity(val id:Int) {
   var isDestroy:Boolean = false
   private var _parent:Option[Entity] = None;
   private val components:mutable.HashMap[String,BaseComponent] = mutable.HashMap()
-  private var _childrens:js.Array[Entity] = js.Array()
+  private var _children:js.Array[Entity] = js.Array()
   private var _info:Option[EntityInfo] = None
 
   override def toString: String = s"Entity($id)"
@@ -46,29 +46,34 @@ class Entity(val id:Int) {
 
   def setParent(parent:Option[Entity]):Unit = {
     if(this._parent != parent) {
-      this.removeFromParent();
+      if(this._parent.isDefined) {
+        val index = this._parent.get._children.indexOf(this);
+        this._parent.get._children.remove(index);
+      }
       if(parent.isDefined) {
         this._parent = Some(parent.get)
-        parent.get._childrens.push(this)
-        Foreign.entitySetParent(this.id,parent.get.id);
+        parent.get._children.push(this)
       }
+      Foreign.treeUpdate(this.id,parent.map(_.id))
     }
   }
 
-  def childrens:js.Array[Entity] = this._childrens
+  def children:js.Array[Entity] = this._children
 
-  private def removeFromParent():Unit = {
-      if(this._parent.isDefined) {
-        var index = this._parent.get._childrens.indexOf(this);
-        this._parent.get._childrens.remove(index);
-      }
+  private def removeFromParent(isDestroy:Boolean):Unit = {
+    if(this._parent.isDefined) {
+        val index = this._parent.get._children.indexOf(this);
+        this._parent.get._children.remove(index);
+    }
+    Foreign.treeRemove(this.id,isDestroy)
+
   }
 
   def destroy():Unit = {
     if(this.isDestroy) return
-    this.removeFromParent()
+
     this.clear()
-    Foreign.deleteEntity(this.id)
+    this.removeFromParent(true)
     isDestroy = true
     
   }
@@ -88,9 +93,10 @@ class Entity(val id:Int) {
 object Entity {
   val entityDic:mutable.HashMap[Int,Entity] = mutable.HashMap()
 
-  def New():Entity = {
+  def New(parent:Option[Entity] = None):Entity = {
     val newEntity = new Entity(Foreign.newEntity)
     entityDic.put(newEntity.id,newEntity)
+    Foreign.treeAdd(newEntity.id,parent.map(_.id))
     newEntity
   }
 

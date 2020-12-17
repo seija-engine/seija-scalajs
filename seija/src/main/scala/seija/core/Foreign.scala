@@ -28,15 +28,24 @@ object Foreign {
 
   def newEntity:Int = Deno.core.jsonOpSync("newEntity").asInstanceOf[Int]
 
-  def entitySetParent(entity:Int,parent:Int):Unit =
-    Deno.core.jsonOpSync("entitySetParent",js.Array(entity,parent))
-
   def entityAll:js.Array[Int] =
     Deno.core.jsonOpSync("entityAll").asInstanceOf[js.Array[Int]]
 
   def deleteEntity(entity: Int):Unit =
     Deno.core.jsonOpSync("deleteEntity",entity)
 
+  def treeAdd(entity: Int,parent:Option[Int]): Int = {
+    val arr:js.Array[Any] = js.Array(entity,parent.orNull)
+    Deno.core.jsonOpSync("treeAdd",arr).asInstanceOf[Int]
+  }
+
+  def treeUpdate(entity: Int,parent:Option[Int]):Int = {
+    val arr:js.Array[Any] = js.Array(entity,parent.orNull)
+    Deno.core.jsonOpSync("treeUpdate",arr).asInstanceOf[Int]
+  }
+
+  def treeRemove(entity: Int, isDestroy:Boolean):Unit =
+    Deno.core.jsonOpSync("treeRemove",js.Array(entity,isDestroy))
 
   def entityIsAlive(entity:Int):Boolean =
     Deno.core.jsonOpSync("entityIsAlive",entity).asInstanceOf[Boolean]
