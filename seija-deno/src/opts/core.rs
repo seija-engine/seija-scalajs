@@ -1,11 +1,11 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
-use seija::specs::{WorldExt,Entity,world::Builder,Join};
+use seija::{common::{Tree, TreeNode}, specs::{WorldExt,Entity,world::Builder,Join}};
 use serde_json::Value;
 use seija::s2d::{S2DLoader,DefaultBackend};
 use seija::common::EntityInfo;
-use seija::common::transform::{component::ParentHierarchy,Parent,transform::Transform};
+use seija::common::transform::{transform::Transform};
 use seija::rendy::texture::image::ImageTextureConfig;
 use seija::assets::{TextuteLoaderInfo,AssetLoadError,SpriteSheetLoaderInfo,FontAssetLoaderInfo};
 use seija::math::Vector3;
@@ -19,11 +19,13 @@ use crate::core::game::MESSAGES;
 pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "newEntity", new_entity);
     reg_json_op_sync(rt, "entityChildrens", entity_childrens);
-    reg_json_op_sync(rt, "entitySetParent", entity_set_parent);
     reg_json_op_sync(rt, "deleteEntity", delete_entity);
-    reg_json_op_sync(rt, "deleteAllChildren", delete_all_children);
     reg_json_op_sync(rt, "entityIsAlive", entity_is_alive);
     reg_json_op_sync(rt, "entityAll", entity_all);
+
+    reg_json_op_sync(rt, "treeAdd", tree_add);
+    reg_json_op_sync(rt, "treeRemove", tree_remove);
+    reg_json_op_sync(rt, "treeUpdate", tree_update);
     
 
     reg_json_op_sync(rt, "loadSync", load_sync);
@@ -122,30 +124,48 @@ fn entity_childrens(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result
     let eid = arr[1].as_i64().unwrap() as u32;
     let entity = world.entities().entity(eid);
     
-    let hierarchy = world.fetch_mut::<ParentHierarchy>();
+    let tree_nodes = world.read_storage::<TreeNode>();
     let mut arr:Vec<Value> = vec![];
 
-    for ce in hierarchy.all_children_iter(entity) {
-        arr.push(Value::from(ce.id()) );
+    for ce in Tree::all_children(&tree_nodes, entity) {
+        arr.push(Value::from(ce) );
     }
     Ok(Value::Array(arr))
 }
 
-fn entity_set_parent(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+fn tree_update(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
     let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
     let pe:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-    let mut storage = world.write_storage::<Parent>();
-    if !storage.contains(e) {
-        let p = Parent {entity:pe };
-        storage.insert(e,p).unwrap();
-    } else {
-        let cur_p = storage.get_mut(e).unwrap();
-        cur_p.entity = pe;
-    }
-    Ok(Value::from(e.id() as i64)) 
+    
+    Tree::update(world, e, Some(pe));
+    Ok(Value::from(e.id() as i64))
 }
+
+
+fn tree_add(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
+    let pe:Option<Entity> = if arr[1].is_null() {
+        None
+    } else {
+        Some(world.entities().entity(arr[1].as_i64().unwrap() as u32))
+    };
+    Tree::add(world, e, pe);
+    Ok(Value::from(e.id() as i64))
+}
+
+fn tree_remove(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
+    let is_destory:bool = arr[0].as_bool().unwrap();
+    Tree::remove_from_parent(world, e, is_destory);
+    Ok(Value::from(e.id() as i64))
+}
+
 
 fn update_world(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
@@ -197,23 +217,6 @@ fn entity_all(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, An
     
     Ok(Value::Array(arr))
 }
-
-fn delete_all_children(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
-    let arr = value.as_array().unwrap();
-    let world = get_mut_world();
-    let entity:Entity = world.entities().entity(arr[1].as_i64().unwrap() as u32);
-    let hierarchy = world.fetch_mut::<ParentHierarchy>();
-    let entities = world.entities();
-    let mut is_succ = true;
-    for ce in hierarchy.all_children_iter(entity) {
-        println!("del:{}",ce.id());
-        if  entities.delete(ce).is_err() {
-            is_succ = false;
-        }
-    }
-    Ok(Value::Bool(is_succ))
-}
-
 
 fn load_sync(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
