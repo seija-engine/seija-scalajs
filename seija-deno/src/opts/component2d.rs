@@ -1,48 +1,62 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
 use serde_json::Value;
-use seija::specs::{WorldExt,Entity,World};
+use seija::{math::Vector2, specs::{Entity, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
 use seija::common::{Rect2D,AnchorAlign};
+use seija::s2d::layout::{LayoutElement,LayoutAlignment,View,Stack,Grid,LNumber,Orientation,Thickness};
 use byteorder::{ByteOrder,NativeEndian};
 
 
 pub fn init_json_func(rt:&mut JsRuntime) {
-    reg_json_op_sync(rt, "addImageRender", add_image_render);
-    reg_json_op_sync(rt, "setImageColorRef", set_image_color);
-    reg_json_op_sync(rt, "getImageColorRef", get_image_color);
-    reg_json_op_sync(rt, "setImageTexture", set_image_texture);
-    reg_json_op_sync(rt, "setImageType",set_image_type);
-    reg_json_op_sync(rt, "setImageFilledValue",set_image_filled_value);
+    reg_json_op_sync(rt,"addImageRender", add_image_render);
+    reg_json_op_sync(rt,"setImageColorRef", set_image_color);
+    reg_json_op_sync(rt,"getImageColorRef", get_image_color);
+    reg_json_op_sync(rt,"setImageTexture", set_image_texture);
+    reg_json_op_sync(rt,"setImageType",set_image_type);
+    reg_json_op_sync(rt,"setImageFilledValue",set_image_filled_value);
 
-    reg_json_op_sync(rt, "addTextRender", add_text_render);
-    reg_json_op_sync(rt, "setTextString", set_text_string);
-    reg_json_op_sync(rt, "setTextColorRef", set_text_color);
-    reg_json_op_sync(rt, "setTextFont", set_text_font);
-    reg_json_op_sync(rt, "setTextFontSize", set_text_font_size);
-    reg_json_op_sync(rt, "setTextAnchor", set_text_anchor);
-    reg_json_op_sync(rt, "setTextLineMode", set_text_line_mode);
+    reg_json_op_sync(rt,"addTextRender", add_text_render);
+    reg_json_op_sync(rt,"setTextString", set_text_string);
+    reg_json_op_sync(rt,"setTextColorRef", set_text_color);
+    reg_json_op_sync(rt,"setTextFont", set_text_font);
+    reg_json_op_sync(rt,"setTextFontSize", set_text_font_size);
+    reg_json_op_sync(rt,"setTextAnchor", set_text_anchor);
+    reg_json_op_sync(rt,"setTextLineMode", set_text_line_mode);
 
-    reg_json_op_sync(rt, "addSpriteRender", add_sprite_render);
-    reg_json_op_sync(rt, "setSpriteName", set_sprite_name);
-    reg_json_op_sync(rt, "setSpriteColorRef",set_sprite_color);
-    reg_json_op_sync(rt, "setSpriteSheet", set_sprite_sheet);
-    reg_json_op_sync(rt, "setSpriteType",set_sprite_type);
-    reg_json_op_sync(rt, "getSpriteColorRef", get_sprite_color);
-    reg_json_op_sync(rt, "setSpriteFilledValue",set_sprite_filled_value);
-    reg_json_op_sync(rt, "setSpriteSliceByConfig",set_sprite_slice_by_config);
+    reg_json_op_sync(rt,"addSpriteRender", add_sprite_render);
+    reg_json_op_sync(rt,"setSpriteName", set_sprite_name);
+    reg_json_op_sync(rt,"setSpriteColorRef",set_sprite_color);
+    reg_json_op_sync(rt,"setSpriteSheet", set_sprite_sheet);
+    reg_json_op_sync(rt,"setSpriteType",set_sprite_type);
+    reg_json_op_sync(rt,"getSpriteColorRef", get_sprite_color);
+    reg_json_op_sync(rt,"setSpriteFilledValue",set_sprite_filled_value);
+    reg_json_op_sync(rt,"setSpriteSliceByConfig",set_sprite_slice_by_config);
 
 
 
-    reg_json_op_sync(rt, "addRect2D",add_rect_2d);
-    reg_json_op_sync(rt, "setRect2DSizeRef", set_rect2d_size);
-    reg_json_op_sync(rt, "setRect2DAnchorRef", set_rect2d_anchor);
-    reg_json_op_sync(rt, "getRect2DSizeRef", get_rect2d_size);
-    reg_json_op_sync(rt, "getRect2DAnchorRef", get_rect2d_anchor);
+    reg_json_op_sync(rt,"addRect2D",add_rect_2d);
+    reg_json_op_sync(rt,"setRect2DSizeRef", set_rect2d_size);
+    reg_json_op_sync(rt,"setRect2DAnchorRef", set_rect2d_anchor);
+    reg_json_op_sync(rt,"getRect2DSizeRef", get_rect2d_size);
+    reg_json_op_sync(rt,"getRect2DAnchorRef", get_rect2d_anchor);
 
-    reg_json_op_sync(rt, "setTransparent", set_transparent);
+    reg_json_op_sync(rt,"setTransparent", set_transparent);
+
+    reg_json_op_sync(rt,"addLayoutView",add_layout_view);
+    reg_json_op_sync(rt,"setLayoutMargin", set_layout_margin);
+    reg_json_op_sync(rt,"setLayoutPadding", set_layout_padding);
+    reg_json_op_sync(rt,"setLayoutHor", set_layout_hor);
+    reg_json_op_sync(rt,"setLayoutVer", set_layout_ver);
+    reg_json_op_sync(rt,"setLayoutSize", set_layout_size);
+    reg_json_op_sync(rt,"addStackLayout",add_stack_layout);
+    reg_json_op_sync(rt,"setStackOrientation",set_stack_orientation);
+    reg_json_op_sync(rt,"setStackSpacing",set_stack_spacing);
+    reg_json_op_sync(rt,"addGridLayout",add_grid_layout);
+    reg_json_op_sync(rt,"addGridRow",add_grid_row);
+    reg_json_op_sync(rt,"addGridCol",add_grid_col);
 }
 
 
@@ -396,6 +410,189 @@ fn set_transparent(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<
 }
 
 
+fn add_layout_view(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let view = View::default();
+    let elem = LayoutElement::View(view);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    if !elems.contains(entity) {
+        elems.insert(entity, elem).unwrap();
+        Ok(Value::Bool(true))
+    } else {
+        Ok(Value::Bool(false))
+    }
+}
+
+fn set_layout_margin(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let l = arr[1].as_f64().unwrap();
+    let t = arr[2].as_f64().unwrap();
+    let r = arr[3].as_f64().unwrap();
+    let b = arr[3].as_f64().unwrap();
+    elem.fview_mut(|view| {
+        view.margin = Thickness::new(l,t,r,b);
+    });
+    Ok(Value::Null)
+}
+
+fn set_layout_padding(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let l = arr[1].as_f64().unwrap();
+    let t = arr[2].as_f64().unwrap();
+    let r = arr[3].as_f64().unwrap();
+    let b = arr[3].as_f64().unwrap();
+    elem.fview_mut(|view| {
+        view.padding = Thickness::new(l,t,r,b);
+    });
+    Ok(Value::Null)
+}
+
+fn set_layout_hor(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let hor:u32 = arr[1].as_u64().unwrap() as u32;
+    elem.fview_mut(|view| {
+        view.hor = LayoutAlignment::from(hor);
+    });
+    Ok(Value::Null)
+}
+
+fn set_layout_ver(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let ver:u32 = arr[1].as_u64().unwrap() as u32;
+    elem.fview_mut(|view| {
+        view.ver = LayoutAlignment::from(ver);
+    });
+    Ok(Value::Null)
+}
+
+fn set_layout_size(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let w = arr[1].as_f64().unwrap();
+    let h = arr[2].as_f64().unwrap();
+    elem.fview_mut(|view| {
+        view.size.set(Vector2::new(w,h));
+    });
+    Ok(Value::Null)
+}
+
+fn add_stack_layout(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let stack = Stack::default();
+    let elem = LayoutElement::StackLayout(stack);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    if !elems.contains(entity) {
+        elems.insert(entity, elem).unwrap();
+        Ok(Value::Bool(true))
+    } else {
+        Ok(Value::Bool(false))
+    }
+}
+
+fn set_stack_orientation(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    let t:u32 = arr[1].as_u64().unwrap() as u32;
+    match elems.get_mut(entity) {
+        Some(LayoutElement::StackLayout(stack)) => {
+            stack.orientation = Orientation::from(t);
+        },
+        _ => ()
+    }
+    Ok(Value::Null)
+}
+
+fn set_stack_spacing(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    let spacing:f32 = arr[1].as_f64().unwrap() as f32;
+    match elems.get_mut(entity) {
+        Some(LayoutElement::StackLayout(stack)) => {
+            stack.spacing = spacing;
+        },
+        _ => ()
+    }
+    Ok(Value::Null)
+}
+
+fn add_grid_layout(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let grid = Grid::default();
+    let elem = LayoutElement::GridLayout(grid);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    if !elems.contains(entity) {
+        elems.insert(entity, elem).unwrap();
+        Ok(Value::Bool(true))
+    } else {
+        Ok(Value::Bool(false))
+    }
+}
+
+fn add_grid_row(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    let t:u64 = arr[1].as_u64().unwrap();
+    let num:f32 = arr[2].as_f64().unwrap() as f32;
+    match elems.get_mut(entity) {
+        Some(LayoutElement::GridLayout(grid)) => {
+            if t == 0 {
+                grid.rows.push(LNumber::Const(num));
+            } else {
+                grid.rows.push(LNumber::Rate(num));
+            }
+        },
+        _ => ()
+    }
+    Ok(Value::Null)
+}
+
+fn add_grid_col(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    let t:u64 = arr[1].as_u64().unwrap();
+    let num:f32 = arr[2].as_f64().unwrap() as f32;
+    match elems.get_mut(entity) {
+        Some(LayoutElement::GridLayout(grid)) => {
+            if t == 0 {
+                grid.cols.push(LNumber::Const(num));
+            } else {
+                grid.cols.push(LNumber::Rate(num));
+            }
+        },
+        _ => ()
+    }
+    Ok(Value::Null)
+}
 
 fn opt_rect_attr_ref(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Rect2D,bytes:&mut [u8])) -> Result<Value, AnyError> {
     let world = get_mut_world();

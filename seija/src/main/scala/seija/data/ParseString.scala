@@ -1,6 +1,6 @@
 package seija.data
 class ParseString(var string:String) {
-    var chars:Array[Char] = string.toCharArray()
+    var chars:Array[Char] = string.toCharArray
     var curIndex:Int = -1
 
     def moveNext():Unit = {

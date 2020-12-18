@@ -29,8 +29,8 @@ class ListView extends Control {
        this.setLispParam[js.Array[Any]]("dataSource",params,Some(js.Array()))
     }
 
-    override def setTemplates(tmpls: Dictionary[XmlNode]): Unit = {
-       this.itemTemplate = tmpls.get("ItemTemplate")
+    override def setTemplates(temples: Dictionary[XmlNode]): Unit = {
+       this.itemTemplate = temples.get("ItemTemplate")
     }
 
     override def init(): Unit = {
@@ -70,7 +70,7 @@ class ListView extends Control {
        evData.head.castKeyword() match {
           case ":Delete" =>
             val deleteIndex = evData(1).caseInt()
-            this.Items.remove(deleteIndex).destory()
+            this.Items.remove(deleteIndex).destroy()
             this.testLayout()
           case ":Add" =>
             val addItem = evData(1).toValue[Any]

@@ -21,7 +21,7 @@ class CheckBox extends Control {
     this.setParam[Vector3]("position",params,Some(Vector3.zero))
   }
 
-  override def handleEvent(evKey:String,evData:js.Array[SExpr]) = {
+  override def handleEvent(evKey:String,evData:js.Array[SExpr]): Unit = {
     evKey match {
       case ":ClickCheck" =>
         if(this.enable) {

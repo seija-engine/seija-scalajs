@@ -176,6 +176,24 @@ object Foreign {
     Deno.core.jsonOpSync("addEventNode",js.Array(entity)).asInstanceOf[Boolean]
   def regEventNodeEvent(entity:Int,evType:Int,isCapture:Boolean): Boolean =
     Deno.core.jsonOpSync("addEventNode",js.Array(entity,evType,isCapture)).asInstanceOf[Boolean]
+
+  def addLayoutView(entity: Int):Boolean =
+    Deno.core.jsonOpSync("addLayoutView",entity).asInstanceOf[Boolean]
+
+  def setLayoutMargin(entity: Int,l:Float,t:Float,r:Float,b:Float):Unit =
+    Deno.core.jsonOpSync("setLayoutMargin",js.Array(entity,l,t,r,b))
+  
+  def setLayoutPadding(entity:Int,l:Float,t:Float,r:Float,b:Float):Unit = 
+   Deno.core.jsonOpSync("setLayoutPadding",js.Array(entity,l,t,r,b))
+
+  def setLayoutHor(entity: Int,typ:Int):Unit =
+    Deno.core.jsonOpSync("setLayoutHor",js.Array(entity,typ))
+
+  def setLayoutVer(entity: Int,typ:Int):Unit =
+    Deno.core.jsonOpSync("setLayoutVer",js.Array(entity,typ))
+
+  def setLayoutSize(entity: Int,w:Float,h:Float): Unit =
+    Deno.core.jsonOpSync("setLayoutSize",js.Array(entity,w,h))
 }
 
 @js.native
