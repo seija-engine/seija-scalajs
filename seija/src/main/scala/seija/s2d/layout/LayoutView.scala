@@ -1,6 +1,6 @@
 package seija.s2d.layout
 import seija.core.{BaseComponent, Component, Entity, Foreign}
-import seija.math.Vector2
+import seija.math.{Vector2, Vector3}
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
 
 
@@ -10,6 +10,7 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
   protected var _hor:LayoutAlignment = LayoutAlignment.Fill
   protected var _ver:LayoutAlignment = LayoutAlignment.Fill
   protected var _size:Vector2 = Vector2.default()
+  protected var _position:Vector3 = Vector3.default()
 
   def margin():Thickness = _margin
   def setMargin(margin:Thickness):Unit = {
@@ -41,11 +42,18 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
     updateSize()
   }
 
-  def updateMargin():Unit = Foreign.setLayoutMargin(entity.id,_margin.left,_margin.top,_margin.right,_margin.bottom)
-  def updatePadding():Unit = Foreign.setLayoutPadding(entity.id,_padding.left,_padding.top,_padding.right,_padding.bottom)
-  def updateHor():Unit = Foreign.setLayoutHor(entity.id,_hor.id)
-  def updateVer():Unit = Foreign.setLayoutVer(entity.id,_ver.id)
-  def updateSize():Unit = Foreign.setLayoutSize(entity.id,_size.x,_size.y)
+  def position:Vector3 = _position
+  def setPosition(pos:Vector3):Unit = {
+    _position = pos
+    updatePosition()
+  }
+
+  protected def updateMargin():Unit = Foreign.setLayoutMargin(entity.id,_margin.left,_margin.top,_margin.right,_margin.bottom)
+  protected def updatePadding():Unit = Foreign.setLayoutPadding(entity.id,_padding.left,_padding.top,_padding.right,_padding.bottom)
+  protected def updateHor():Unit = Foreign.setLayoutHor(entity.id,_hor.id)
+  protected def updateVer():Unit = Foreign.setLayoutVer(entity.id,_ver.id)
+  protected def updateSize():Unit = Foreign.setLayoutSize(entity.id,_size.x,_size.y)
+  protected def updatePosition():Unit = Foreign.setLayoutPosition(entity.id,_position.x,_position.y,_position.z)
 }
 
 
@@ -57,4 +65,5 @@ object LayoutView {
       new LayoutView(e)
     }
   }
+
 }

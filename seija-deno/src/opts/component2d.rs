@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
 use serde_json::Value;
-use seija::{math::Vector2, specs::{Entity, World, WorldExt, WriteStorage}};
+use seija::{math::{Vector2,Vector3}, s2d::layout::GridCell, specs::{Entity, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
@@ -51,12 +51,15 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"setLayoutHor", set_layout_hor);
     reg_json_op_sync(rt,"setLayoutVer", set_layout_ver);
     reg_json_op_sync(rt,"setLayoutSize", set_layout_size);
+    reg_json_op_sync(rt,"setLayoutPosition", set_layout_position);
     reg_json_op_sync(rt,"addStackLayout",add_stack_layout);
     reg_json_op_sync(rt,"setStackOrientation",set_stack_orientation);
     reg_json_op_sync(rt,"setStackSpacing",set_stack_spacing);
     reg_json_op_sync(rt,"addGridLayout",add_grid_layout);
     reg_json_op_sync(rt,"addGridRow",add_grid_row);
     reg_json_op_sync(rt,"addGridCol",add_grid_col);
+    reg_json_op_sync(rt, "addGridCell", add_grid_cell);
+    reg_json_op_sync(rt, "setGridCell", set_grid_cell);
 }
 
 
@@ -433,7 +436,7 @@ fn set_layout_margin(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resul
     let l = arr[1].as_f64().unwrap();
     let t = arr[2].as_f64().unwrap();
     let r = arr[3].as_f64().unwrap();
-    let b = arr[3].as_f64().unwrap();
+    let b = arr[4].as_f64().unwrap();
     elem.fview_mut(|view| {
         view.margin = Thickness::new(l,t,r,b);
     });
@@ -449,7 +452,7 @@ fn set_layout_padding(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resu
     let l = arr[1].as_f64().unwrap();
     let t = arr[2].as_f64().unwrap();
     let r = arr[3].as_f64().unwrap();
-    let b = arr[3].as_f64().unwrap();
+    let b = arr[4].as_f64().unwrap();
     elem.fview_mut(|view| {
         view.padding = Thickness::new(l,t,r,b);
     });
@@ -495,6 +498,23 @@ fn set_layout_size(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<
     });
     Ok(Value::Null)
 }
+
+
+fn set_layout_position(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let x = arr[1].as_f64().unwrap() as f32;
+    let y = arr[2].as_f64().unwrap() as f32;
+    let z = arr[3].as_f64().unwrap() as f32;
+    elem.fview_mut(|view| {
+        view.pos.set(Vector3::new(x,y,z));
+    });
+    Ok(Value::Null)
+}
+
 
 fn add_stack_layout(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
@@ -590,6 +610,38 @@ fn add_grid_col(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Val
             }
         },
         _ => ()
+    }
+    Ok(Value::Null)
+}
+
+fn add_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let cell = GridCell::new(0, 0, 0, 0);
+    let mut cells:WriteStorage<GridCell> = world.write_storage::<GridCell>();
+    if !cells.contains(entity) {
+        cells.insert(entity, cell).unwrap();
+        Ok(Value::Bool(true))
+    } else {
+        Ok(Value::Bool(false))
+    }
+}
+
+
+fn set_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let row = arr[1].as_i64().unwrap() as usize;
+    let col = arr[2].as_i64().unwrap() as usize;
+    let row_span = arr[3].as_f64().unwrap() as usize;
+    let col_span = arr[4].as_f64().unwrap() as usize;
+    let mut cells:WriteStorage<GridCell> = world.write_storage::<GridCell>();
+    if let Some(cell) = cells.get_mut(entity) {
+        cell.row = row;
+        cell.col = col;
+        cell.row_span = row_span;
+        cell.col_span = col_span;
     }
     Ok(Value::Null)
 }

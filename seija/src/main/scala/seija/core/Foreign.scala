@@ -194,6 +194,33 @@ object Foreign {
 
   def setLayoutSize(entity: Int,w:Float,h:Float): Unit =
     Deno.core.jsonOpSync("setLayoutSize",js.Array(entity,w,h))
+
+  def setLayoutPosition(entity: Int,x:Float,y:Float,z:Float): Unit =
+    Deno.core.jsonOpSync("setLayoutPosition",js.Array(entity,x,y,z))
+
+  def addStackLayout(entity: Int):Boolean =
+    Deno.core.jsonOpSync("addStackLayout",entity).asInstanceOf[Boolean]
+
+  def setStackSpacing(entity: Int,f:Float):Unit =
+    Deno.core.jsonOpSync("setStackSpacing",js.Array(entity,f))
+
+  def setStackOrientation(entity: Int,t:Int):Unit =
+    Deno.core.jsonOpSync("setStackOrientation",js.Array(entity,t))
+
+  def addGridLayout(entity: Int):Boolean =
+    Deno.core.jsonOpSync("addGridLayout",entity).asInstanceOf[Boolean]
+
+  def addGridRow(entity: Int,t:Int,number:Float):Unit =
+    Deno.core.jsonOpSync("addGridRow",js.Array(entity,t,number))
+
+  def addGridCol(entity:Int,t:Int,number:Float):Unit =
+    Deno.core.jsonOpSync("addGridCol",js.Array(entity,t,number))
+
+  def addGridCell(entity:Int):Boolean =
+    Deno.core.jsonOpSync("addGridCell",entity).asInstanceOf[Boolean]
+
+  def setGridCell(entity:Int,row:Int,col:Int,rowSpan:Int,colSpan:Int):Unit =
+    Deno.core.jsonOpSync("setGridCell",js.Array(entity,row,col,rowSpan,colSpan))
 }
 
 @js.native

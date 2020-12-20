@@ -50,11 +50,24 @@ class Color(private var _inner:Float32Array) {
 }
 
 object Color {
+    def red:Color = Color.New(1,0,0,1)
+    def green:Color = Color.New(0,1,0,1)
+    def blue:Color = Color.New(0,0,1,1)
+
+    def mblue:Color = Color.NewInt(27,161,226,255)
+    def bron:Color = Color.NewInt(160,80,0,255)
+    def silver:Color = Color.NewInt(192,192,192,255)
+
+
     def New(r:Float,g:Float,b:Float,a:Float,callback:Option[() => Unit] = None):Color = {
        var color = new Color(Float32Array.from(js.Array(r,g,b,a)))
        color.callBack = callback
        color
     }
+
+   def NewInt(r:Int,g:Int,b:Int,a:Int,callback:Option[() => Unit] =None):Color = {
+     Color.New(r/255f,r/255f,b/255f,a/255f,callback)
+   }
 
    def NewCB(r:Float,g:Float,b:Float,a:Float,f:() => Unit):Color = {
        var color = new Color(Float32Array.from(js.Array(r,g,b,a)))

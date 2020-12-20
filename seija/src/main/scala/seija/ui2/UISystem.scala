@@ -1,15 +1,17 @@
 package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
-import seija.data.{Read, SBool, SContent, SExpr, SExprInterp, SFloat, SFunc, SInt, SKeyword, SList, SNFunc, SNil, SObject, SString, SSymbol, SUserData, SVector, Xml, XmlNode}
+import seija.data._
 import seija.math.Vector2
-import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl}
+import seija.ui2.controls.{CheckBox, ImageControl, Panel,StackLayout, SpriteControl}
 
 import scalajs.js
 import seija.ui2.controls.ListView
+
 import scala.collection.immutable.HashMap
 import seija.ui2.controls.LabelControl
 import seija.data.DynObject
+import seija.s2d.layout.StackLayout
 
 trait UIComponent {
   def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
@@ -31,6 +33,7 @@ object UISystem {
     this.registerControl("Panel",() => new Panel)
     this.registerControl("ListView",() => new ListView)
     this.registerControl("LabelControl",() => new LabelControl)
+    this.registerControl("StackLayout",() => new StackLayout)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -40,6 +43,7 @@ object UISystem {
     this.registerComp("SpriteRender",new SpriteRenderUIComp)
     this.registerComp("EventBoard",new EventBoardUIComp)
     this.registerComp("TextRender",new TextRenderUIComp)
+    this.registerComp("LayoutView",new LayoutViewUIComp)
 
 
     val content = new SContent(Some(SExprInterp.rootContent))

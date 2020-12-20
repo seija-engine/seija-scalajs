@@ -9,6 +9,9 @@ import seija.s2d.assets.{Image, SpriteSheet}
 import seija.data.CoreRead._
 import seija.s2d.TextRender
 import seija.s2d.assets.Font
+import seija.s2d.layout.LayoutAlignment.LayoutAlignment
+import seija.s2d.layout.Orientation.Orientation
+import seija.s2d.layout.{LayoutView, StackLayout, Thickness}
 
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
@@ -102,11 +105,30 @@ class TextRenderUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val dic = Utils.getXmlNodeParam(xmlNode)
     val textRender = entity.addComponent[TextRender]()
-    UIComponent.initParam[String]("text",dic,sText => {
-      println("set SText:"+sText)
-      textRender.setText(sText)
-    },tmpl.control.sContent)
+    UIComponent.initParam[String]("text",dic,sText =>textRender.setText(sText),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,textRender.color = _,tmpl.control.sContent)
     UIComponent.initParam[Int]("font",dic,fontID => textRender.setFont(new Font(fontID)) ,tmpl.control.sContent)
+  }
+}
+
+class LayoutViewUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    val layoutView = entity.addComponent[LayoutView]()
+    UIComponent.initParam[LayoutAlignment]("hor",dic, hor => layoutView.setHor(hor),tmpl.control.sContent)
+    UIComponent.initParam[LayoutAlignment]("ver",dic,ver => layoutView.setVer(ver),tmpl.control.sContent)
+    UIComponent.initParam[Vector2]("size",dic,s => layoutView.setSize(s),tmpl.control.sContent)
+    UIComponent.initParam[Vector3]("position",dic,s => layoutView.setPosition(s),tmpl.control.sContent)
+    UIComponent.initParam[Thickness]("margin",dic,t => layoutView.setMargin(t),tmpl.control.sContent)
+    UIComponent.initParam[Thickness]("padding",dic,t => layoutView.setPadding(t),tmpl.control.sContent)
+  }
+}
+
+class StackLayoutUIComp extends LayoutViewUIComp {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlNodeParam(xmlNode)
+    val stackLayout = entity.addComponent[StackLayout]()
+    UIComponent.initParam[Float]("spacing",dic,s => stackLayout.setSpacing(s),tmpl.control.sContent)
+    UIComponent.initParam[Orientation]("orientation",dic,o => stackLayout.setOrientation(o),tmpl.control.sContent)
   }
 }
