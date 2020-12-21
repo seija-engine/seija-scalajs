@@ -2,22 +2,19 @@ package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
-import seija.math.Vector2
-import seija.ui2.controls.{CheckBox, ImageControl, Panel,StackLayout, SpriteControl}
+import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl, StackLayout}
 
 import scalajs.js
 import seija.ui2.controls.ListView
-
-import scala.collection.immutable.HashMap
 import seija.ui2.controls.LabelControl
 import seija.data.DynObject
-import seija.s2d.layout.StackLayout
+import slogging.LazyLogging
 
 trait UIComponent {
   def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
 }
 
-object UISystem {
+object UISystem extends LazyLogging {
   def cContent:Option[SContent] = controlContent
   var rootPath:String = ""
   private val controlCreators:js.Dictionary[() => Control] = js.Dictionary()
@@ -44,7 +41,7 @@ object UISystem {
     this.registerComp("EventBoard",new EventBoardUIComp)
     this.registerComp("TextRender",new TextRenderUIComp)
     this.registerComp("LayoutView",new LayoutViewUIComp)
-
+    this.registerComp("StackLayout", new StackLayoutUIComp)
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -62,7 +59,7 @@ object UISystem {
                          childNodes:js.Array[XmlNode] = js.Array(),
                          dataContent:Option[Any] = None):Either[String, Control] = {
     val filePath = rootPath + path
-    //println("load xml:" + filePath)
+    logger.trace("UISystem create:" + filePath)
     val createByXmlNode:(XmlNode,()=>Control) => Either[String,Control] = (xmlNode,createF) => {
       if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
         return Left("need children")

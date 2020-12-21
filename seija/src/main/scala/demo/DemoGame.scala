@@ -11,10 +11,19 @@ import seija.s2d.layout.{GridCell, GridLayout, LRate, LayoutAlignment, LayoutVie
 import seija.ui2.{Control, UISystem}
 import seija.ui2.EventBoard
 import seija.ui2.EventBoardComponent
+import slogging.{ConsoleLoggerFactory, LazyLogging, LogLevel, LoggerConfig, PrintLoggerFactory, StrictLogging}
 
-class DemoGame extends IGame {
+
+
+class DemoGame extends LazyLogging with IGame {
   override def onStart(): Unit = {
-    TestUI.loadLayout()
+
+
+    assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
+    UISystem.rootPath = "src/Resource/UI"
+    UISystem.initCore()
+    TestUI.loadUILayout()
+
 
   }
 

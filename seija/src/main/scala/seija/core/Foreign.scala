@@ -13,6 +13,12 @@ object Foreign {
     console.log = (v:js.Any) => {
       Deno.core.print(v.toString +"\n")
     }
+    console.error = (v:js.Any) => {
+      Deno.core.print(v.toString +"\n",1)
+    }
+    console.warn = (v:js.Any) => {
+      Deno.core.print(v.toString +"\n")
+    }
     Deno.core.ops();
   }
 
@@ -226,7 +232,9 @@ object Foreign {
 @js.native
 @JSGlobal
 object console extends js.Object {
-  var log:js.Any = js.native;
+  var log:js.Any = js.native
+  var error:js.Any = js.native
+  var warn:js.Any = js.native
 }
 
 @js.native
@@ -237,7 +245,7 @@ object Deno extends js.Object {
 
 @js.native
 trait DenoCore extends js.Object {
-  def print(v:js.Any):Unit
+  def print(v:js.Any*):Unit
   def ops():Unit
   def jsonOpSync(name:String,value:js.Any = null,buffer:js.Any = js.native):js.Any
 }

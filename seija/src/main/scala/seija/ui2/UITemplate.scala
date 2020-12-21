@@ -4,8 +4,9 @@ import seija.core.Entity
 import seija.data.XmlNode
 import seija.math.Vector2
 import seija.data.XmlExt.RichXmlNode
+import slogging.LazyLogging
 
-class UITemplate(val xmlNode: XmlNode,val control: Control) {
+class UITemplate(val xmlNode: XmlNode,val control: Control) extends LazyLogging {
   def create():Either[String,Entity]  = {
     if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
       return Left("template need children")
@@ -30,7 +31,10 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
           case "Components" =>
             node.children.foreach(arr => {
               for(compNode <- arr) {
-                 UISystem.getUIComp(compNode.tag).foreach(_.attach(newEntity,compNode,this))
+                UISystem.getUIComp(compNode.tag) match {
+                  case Some(value) => value.attach(newEntity,compNode,this)
+                  case None => logger.error(s"not found ${compNode.tag} UIComponent")
+                }
               }
             })
           case _ =>
@@ -47,7 +51,7 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) {
     val pathHead = if(arrName.length > 0) {
       val nsPath = this.control.nsDic.get(arrName(0))
       if(nsPath.isEmpty) {
-        throw new Exception(s"not found ns path: ${arrName(0)}")
+       logger.error(s"not found ns path: ${arrName(0)}")
       }
       nsPath.get
     } else ""

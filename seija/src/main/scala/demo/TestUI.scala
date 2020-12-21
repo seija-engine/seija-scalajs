@@ -13,6 +13,8 @@ import seija.ui2.{Control, UISystem}
 import seija.ui2.EventBoard
 import seija.ui2.EventBoardComponent
 
+import scala.scalajs.js
+
 object TestUI {
   def load():Unit = {
 
@@ -112,5 +114,23 @@ object TestUI {
     r.color = c.getOrElse(Color.New(1,1,1,1))
     img1.setParent(Some(parent))
     img1
+  }
+
+  def loadUILayout():Unit = {
+    val colorTex = Loader.loadSync[Image]("white.png").toOption.get
+    UISystem.env.put("res",js.Dictionary("white"-> colorTex.id))
+
+    val root = Entity.New()
+    root.addComponent[Transform]()
+    root.addComponent[CABEventRoot]()
+    val rect2d = root.addComponent[Rect2D]()
+    rect2d.size.set(1024,768)
+
+    val layoutPanel = UISystem.create("/Layout.xml")
+    layoutPanel match {
+      case Left(value) => println(value)
+      case Right(value) => value.entity.get.setParent(Some(root))
+    }
+
   }
 }

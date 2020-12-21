@@ -10,8 +10,8 @@ class TestModel extends IBehavior {
    var itemList:js.Array[TDemoItem] = js.Array()
 
    def init() {
-       DynObject.registerClass[TestModel]()
-       DynObject.registerClass[TDemoItem]()
+       //DynObject.registerClass[TestModel]()
+       //DynObject.registerClass[TDemoItem]()
        this.itemList.push(TDemoItem(1200,"DDDD",15))
        this.itemList.push(TDemoItem(1201,"Gold",20))
    }

@@ -1,16 +1,9 @@
 <Panel xmlns:core="/core/">
-    <Grid>
-      <Param.Rows>
-          <RowRate value="1"/>
-      </Param.Rows>>
-      <Param.Cols>
-          <ColConst value="300" />
-          <ColRate  value="1" />
-      </Param.Cols>
-      
-       <core:Sprite  />
-       
-       <core:StackPanel >
-       </core:StackPanel>
-    </Grid>
+    <Template>
+        <core:StackLayout ori="Ver">
+            <core:Image hieght="30" texture="(env res.white)" color="(const color-red)" />
+            <core:Image hieght="30" texture="(env res.white)" color="(const color-greed)" />
+            <core:Image hieght="30" texture="(env res.white)" color="(const color-blue)" />
+        </core:StackLayout>
+    </Template>
 </Panel>

@@ -1,0 +1,16 @@
+<StackLayout>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D />
+                <StackLayout margin="(attr-bind :margin)"
+                             padding="(attr-bind :margin)" 
+                             hor="(attr-bind :hor)" 
+                             ver="(attr-bind :ver)" />
+
+                <ImageRender texture ="(env res.white)" color="(const color.red)" />
+            </Components>
+        </Entity>
+    </Template>
+</StackLayout>
