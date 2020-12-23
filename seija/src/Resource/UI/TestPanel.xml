@@ -10,7 +10,7 @@
             <core:Sprite OnClick="#(emit :AddItem 'Q')"
                          size="260,176" scale="0.2,0.2,1" position="0,55,0" sheet="(env paperSheet)" spriteName="BlueButton" />
             <c:MyList position="0,-30,0" size="1024,768" eventRecv=":UpdateItem" dataSource="(ctx-data data.itemList)">
-                <ItemTemplate>
+                <Param.ItemTemplate>
                     <Entity>
                         <Components>
                             <Transform />
@@ -24,7 +24,7 @@
                         <core:Label size="20,30" position="-40,0,0" text="(str (ctx-data data.itemName))" />
 
                     </Entity>
-                </ItemTemplate>
+                </Param.ItemTemplate>
             </c:MyList>
             
         </Entity>

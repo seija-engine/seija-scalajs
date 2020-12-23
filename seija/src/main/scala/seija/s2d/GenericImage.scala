@@ -1,13 +1,14 @@
 package seija.s2d
 
-import seija.data.Color;
-trait GenericImage[T] {
-    var _color:Color = Color.NewCB(1f,1f,1f,1f,colorToRust);
+import seija.data.Color
+import slogging.LazyLogging;
+trait GenericImage[T] extends LazyLogging {
+    var _color:Color = Color.NewCB(1f,1f,1f,1f,() => colorToRust());
     var _imageType:ImageType = ImageSimple
     
     def color_= (v:Color): Unit = {
         _color = v
-        _color.setCallback(colorToRust)
+        _color.setCallback(() => this.colorToRust())
         this.colorToRust()
     }
 
@@ -21,6 +22,6 @@ trait GenericImage[T] {
 
     def setFilledValue(v:Float) :Unit = {}
 
-    def colorToRust():Unit
-    def colorFromRust():Unit
+    def colorToRust():Unit = {}
+    def colorFromRust():Unit = {}
 }

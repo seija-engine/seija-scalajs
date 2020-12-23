@@ -2,15 +2,18 @@
     <Template>
         <Entity>
             <Components>
-                <Transform />
+                <Transform position="0,0,-10" />
                 <Rect2D />
                 <StackLayout margin="(attr-bind :margin)"
-                             padding="(attr-bind :margin)" 
-                             hor="(attr-bind :hor)" 
-                             ver="(attr-bind :ver)" />
-
-                <ImageRender texture ="(env res.white)" color="(const color.red)" />
+                             padding="(attr-bind :padding)"
+                             hor="(attr-bind :hor)"
+                             ver="(attr-bind :ver)"
+                             orientation="(attr-bind :orientation)"
+                />
+                <ImageRender texture="(env res.white)" color="#999999" />
+                <Transparent />
             </Components>
+            <Slot.Children />
         </Entity>
     </Template>
 </StackLayout>

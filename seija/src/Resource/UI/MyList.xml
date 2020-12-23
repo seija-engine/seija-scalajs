@@ -5,7 +5,7 @@
                 <Transform  position="(attr-bind :position)" />
                 <Rect2D size="(attr-bind :size)" />
             </Components>
+            <Slot.Children />
         </Entity>
-        
     </Template>
 </ListView>

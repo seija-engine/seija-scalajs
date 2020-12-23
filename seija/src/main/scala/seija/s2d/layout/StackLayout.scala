@@ -2,6 +2,7 @@ package seija.s2d.layout
 
 import seija.core.{BaseComponent, Component, Entity, Foreign}
 import seija.s2d.layout.Orientation.Orientation
+import slogging.LazyLogging
 
 class StackLayout(override val entity:Entity) extends LayoutView(entity) {
   protected var _spacing:Float = 0
@@ -20,7 +21,7 @@ class StackLayout(override val entity:Entity) extends LayoutView(entity) {
   }
 }
 
-object StackLayout {
+object StackLayout extends LazyLogging {
   implicit val layoutViewComp: Component[StackLayout] = new Component[StackLayout] {
     override val key: String = "StackLayout"
     override def addToEntity(e: Entity): StackLayout = {

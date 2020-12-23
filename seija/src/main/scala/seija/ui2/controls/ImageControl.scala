@@ -10,7 +10,7 @@ import scala.scalajs.js.Dictionary
 
 class ImageControl extends Control {
   override def setParams(params: Dictionary[String]): Unit = {
-    this.setParam[Vector3]("position",params,Some(Vector3.zero))
+    PropertySet.setLayout(this,params)
     this.setParam[Vector3]("scale",params,Some(Vector3.one))
     this.setParam[Vector3]("rotation",params,Some(Vector3.zero))
     this.setParam[Vector2]("size",params,Some(Vector2.New(100f,100f)))
@@ -30,4 +30,6 @@ class ImageControl extends Control {
       case _ => ()
     }
   }
+
+
 }

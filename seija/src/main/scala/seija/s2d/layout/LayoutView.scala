@@ -39,6 +39,7 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
   def size:Vector2 = _size
   def setSize(size:Vector2):Unit = {
     _size = size
+    println(s"setSize ${_size}");
     updateSize()
   }
 

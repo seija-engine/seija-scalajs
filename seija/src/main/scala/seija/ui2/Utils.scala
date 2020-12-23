@@ -6,7 +6,7 @@ import scala.scalajs.js
 
 object Utils {
   def parseParam(string: String):Either[String,SExpr] = {
-    if(string.length  == 0) {
+    if(string.isEmpty) {
       return Left("")
     }
     if(string.head == '(' || string.startsWith("#(")) {
@@ -21,7 +21,23 @@ object Utils {
     }
   }
 
-  def getXmlNodeParam(xmlNode:XmlNode):js.Dictionary[String] = {
+  def getXmlNodeParam(xmlNode:XmlNode):(js.Dictionary[String],js.Dictionary[XmlNode]) = {
+    val tmpls:js.Dictionary[XmlNode] = js.Dictionary()
+    if(xmlNode.children.isDefined) {
+      for(item <- xmlNode.children.get) {
+        if(item.tag.startsWith("Param.")) {
+          if(item.tag.endsWith("Template")) {
+            tmpls.put(item.tag.substring("Param.".length),item)
+          } else {
+            xmlNode.attrs.put(item.tag.drop(6),item.text.getOrElse(""))
+          }
+        }
+      }
+    }
+    (xmlNode.attrs,tmpls)
+  }
+
+  def getXmlStringParam(xmlNode: XmlNode):js.Dictionary[String] = {
     if(xmlNode.children.isDefined) {
       for(item <- xmlNode.children.get) {
         if(item.tag.startsWith("Param.")) {

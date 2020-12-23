@@ -129,7 +129,7 @@ object TestUI {
     val layoutPanel = UISystem.create("/Layout.xml")
     layoutPanel match {
       case Left(value) => println(value)
-      case Right(value) => value.entity.get.setParent(Some(root))
+      case Right(value) => //value.entity.get.setParent(Some(root))
     }
 
   }

@@ -17,6 +17,7 @@ trait UIComponent {
 object UISystem extends LazyLogging {
   def cContent:Option[SContent] = controlContent
   var rootPath:String = ""
+  val cacheXml:js.Dictionary[XmlNode] = js.Dictionary()
   private val controlCreators:js.Dictionary[() => Control] = js.Dictionary()
   private val comps:js.Dictionary[UIComponent] = js.Dictionary()
   private var controlContent:Option[SContent] = None
@@ -54,9 +55,18 @@ object UISystem extends LazyLogging {
     content.set("ctx-data",SNFunc(UISystemSFunc.dataF))
   }
 
+  def getXml(path:String):Either[String,XmlNode] = {
+    if(this.cacheXml.contains(path)) {
+      return Right(this.cacheXml(path))
+    }
+    val eNode = Xml.fromFile(path);
+    eNode.foreach(this.cacheXml.put(path,_))
+    eNode
+  }
+
   def create(path:String,args:js.Dictionary[String] = js.Dictionary(),
                          parent:Option[Control] = None,
-                         childNodes:js.Array[XmlNode] = js.Array(),
+                         tmpls:js.Dictionary[XmlNode] = js.Dictionary(),
                          dataContent:Option[Any] = None):Either[String, Control] = {
     val filePath = rootPath + path
     logger.trace("UISystem create:" + filePath)
@@ -77,13 +87,10 @@ object UISystem extends LazyLogging {
           control.template = Some(new UITemplate(node,control))
         }
       }
-      val tmplDic = childNodes.filter(_.tag.endsWith("Template")).foldLeft[js.Dictionary[XmlNode]](js.Dictionary())((d,x) => {
-        d.put(x.tag,x)
-        d
-      })
+
       control.dataContent = dataContent
       control.setParams(args)
-      control.setTemplates(tmplDic)
+      control.setTemplates(tmpls)
       control.init()
       
       control.OnEnter()
@@ -91,7 +98,7 @@ object UISystem extends LazyLogging {
     }
     
     for {
-      xmlNode <- Xml.fromFile(filePath)
+      xmlNode <- getXml(filePath)
       createFn <- this.controlCreators.get(xmlNode.tag).toRight(s"not found control creator ${xmlNode.tag}")
       control <- createByXmlNode(xmlNode,createFn)
     } yield control
@@ -228,6 +235,7 @@ object UISystemSFunc {
 object UIComponent {
   val cacheContent:SContent = new SContent()
   def initParam[T](name:String,dic:js.Dictionary[String],setFunc:(T) => Unit,content: SContent)(implicit readT:Read[T]):Unit = {
+
     dic.get(name).map(Utils.parseParam).foreach {
       case Left(value) =>
         readT.read(value).foreach(setFunc)
@@ -236,7 +244,9 @@ object UIComponent {
         cacheContent.parent = Some(content)
         cacheContent.set("setFunc",SUserData(setFunc))
         SExprInterp.eval(expr, Some(cacheContent)) match {
-          case SUserData(value) => setFunc(value.asInstanceOf[T])
+          case SUserData(value) =>
+
+            setFunc(value.asInstanceOf[T])
           case _ => ()
         }
     }

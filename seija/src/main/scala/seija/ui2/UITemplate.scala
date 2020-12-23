@@ -6,7 +6,7 @@ import seija.math.Vector2
 import seija.data.XmlExt.RichXmlNode
 import slogging.LazyLogging
 
-class UITemplate(val xmlNode: XmlNode,val control: Control) extends LazyLogging {
+class UITemplate(val xmlNode: XmlNode,val control: Control,val slots:js.Dictionary[Entity] = js.Dictionary()) extends LazyLogging {
   def create():Either[String,Entity]  = {
     if(xmlNode.children.isEmpty || xmlNode.children.get.length == 0) {
       return Left("template need children")
@@ -37,6 +37,8 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) extends LazyLogging 
                 }
               }
             })
+          case str if str.startsWith("Slot.") =>
+            this.slots.put(str.substring("Slot".length),newEntity)
           case _ =>
             this.parse(node,Some(newEntity)).left.foreach(println)
         }
@@ -45,25 +47,41 @@ class UITemplate(val xmlNode: XmlNode,val control: Control) extends LazyLogging 
     
     Right(newEntity)
   }
-
-  def parseControl(xmlNode: XmlNode,parent:Option[Entity]):Either[String,Entity] = {
+  def getFullPath(xmlNode: XmlNode): String = {
     val arrName = xmlNode.tag.split(':')
     val pathHead = if(arrName.length > 0) {
       val nsPath = this.control.nsDic.get(arrName(0))
       if(nsPath.isEmpty) {
-       logger.error(s"not found ns path: ${arrName(0)}")
+        logger.error(s"not found ns path: ${arrName(0)}")
       }
       nsPath.get
     } else ""
-    val controlPath = pathHead + arrName(1) + ".xml"
-    val dic = Utils.getXmlNodeParam(xmlNode)
-    val children = xmlNode.children.getOrElse(js.Array())
-    val newControl = UISystem.create(controlPath,dic,Some(this.control),children)
+    pathHead + arrName(1) + ".xml"
+  }
+
+  def parseControl(xmlNode: XmlNode,parent:Option[Entity]):Either[String,Entity] = {
+    val controlPath = getFullPath(xmlNode)
+    val (dic,tmpls) = Utils.getXmlNodeParam(xmlNode)
+    val newControl = UISystem.create(controlPath,dic,Some(this.control),tmpls)
+    var newEntity:Option[Entity] = None
+    var mainTemplate:Option[UITemplate] = None
     newControl match {
-      case Left(value) => Left(value)
+      case Left(value) => return Left(value)
       case Right(control) =>
+        newEntity = control.entity
+        mainTemplate = control.template
         control.entity.foreach(_.setParent(parent))
-        Right(control.entity.get)
     }
+    val childrenSlot = mainTemplate.map(_.slots.get("Children"))
+    if(childrenSlot.isEmpty) {
+      return Right(newEntity.get)
+    }
+    for(child <- xmlNode.children.getOrElse(js.Array());if !child.tag.startsWith("Param."); if !child.tag.startsWith("Slot.")) {
+      this.parse(child,newEntity) match {
+        case Left(errString) => logger.error(errString)
+        case Right(e) => e.setParent(newEntity)
+      }
+    }
+    Right(newEntity.get)
   }
 }

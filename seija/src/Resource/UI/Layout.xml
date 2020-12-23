@@ -1,9 +1,9 @@
 <Panel xmlns:core="/core/">
     <Template>
-        <core:StackLayout ori="Ver">
-            <core:Image hieght="30" texture="(env res.white)" color="(const color-red)" />
-            <core:Image hieght="30" texture="(env res.white)" color="(const color-greed)" />
-            <core:Image hieght="30" texture="(env res.white)" color="(const color-blue)" />
+        <core:StackLayout orientation="Vertical">
+            <core:Image hor="Center" margin="0,0,0,0" width="10" height="20" texture="(env res.white)" color="(const color.red)" />
+            <core:Image hor="Center" margin="0,10,0,0" width="10" height="50" texture="(env res.white)" color="(const color.green)" />
+            <core:Image hor="Center" margin="0,0,0,0" width="10" height="70" texture="(env res.white)" color="(const color.blue)" />
         </core:StackLayout>
     </Template>
 </Panel>

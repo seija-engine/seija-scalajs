@@ -1,0 +1,10 @@
+<Grid>
+    <Template>
+        <Entity>
+            <Components>
+                <GridLayout rows="(attrs :rows)" cols="(attr :cols)" />
+            </Components>
+            <Slot.Children />
+        </Entity>
+    </Template>
+</Grid>

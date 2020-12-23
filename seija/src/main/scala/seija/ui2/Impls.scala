@@ -16,7 +16,7 @@ import seija.s2d.layout.{LayoutView, StackLayout, Thickness}
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
     val trans = entity.addComponent[Transform]()
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     UIComponent.initParam[Vector3]("position",dic,trans.localPosition = _,tmpl.control.sContent);
     UIComponent.initParam[Vector3]("scale",dic,trans.scale = _,tmpl.control.sContent);
     UIComponent.initParam[Vector3]("rotation",dic,trans.rotation = _,tmpl.control.sContent);
@@ -26,7 +26,7 @@ class TransformUIComp extends UIComponent {
 class Rect2DUIComp extends UIComponent {
   override def attach(entity: Entity,xmlNode: XmlNode,tmpl:UITemplate): Unit = {
     val rect2d = entity.addComponent[Rect2D]()
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     UIComponent.initParam[Vector2]("size",dic,rect2d.size = _,tmpl.control.sContent)
     UIComponent.initParam[Vector2]("anchor",dic,rect2d.anchor = _,tmpl.control.sContent)
   }
@@ -35,7 +35,7 @@ class Rect2DUIComp extends UIComponent {
 class ImageRenderUIComp extends UIComponent {
   override def attach(entity: Entity,xmlNode: XmlNode,tmpl:UITemplate): Unit = {
     val image = entity.addComponent[ImageRender]()
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     UIComponent.initParam[Int]("texture",dic,tex => image.setTexture(new Image(tex)),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,image.color = _,tmpl.control.sContent)
   }
@@ -44,7 +44,7 @@ class ImageRenderUIComp extends UIComponent {
 class SpriteRenderUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val sprite = entity.addComponent[SpriteRender]()
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     UIComponent.initParam[String]("spriteName",dic,sName => sprite.setSpriteName(sName),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,sprite.color = _,tmpl.control.sContent)
     UIComponent.initParam[Int]("sheet",dic,sheet => sprite.setSpriteSheet(new SpriteSheet(sheet)),tmpl.control.sContent)
@@ -60,7 +60,7 @@ class TransparentUIComp extends UIComponent {
 class EventNodeUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val eventNode = entity.addComponent[EventNode]()
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
 
     for((k,v) <- dic) {
       val (head,tail) = k.splitAt(2)
@@ -94,7 +94,7 @@ class EventNodeUIComp extends UIComponent {
 
 class EventBoardUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     val eventBoard = entity.addComponent[EventBoardComponent]()
     eventBoard.initBoard(dic.get("name").getOrElse(""))
     tmpl.control.eventBoard = eventBoard.eventBoard
@@ -103,7 +103,7 @@ class EventBoardUIComp extends UIComponent {
 
 class TextRenderUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     val textRender = entity.addComponent[TextRender]()
     UIComponent.initParam[String]("text",dic,sText =>textRender.setText(sText),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,textRender.color = _,tmpl.control.sContent)
@@ -113,11 +113,14 @@ class TextRenderUIComp extends UIComponent {
 
 class LayoutViewUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     val layoutView = entity.addComponent[LayoutView]()
     UIComponent.initParam[LayoutAlignment]("hor",dic, hor => layoutView.setHor(hor),tmpl.control.sContent)
     UIComponent.initParam[LayoutAlignment]("ver",dic,ver => layoutView.setVer(ver),tmpl.control.sContent)
-    UIComponent.initParam[Vector2]("size",dic,s => layoutView.setSize(s),tmpl.control.sContent)
+    UIComponent.initParam[Vector2]("size",dic,s => {
+
+      layoutView.setSize(s)
+    },tmpl.control.sContent)
     UIComponent.initParam[Vector3]("position",dic,s => layoutView.setPosition(s),tmpl.control.sContent)
     UIComponent.initParam[Thickness]("margin",dic,t => layoutView.setMargin(t),tmpl.control.sContent)
     UIComponent.initParam[Thickness]("padding",dic,t => layoutView.setPadding(t),tmpl.control.sContent)
@@ -126,7 +129,7 @@ class LayoutViewUIComp extends UIComponent {
 
 class StackLayoutUIComp extends LayoutViewUIComp {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    val dic = Utils.getXmlNodeParam(xmlNode)
+    val dic = Utils.getXmlStringParam(xmlNode)
     val stackLayout = entity.addComponent[StackLayout]()
     UIComponent.initParam[Float]("spacing",dic,s => stackLayout.setSpacing(s),tmpl.control.sContent)
     UIComponent.initParam[Orientation]("orientation",dic,o => stackLayout.setOrientation(o),tmpl.control.sContent)

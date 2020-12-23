@@ -1,0 +1,10 @@
+<Panel xmlns:core="/core/">
+    <Template>
+        <core:Grid rows="[(num-rate 3) (num-rate 7)]" cols="[(num-rate 1)]">
+            <core:GridCell rowIndex="0" colIndex="0">
+                <core:Image texture="(env res.white)" color="(const color.red)" />
+            </core:GridCell>
+            <core:Image rowIndex="0" colIndex="0" texture="(env res.white)" color="(const color.red)"  />
+        </core:Grid>
+    </Template>
+</Panel>
