@@ -222,11 +222,25 @@ object Foreign {
   def addGridCol(entity:Int,t:Int,number:Float):Unit =
     Deno.core.jsonOpSync("addGridCol",js.Array(entity,t,number))
 
+  def setGridRows(entity:Int, arrays: js.Array[js.Array[Any]]):Unit =
+    Deno.core.jsonOpSync("setGridRows",js.Array(entity,arrays))
+
+  def setGridCols(entity:Int, arrays: js.Array[js.Array[Any]]):Unit = {
+    Deno.core.jsonOpSync("setGridCols",js.Array(entity,arrays))
+  }
+
   def addGridCell(entity:Int):Boolean =
     Deno.core.jsonOpSync("addGridCell",entity).asInstanceOf[Boolean]
 
-  def setGridCell(entity:Int,row:Int,col:Int,rowSpan:Int,colSpan:Int):Unit =
+  def setGridCell(entity:Int,row:Int,col:Int,rowSpan:Int,colSpan:Int):Unit = {
     Deno.core.jsonOpSync("setGridCell",js.Array(entity,row,col,rowSpan,colSpan))
+  }
+
+  def addContentView(entity:Int):Boolean =
+    Deno.core.jsonOpSync("addContentView",entity).asInstanceOf[Boolean]
+
+  def removeContentView(entity:Int):Unit =
+    Deno.core.jsonOpSync("removeContentView",entity)
 }
 
 @js.native

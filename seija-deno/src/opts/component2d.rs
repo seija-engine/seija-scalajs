@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
 use serde_json::Value;
-use seija::{math::{Vector2,Vector3}, s2d::layout::GridCell, specs::{Entity, World, WorldExt, WriteStorage}};
+use seija::{math::{Vector2,Vector3}, s2d::layout::{ContentView, GridCell}, specs::{Entity, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
@@ -58,8 +58,13 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"addGridLayout",add_grid_layout);
     reg_json_op_sync(rt,"addGridRow",add_grid_row);
     reg_json_op_sync(rt,"addGridCol",add_grid_col);
-    reg_json_op_sync(rt, "addGridCell", add_grid_cell);
-    reg_json_op_sync(rt, "setGridCell", set_grid_cell);
+    reg_json_op_sync(rt,"setGridRows",set_grid_rows);
+    reg_json_op_sync(rt,"setGridCols",set_grid_cols);
+    reg_json_op_sync(rt,"addGridCell", add_grid_cell);
+    reg_json_op_sync(rt,"setGridCell", set_grid_cell);
+    reg_json_op_sync(rt,"addContentView",add_context_view);
+    reg_json_op_sync(rt,"removeContentView",remove_context_view);
+    
 }
 
 
@@ -594,6 +599,56 @@ fn add_grid_row(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Val
     Ok(Value::Null)
 }
 
+fn set_grid_rows(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    match elems.get_mut(entity)  {
+        Some(LayoutElement::GridLayout(grid)) => {
+            let rows_arr = arr[1].as_array().unwrap();
+            let mut idx = 0;
+            while idx <= rows_arr.len() {
+               let t = rows_arr[idx].as_u64().unwrap();
+               let num = rows_arr[idx + 1].as_f64().unwrap() as f32;
+               if t == 0 {
+                  grid.rows.push(LNumber::Const(num));
+               } else {
+                  grid.rows.push(LNumber::Const(num));
+               }
+               idx += 2
+            }
+            Ok(Value::Bool(false))
+        }
+        _ =>  Ok(Value::Bool(true))
+    }
+}
+
+fn set_grid_cols(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let arr = value.as_array().unwrap();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    match elems.get_mut(entity)  {
+        Some(LayoutElement::GridLayout(grid)) => {
+            let cols_arr = arr[1].as_array().unwrap();
+            let mut idx = 0;
+            while idx <= cols_arr.len() {
+               let t = cols_arr[idx].as_u64().unwrap();
+               let num = cols_arr[idx + 1].as_f64().unwrap() as f32;
+               if t == 0 {
+                  grid.cols.push(LNumber::Const(num));
+               } else {
+                  grid.cols.push(LNumber::Const(num));
+               }
+               idx += 2
+            }
+            Ok(Value::Bool(false))
+        }
+        _ =>  Ok(Value::Bool(true))
+    }
+}
+
 fn add_grid_col(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let arr = value.as_array().unwrap();
@@ -628,6 +683,7 @@ fn add_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
 }
 
 
+
 fn set_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let world = get_mut_world();
     let arr = value.as_array().unwrap();
@@ -642,6 +698,30 @@ fn set_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         cell.col = col;
         cell.row_span = row_span;
         cell.col_span = col_span;
+    }
+    Ok(Value::Null)
+}
+
+fn add_context_view(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let content_view = ContentView::default();
+    let elem = LayoutElement::ContentView(content_view);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    if !elems.contains(entity) {
+        elems.insert(entity, elem).unwrap();
+        Ok(Value::Bool(true))
+    } else {
+        Ok(Value::Bool(false))
+   }
+}
+
+fn remove_context_view(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let entity = world.entities().entity( value.as_i64().unwrap() as u32);
+    let mut elems:WriteStorage<LayoutElement> = world.write_storage::<LayoutElement>();
+    if elems.contains(entity) {
+        elems.remove(entity).unwrap();
     }
     Ok(Value::Null)
 }

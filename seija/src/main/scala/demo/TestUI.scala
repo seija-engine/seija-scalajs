@@ -126,7 +126,7 @@ object TestUI {
     val rect2d = root.addComponent[Rect2D]()
     rect2d.size.set(1024,768)
 
-    val layoutPanel = UISystem.create("/Layout.xml")
+    val layoutPanel = UISystem.create("/GridLayout.xml")
     layoutPanel match {
       case Left(value) => println(value)
       case Right(value) => //value.entity.get.setParent(Some(root))

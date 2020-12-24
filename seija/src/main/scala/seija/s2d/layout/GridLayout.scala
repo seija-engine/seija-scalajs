@@ -45,9 +45,23 @@ class GridLayout(override val entity:Entity) extends LayoutView(entity) {
     Foreign.addGridRow(this.entity.id,num.typ(),num.value())
   }
 
+  def setRows(rows:js.Array[LNumber]):Unit = {
+    _rows.clear()
+    _rows = rows
+    val arr:js.Array[js.Array[Any]] = cols.map(v => js.Array(v.typ(),v.value()))
+    Foreign.setGridRows(this.entity.id,arr)
+  }
+
   def addCol(num:LNumber):Unit = {
     _cols.push(num);
     Foreign.addGridCol(this.entity.id,num.typ(),num.value())
+  }
+
+  def setCols(cols:js.Array[LNumber]):Unit = {
+    _cols.clear()
+    _cols = cols
+    val arr:js.Array[js.Array[Any]] = cols.map(v => js.Array(v.typ(),v.value()))
+    Foreign.setGridCols(this.entity.id,arr)
   }
 }
 

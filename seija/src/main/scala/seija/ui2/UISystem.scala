@@ -2,12 +2,13 @@ package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
-import seija.ui2.controls.{CheckBox, ImageControl, Panel, SpriteControl, StackLayout}
+import seija.ui2.controls.{CheckBox, Grid, ImageControl, Panel, SpriteControl, StackLayout}
 
 import scalajs.js
 import seija.ui2.controls.ListView
 import seija.ui2.controls.LabelControl
 import seija.data.DynObject
+import seija.s2d.layout.{LConst, LRate}
 import slogging.LazyLogging
 
 trait UIComponent {
@@ -32,6 +33,7 @@ object UISystem extends LazyLogging {
     this.registerControl("ListView",() => new ListView)
     this.registerControl("LabelControl",() => new LabelControl)
     this.registerControl("StackLayout",() => new StackLayout)
+    this.registerControl("Grid", () => new Grid)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -43,6 +45,8 @@ object UISystem extends LazyLogging {
     this.registerComp("TextRender",new TextRenderUIComp)
     this.registerComp("LayoutView",new LayoutViewUIComp)
     this.registerComp("StackLayout", new StackLayoutUIComp)
+    this.registerComp("ContentView",new ContentViewUIComp)
+    this.registerComp("GridLayout",new GridLayoutUIComp)
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -53,6 +57,8 @@ object UISystem extends LazyLogging {
     content.set("env",SNFunc(UISystemSFunc.env))
     content.set("node-ev-bind",SNFunc(UISystemSFunc.nodeEvBind))
     content.set("ctx-data",SNFunc(UISystemSFunc.dataF))
+    content.set("num-rate",SNFunc(UISystemSFunc.numberRate))
+    content.set("num-const",SNFunc(UISystemSFunc.numberConst))
   }
 
   def getXml(path:String):Either[String,XmlNode] = {
@@ -229,13 +235,22 @@ object UISystemSFunc {
     val retValue = DynObject.findValue(dataPath,control.dataContent.get)
     retValue.map(SUserData).getOrElse(SNil)
   }
+
+  def numberRate(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    SUserData(LRate(evalArgs(0).castFloat()))
+  }
+
+  def numberConst(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e, Some(content)))
+    SUserData(LConst(evalArgs(0).castFloat()))
+  }
 }
 
 
-object UIComponent {
+object UIComponent extends LazyLogging {
   val cacheContent:SContent = new SContent()
   def initParam[T](name:String,dic:js.Dictionary[String],setFunc:(T) => Unit,content: SContent)(implicit readT:Read[T]):Unit = {
-
     dic.get(name).map(Utils.parseParam).foreach {
       case Left(value) =>
         readT.read(value).foreach(setFunc)
@@ -245,10 +260,23 @@ object UIComponent {
         cacheContent.set("setFunc",SUserData(setFunc))
         SExprInterp.eval(expr, Some(cacheContent)) match {
           case SUserData(value) =>
-
             setFunc(value.asInstanceOf[T])
           case _ => ()
         }
     }
+  }
+
+  def initLispParam[T](name:String,dic:js.Dictionary[String],setFunc:(T) => Unit,content:SContent):Unit = {
+    dic.get(name).foreach(paramString => {
+      cacheContent.clear()
+      cacheContent.parent = Some(content)
+      cacheContent.set("setFunc",SUserData(setFunc))
+      SExprInterp.evalString(paramString, Some(cacheContent)) match {
+        case Left(errString) => logger.info(errString)
+        case Right(SUserData(value)) =>
+          setFunc(value.asInstanceOf[T])
+        case Right(_) => ()
+      }
+    })
   }
 }

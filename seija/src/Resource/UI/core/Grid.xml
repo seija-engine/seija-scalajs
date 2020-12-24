@@ -2,7 +2,7 @@
     <Template>
         <Entity>
             <Components>
-                <GridLayout rows="(attrs :rows)" cols="(attr :cols)" />
+                <GridLayout rows="(attr :rows)" cols="(attr :cols)" />
             </Components>
             <Slot.Children />
         </Entity>

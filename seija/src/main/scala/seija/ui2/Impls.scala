@@ -1,5 +1,5 @@
 package seija.ui2
-
+import scala.scalajs.js
 import seija.core.event.{EventNode, GameEventType}
 import seija.core.{Entity, Transform}
 import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SNil, SUserData, SVector, XmlNode}
@@ -11,7 +11,7 @@ import seija.s2d.TextRender
 import seija.s2d.assets.Font
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
 import seija.s2d.layout.Orientation.Orientation
-import seija.s2d.layout.{LayoutView, StackLayout, Thickness}
+import seija.s2d.layout.{ContentView, GridLayout, LNumber, LayoutView, StackLayout, Thickness}
 
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
@@ -129,9 +129,22 @@ class LayoutViewUIComp extends UIComponent {
 
 class StackLayoutUIComp extends LayoutViewUIComp {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    super.attach(entity,xmlNode,tmpl)
     val dic = Utils.getXmlStringParam(xmlNode)
     val stackLayout = entity.addComponent[StackLayout]()
     UIComponent.initParam[Float]("spacing",dic,s => stackLayout.setSpacing(s),tmpl.control.sContent)
     UIComponent.initParam[Orientation]("orientation",dic,o => stackLayout.setOrientation(o),tmpl.control.sContent)
+  }
+}
+
+class ContentViewUIComp extends LayoutViewUIComp
+
+class GridLayoutUIComp extends LayoutViewUIComp {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    super.attach(entity, xmlNode, tmpl)
+    val dic = Utils.getXmlStringParam(xmlNode)
+    val gridLayout = entity.addComponent[GridLayout]()
+    UIComponent.initLispParam[js.Array[LNumber]]("rows",dic,rows => gridLayout.setRows(rows),tmpl.control.sContent)
+    UIComponent.initLispParam[js.Array[LNumber]]("cols",dic,cols => gridLayout.setCols(cols),tmpl.control.sContent)
   }
 }
