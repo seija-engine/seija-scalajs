@@ -6,7 +6,7 @@ class ContentView (override val entity:Entity) extends LayoutView(entity) {}
 object ContentView {
   implicit val contentViewComp:Component[ContentView] = new Component[ContentView] {
     override def addToEntity(e: Entity): ContentView = {
-      Foreign.addLayoutView(e.id)
+      Foreign.addContentView(e.id)
       new ContentView(e)
     }
 

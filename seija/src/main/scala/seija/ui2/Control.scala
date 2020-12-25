@@ -100,7 +100,7 @@ class Control extends IBehavior {
             if (readT.read(paramString).map(v => this.property.put(name, v)).isEmpty) {
               println(s"property error ${name}:${paramString}")
             }
-          case Right(expr) => this.setLispParam(name, dic, defValue)
+          case Right(_) => this.setLispParam(name, dic, defValue)
         }
       case None =>
         if (defValue.isDefined) {

@@ -2,6 +2,8 @@ package seija.s2d.layout
 
 import seija.data.Read
 
+import scala.scalajs.js
+
 case class Thickness(val left:Float,val top:Float,val right: Float,val bottom:Float) {
   def this(n:Float) = this(n,n,n,n)
   def this(w:Float,h:Float) = this(w,h,w,h)
@@ -78,4 +80,15 @@ case class LRate(number:Float) extends LNumber {
   override def typ(): Int = 1
 
   override def value(): Float = number
+}
+
+object LNumber {
+  def arrToJs(arr:js.Array[LNumber]):js.Array[Any] = {
+    val retArr:js.Array[Any] = js.Array()
+    for(num <- arr) {
+      retArr.push(num.typ())
+      retArr.push(num.value())
+    }
+    retArr
+  }
 }

@@ -2,11 +2,9 @@ package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
-import seija.ui2.controls.{CheckBox, Grid, ImageControl, Panel, SpriteControl, StackLayout}
+import seija.ui2.controls.{CheckBox, Grid, GridCell, ImageControl, LabelControl, ListView, Panel, SpriteControl, StackLayout}
 
 import scalajs.js
-import seija.ui2.controls.ListView
-import seija.ui2.controls.LabelControl
 import seija.data.DynObject
 import seija.s2d.layout.{LConst, LRate}
 import slogging.LazyLogging
@@ -34,6 +32,7 @@ object UISystem extends LazyLogging {
     this.registerControl("LabelControl",() => new LabelControl)
     this.registerControl("StackLayout",() => new StackLayout)
     this.registerControl("Grid", () => new Grid)
+    this.registerControl("GridCell",() => new GridCell)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -47,6 +46,7 @@ object UISystem extends LazyLogging {
     this.registerComp("StackLayout", new StackLayoutUIComp)
     this.registerComp("ContentView",new ContentViewUIComp)
     this.registerComp("GridLayout",new GridLayoutUIComp)
+    this.registerComp("GridCell",new GridCellUIComp)
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -145,6 +145,7 @@ object UISystemSFunc {
     val attrName = evalArgs(0).asInstanceOf[SKeyword].value.tail
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
     val ret = control.property.get(attrName).map(SExpr.fromAny).getOrElse(SNil)
+    //println(s"$attrName = $ret")
     ret
   }
 
@@ -258,10 +259,10 @@ object UIComponent extends LazyLogging {
         cacheContent.clear()
         cacheContent.parent = Some(content)
         cacheContent.set("setFunc",SUserData(setFunc))
-        SExprInterp.eval(expr, Some(cacheContent)) match {
-          case SUserData(value) =>
-            setFunc(value.asInstanceOf[T])
-          case _ => ()
+        val evalValue  = SExprInterp.eval(expr, Some(cacheContent))
+        val castValue = evalValue.castSingleAny()
+        if(castValue != null) {
+          setFunc(castValue.asInstanceOf[T])
         }
     }
   }
@@ -273,9 +274,11 @@ object UIComponent extends LazyLogging {
       cacheContent.set("setFunc",SUserData(setFunc))
       SExprInterp.evalString(paramString, Some(cacheContent)) match {
         case Left(errString) => logger.info(errString)
-        case Right(SUserData(value)) =>
-          setFunc(value.asInstanceOf[T])
-        case Right(_) => ()
+        case Right(evalValue) =>
+          val castValue = evalValue.castSingleAny()
+          if(castValue != null) {
+            setFunc(castValue.asInstanceOf[T])
+          }
       }
     })
   }

@@ -11,7 +11,7 @@ import seija.s2d.TextRender
 import seija.s2d.assets.Font
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
 import seija.s2d.layout.Orientation.Orientation
-import seija.s2d.layout.{ContentView, GridLayout, LNumber, LayoutView, StackLayout, Thickness}
+import seija.s2d.layout.{ContentView, GridCell, GridLayout, LNumber, LayoutView, StackLayout, Thickness}
 
 class TransformUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode,tmpl:UITemplate): Unit = {
@@ -115,10 +115,13 @@ class LayoutViewUIComp extends UIComponent {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
     val dic = Utils.getXmlStringParam(xmlNode)
     val layoutView = entity.addComponent[LayoutView]()
+    setViewParam(layoutView,dic,tmpl)
+  }
+
+  def setViewParam(layoutView:LayoutView,dic:js.Dictionary[String], tmpl: UITemplate): Unit = {
     UIComponent.initParam[LayoutAlignment]("hor",dic, hor => layoutView.setHor(hor),tmpl.control.sContent)
     UIComponent.initParam[LayoutAlignment]("ver",dic,ver => layoutView.setVer(ver),tmpl.control.sContent)
     UIComponent.initParam[Vector2]("size",dic,s => {
-
       layoutView.setSize(s)
     },tmpl.control.sContent)
     UIComponent.initParam[Vector3]("position",dic,s => layoutView.setPosition(s),tmpl.control.sContent)
@@ -129,22 +132,39 @@ class LayoutViewUIComp extends UIComponent {
 
 class StackLayoutUIComp extends LayoutViewUIComp {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    super.attach(entity,xmlNode,tmpl)
     val dic = Utils.getXmlStringParam(xmlNode)
     val stackLayout = entity.addComponent[StackLayout]()
+    setViewParam(stackLayout,dic,tmpl)
     UIComponent.initParam[Float]("spacing",dic,s => stackLayout.setSpacing(s),tmpl.control.sContent)
     UIComponent.initParam[Orientation]("orientation",dic,o => stackLayout.setOrientation(o),tmpl.control.sContent)
   }
 }
 
-class ContentViewUIComp extends LayoutViewUIComp
+class ContentViewUIComp extends LayoutViewUIComp {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlStringParam(xmlNode)
+    val contentView = entity.addComponent[ContentView]()
+    setViewParam(contentView,dic,tmpl)
+  }
+}
 
 class GridLayoutUIComp extends LayoutViewUIComp {
   override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
-    super.attach(entity, xmlNode, tmpl)
     val dic = Utils.getXmlStringParam(xmlNode)
     val gridLayout = entity.addComponent[GridLayout]()
+    setViewParam(gridLayout,dic,tmpl)
     UIComponent.initLispParam[js.Array[LNumber]]("rows",dic,rows => gridLayout.setRows(rows),tmpl.control.sContent)
     UIComponent.initLispParam[js.Array[LNumber]]("cols",dic,cols => gridLayout.setCols(cols),tmpl.control.sContent)
+  }
+}
+
+class GridCellUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    val dic = Utils.getXmlStringParam(xmlNode)
+    val gridCell = entity.addComponent[GridCell]()
+    UIComponent.initParam[Int]("row",dic,row => {gridCell.setRow(row)},tmpl.control.sContent)
+    UIComponent.initParam[Int]("col",dic,col => gridCell.setCol(col),tmpl.control.sContent)
+    UIComponent.initParam[Int]("rowSpan",dic,rowSpan => gridCell.setRowSpan(rowSpan),tmpl.control.sContent)
+    UIComponent.initParam[Int]("colSpan",dic,colSpan => gridCell.setColSpan(colSpan),tmpl.control.sContent)
   }
 }

@@ -608,13 +608,15 @@ fn set_grid_rows(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         Some(LayoutElement::GridLayout(grid)) => {
             let rows_arr = arr[1].as_array().unwrap();
             let mut idx = 0;
-            while idx <= rows_arr.len() {
+            dbg!(rows_arr.len());
+            while idx < rows_arr.len() {
+               dbg!(idx);
                let t = rows_arr[idx].as_u64().unwrap();
                let num = rows_arr[idx + 1].as_f64().unwrap() as f32;
                if t == 0 {
                   grid.rows.push(LNumber::Const(num));
                } else {
-                  grid.rows.push(LNumber::Const(num));
+                  grid.rows.push(LNumber::Rate(num));
                }
                idx += 2
             }
@@ -633,13 +635,15 @@ fn set_grid_cols(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         Some(LayoutElement::GridLayout(grid)) => {
             let cols_arr = arr[1].as_array().unwrap();
             let mut idx = 0;
-            while idx <= cols_arr.len() {
+            dbg!(cols_arr.len());
+            while idx < cols_arr.len() {
+               dbg!(idx);
                let t = cols_arr[idx].as_u64().unwrap();
                let num = cols_arr[idx + 1].as_f64().unwrap() as f32;
                if t == 0 {
                   grid.cols.push(LNumber::Const(num));
                } else {
-                  grid.cols.push(LNumber::Const(num));
+                  grid.cols.push(LNumber::Rate(num));
                }
                idx += 2
             }
@@ -690,14 +694,15 @@ fn set_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
     let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
     let row = arr[1].as_i64().unwrap() as usize;
     let col = arr[2].as_i64().unwrap() as usize;
-    let row_span = arr[3].as_f64().unwrap() as usize;
-    let col_span = arr[4].as_f64().unwrap() as usize;
+    let row_span = arr[3].as_i64().unwrap() as usize;
+    let col_span = arr[4].as_i64().unwrap() as usize;
     let mut cells:WriteStorage<GridCell> = world.write_storage::<GridCell>();
     if let Some(cell) = cells.get_mut(entity) {
         cell.row = row;
         cell.col = col;
         cell.row_span = row_span;
         cell.col_span = col_span;
+        dbg!(cell.row_span,cell.col_span,cell.row,cell.col);
     }
     Ok(Value::Null)
 }

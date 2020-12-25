@@ -222,10 +222,10 @@ object Foreign {
   def addGridCol(entity:Int,t:Int,number:Float):Unit =
     Deno.core.jsonOpSync("addGridCol",js.Array(entity,t,number))
 
-  def setGridRows(entity:Int, arrays: js.Array[js.Array[Any]]):Unit =
+  def setGridRows(entity:Int, arrays: js.Array[Any]):Unit =
     Deno.core.jsonOpSync("setGridRows",js.Array(entity,arrays))
 
-  def setGridCols(entity:Int, arrays: js.Array[js.Array[Any]]):Unit = {
+  def setGridCols(entity:Int, arrays: js.Array[Any]):Unit = {
     Deno.core.jsonOpSync("setGridCols",js.Array(entity,arrays))
   }
 

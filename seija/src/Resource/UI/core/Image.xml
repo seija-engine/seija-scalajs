@@ -12,7 +12,7 @@
                             hor = "(attr :hor)"
                             ver = "(attr :ver)"
                 />
-                <ImageRender texture="(env res.white)" color="(attr-bind :color)" />
+                <ImageRender texture="(env res.white)" color="(attr :color)" />
                 <Transparent />
             </Components>
         </Entity>

@@ -70,11 +70,11 @@ object TestUI {
 
     val g0 = addImg(colorTex,root,Some(Color.mblue) )
     val cell = g0.addComponent[GridCell]()
-    cell.set(1,0,0,0)
+    cell.setRow(1)
 
     val stackEntity = addImg(colorTex,root,Some(Color.silver),addView = false)
     val cell2 = stackEntity.addComponent[GridCell]()
-    cell2.set(0,0,0,0)
+
     stackEntity.removeComponent[LayoutView]()
     val stack = stackEntity.addComponent[StackLayout]()
     stack.setOrientation(Orientation.Vertical)
