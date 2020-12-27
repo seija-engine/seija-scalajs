@@ -49,14 +49,13 @@ class UITemplate(val xmlNode: XmlNode,val control: Control,val slots:js.Dictiona
   }
   def getFullPath(xmlNode: XmlNode): String = {
     val arrName = xmlNode.tag.split(':')
-    val pathHead = if(arrName.length > 0) {
+    if(arrName.length > 1) {
       val nsPath = this.control.nsDic.get(arrName(0))
       if(nsPath.isEmpty) {
         logger.error(s"not found ns path: ${arrName(0)}")
       }
-      nsPath.get
-    } else ""
-    pathHead + arrName(1) + ".xml"
+      nsPath.get + arrName(1) + ".xml"
+    } else arrName(0) + ".xml"
   }
 
   def parseControl(xmlNode: XmlNode,parent:Option[Entity]):Either[String,Entity] = {

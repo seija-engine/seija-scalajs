@@ -50,6 +50,10 @@ class Control extends IBehavior {
     }
   }
 
+  override def handleEvent(evKey: String, evData: js.Array[SExpr]): Unit = {
+    this.eventBoard.foreach(_.fire(evKey,evData))
+  }
+
   def setParent(parent: Option[Control]): Unit = {
     if (_parent != parent) {
       if (_parent.isDefined) {

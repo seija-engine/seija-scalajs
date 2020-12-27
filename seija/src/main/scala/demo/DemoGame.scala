@@ -17,11 +17,8 @@ import slogging.{ConsoleLoggerFactory, LazyLogging, LogLevel, LoggerConfig, Prin
 
 class DemoGame extends LazyLogging with IGame {
   override def onStart(): Unit = {
-
-
     assets.Loader.setAssetRoot("../seija-deno/src/tests/res/")
-    UISystem.rootPath = "src/Resource/UI"
-    UISystem.initCore()
+    UISystem.initCore("src/Resource/UI")
     TestUI.loadUILayout()
 
 

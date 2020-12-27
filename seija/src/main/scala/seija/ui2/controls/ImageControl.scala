@@ -4,6 +4,7 @@ import seija.data.{Color, SExpr, SInt, XmlNode}
 import seija.math.{Vector2, Vector3}
 import seija.ui2.{Control, UITemplate}
 import seija.data.CoreRead._
+import seija.s2d.ImageType
 
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
@@ -18,6 +19,7 @@ class ImageControl extends Control {
     this.setParam[Color]("color",params,Some(Color.New(1,1,1,1)))
     this.setParam[Int]("texture",params,None)
     this.setParam[Int]("Int",params,Some(0))
+    this.setParam[ImageType]("type",params,None)
   }
 
   override def handleEvent(evKey:String,evData: js.Array[SExpr]): Unit = {

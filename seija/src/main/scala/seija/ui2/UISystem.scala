@@ -2,7 +2,7 @@ package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
-import seija.ui2.controls.{CheckBox, Grid, GridCell, ImageControl, LabelControl, ListView, Panel, SpriteControl, StackLayout}
+import seija.ui2.controls.{CheckBox, Grid, GridCell, ImageControl, LabelControl, ListView, Menu, Panel, SpriteControl, StackLayout}
 
 import scalajs.js
 import seija.data.DynObject
@@ -15,15 +15,16 @@ trait UIComponent {
 
 object UISystem extends LazyLogging {
   def cContent:Option[SContent] = controlContent
-  var rootPath:String = ""
-  val cacheXml:js.Dictionary[XmlNode] = js.Dictionary()
+  protected var rootPath:String = ""
+  protected val cacheXml:js.Dictionary[XmlNode] = js.Dictionary()
   private val controlCreators:js.Dictionary[() => Control] = js.Dictionary()
   private val comps:js.Dictionary[UIComponent] = js.Dictionary()
   private var controlContent:Option[SContent] = None
 
-  val env:js.Dictionary[Any] = js.Dictionary()
+  val ENV: js.Dictionary[Any] = js.Dictionary()
 
-  def initCore():Unit = {
+  def initCore(path:String):Unit = {
+    rootPath = path
     this.registerControl("ImageControl",() => new ImageControl)
     this.registerControl("SpriteControl",() => new SpriteControl)
     this.registerControl("CheckBox",() => new CheckBox)
@@ -33,6 +34,7 @@ object UISystem extends LazyLogging {
     this.registerControl("StackLayout",() => new StackLayout)
     this.registerControl("Grid", () => new Grid)
     this.registerControl("GridCell",() => new GridCell)
+    this.registerControl("Menu",() => new Menu)
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -47,6 +49,7 @@ object UISystem extends LazyLogging {
     this.registerComp("ContentView",new ContentViewUIComp)
     this.registerComp("GridLayout",new GridLayoutUIComp)
     this.registerComp("GridCell",new GridCellUIComp)
+    this.registerComp("CABEventRoot",new CABEventRootUIComp)
 
     val content = new SContent(Some(SExprInterp.rootContent))
     this.controlContent = Some(content)
@@ -124,7 +127,7 @@ object UISystem extends LazyLogging {
 
   def findEnv(name:String):Any = {
     val nameArrays = name.split('.')
-    var curValue:Any = env
+    var curValue:Any = ENV
     for(name <- nameArrays) {
       val curDic = curValue.asInstanceOf[js.Dictionary[Any]]
       curDic.get(name) match {
@@ -152,7 +155,7 @@ object UISystemSFunc {
   def emit(args:js.Array[SExpr],content: SContent):SExpr = {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val control = content.find("control").get.asInstanceOf[SUserData].value.asInstanceOf[Control]
-    control.eventBoard.foreach(_.fire(evalArgs.head.castKeyword(),evalArgs.tail))
+    control.handleEvent(evalArgs.head.castKeyword(),evalArgs.tail)
     SNil
   }
 

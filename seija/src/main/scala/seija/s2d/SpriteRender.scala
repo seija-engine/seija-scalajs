@@ -20,13 +20,19 @@ class SpriteRender(override val entity:Entity) extends BaseComponent(entity) wit
     _spriteName = name;
   }
 
+
+
   def setSliceByConfig(idx:Int):Unit =
     Foreign.setSpriteSliceByConfig(entity.id,idx)
 
-  override def colorToRust(): Unit = Foreign.setSpriteColor(entity.id,this._color.inner())
+  override def colorToRust(): Unit = {
+    Foreign.setSpriteColor(entity.id,this._color.inner())
+  }
   override def colorFromRust(): Unit = Foreign.getSpriteColor(entity.id,this._color.inner())
 
-  override def setImageType(typ: ImageType): Unit = Foreign.setSpriteType(entity.id,typ.toJsValue)
+  override def setImageType(typ: ImageType): Unit = {
+    Foreign.setSpriteType(entity.id,typ.toJsValue)
+  }
   override def setFilledValue(v: Float): Unit = Foreign.setSpriteFilledValue(entity.id,v)
 }
 

@@ -1,0 +1,21 @@
+<LabelControl>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform position="(attr :position)" scale="1,1,1"/>
+                <Rect2D />
+
+                <TextRender fontSize="(attr :fontSize)" text="(attr-bind :text)" font="(env res.font)" color="(attr :color)" />
+                <Transparent />
+                <LayoutView size="(vec2 (attr :width) (attr :height))"
+                            margin="(attr :margin)"
+                            padding="(attr :padding)"
+                            position="(attr :position)"
+                            hor = "(attr :hor)"
+                            ver = "(attr :ver)"
+                />
+                <EventNode OnClick="(node-ev-bind :OnClick)" />
+            </Components>
+        </Entity>
+    </Template>
+</LabelControl>

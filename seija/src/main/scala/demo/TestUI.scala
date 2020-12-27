@@ -31,12 +31,12 @@ object TestUI {
     rect.size.set(1024,768)
     rootEntity.addComponent[CABEventRoot]()
 
-    UISystem.initCore()
-    UISystem.rootPath = "src/Resource/UI"
-    UISystem.env.put("sheet",materialSheet.id)
-    UISystem.env.put("paperSheet",paperSheet.id)
-    UISystem.env.put("star",tex.id)
-    UISystem.env.put("font",font.id)
+    UISystem.initCore("src/Resource/UI")
+    
+    UISystem.ENV.put("sheet",materialSheet.id)
+    UISystem.ENV.put("paperSheet",paperSheet.id)
+    UISystem.ENV.put("star",tex.id)
+    UISystem.ENV.put("font",font.id)
     val demoModel = new demo.TestModel()
     demoModel.init()
     val panelControl = UISystem.create("/TestPanel.xml",dataContent = Some(demoModel));
@@ -118,7 +118,7 @@ object TestUI {
 
   def loadUILayout():Unit = {
     val colorTex = Loader.loadSync[Image]("white.png").toOption.get
-    UISystem.env.put("res",js.Dictionary("white"-> colorTex.id))
+    UISystem.ENV.put("res",js.Dictionary("white"-> colorTex.id))
 
     val root = Entity.New()
     root.addComponent[Transform]()

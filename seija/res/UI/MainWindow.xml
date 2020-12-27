@@ -1,0 +1,21 @@
+<Panel xmlns:core="/core/" xmlns:m="/chrome/">
+    <Template>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D width="1024" height="768"/>
+                <CABEventRoot />
+                <ContentView size="1024,768" />
+                <EventBoard name="RootBorad" />
+            </Components>
+            <m:Panel>
+                <core:Grid rows="[(num-rate 2) (num-rate 8)]" cols="[(num-const 25) (num-rate 1)]">
+                    <core:GridCell row="0" col="0" rowSpan="2" >
+                        <core:Image margin="0,24,0,0" texture="(env res.white)" color="#666666"/>
+                        <Menu />
+                    </core:GridCell>
+                </core:Grid>
+            </m:Panel>
+        </Entity>
+    </Template>
+</Panel>

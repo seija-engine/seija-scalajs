@@ -1,0 +1,11 @@
+<Grid xmlns:core="/core/">
+    <Template>
+        <core:GridCell rowIndex="0" colIndex="0">
+            <core:StackPanel>
+                <core:Label text="File" />
+                <core:Label text="Setting" />
+                <core:Label text="Setting" />
+            </core:StackPanel>
+        </core:GridCell>
+    </Template>
+</Grid>

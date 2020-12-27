@@ -1,13 +1,12 @@
 package seija.ui2
 import scala.scalajs.js
-import seija.core.event.{EventNode, GameEventType}
+import seija.core.event.{CABEventRoot, EventNode, GameEventType}
 import seija.core.{Entity, Transform}
 import seija.data.{Color, SBool, SExprInterp, SFunc, SList, SNil, SUserData, SVector, XmlNode}
 import seija.math.{Vector2, Vector3}
-import seija.s2d.{ImageRender, Rect2D, SpriteRender, Transparent}
+import seija.s2d.{ImageRender, ImageType, Rect2D, SpriteRender, TextRender, Transparent}
 import seija.s2d.assets.{Image, SpriteSheet}
 import seija.data.CoreRead._
-import seija.s2d.TextRender
 import seija.s2d.assets.Font
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
 import seija.s2d.layout.Orientation.Orientation
@@ -48,6 +47,7 @@ class SpriteRenderUIComp extends UIComponent {
     UIComponent.initParam[String]("spriteName",dic,sName => sprite.setSpriteName(sName),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,sprite.color = _,tmpl.control.sContent)
     UIComponent.initParam[Int]("sheet",dic,sheet => sprite.setSpriteSheet(new SpriteSheet(sheet)),tmpl.control.sContent)
+    UIComponent.initParam[ImageType]("type",dic,t => sprite.setImageType(t),tmpl.control.sContent)
   }
 }
 
@@ -65,6 +65,7 @@ class EventNodeUIComp extends UIComponent {
     for((k,v) <- dic) {
       val (head,tail) = k.splitAt(2)
       if(head == "On") {
+
         val evType = GameEventType.gameEventTypeRead.read(tail)
         if(evType.isDefined) {
           UIComponent.cacheContent.clear()
@@ -80,6 +81,7 @@ class EventNodeUIComp extends UIComponent {
               })
             case Right(f@SFunc(args, list)) =>
               eventNode.register(evType.get,isCapture = false, () => {
+                println("cccccccccc?")
                 f.call(Some(tmpl.control.sContent))
               })
             case Right(SNil) => ()
@@ -108,6 +110,7 @@ class TextRenderUIComp extends UIComponent {
     UIComponent.initParam[String]("text",dic,sText =>textRender.setText(sText),tmpl.control.sContent)
     UIComponent.initParam[Color]("color",dic,textRender.color = _,tmpl.control.sContent)
     UIComponent.initParam[Int]("font",dic,fontID => textRender.setFont(new Font(fontID)) ,tmpl.control.sContent)
+    UIComponent.initParam[Int]("fontSize",dic,fontSize => textRender.setFontSize(fontSize),tmpl.control.sContent)
   }
 }
 
@@ -166,5 +169,11 @@ class GridCellUIComp extends UIComponent {
     UIComponent.initParam[Int]("col",dic,col => gridCell.setCol(col),tmpl.control.sContent)
     UIComponent.initParam[Int]("rowSpan",dic,rowSpan => gridCell.setRowSpan(rowSpan),tmpl.control.sContent)
     UIComponent.initParam[Int]("colSpan",dic,colSpan => gridCell.setColSpan(colSpan),tmpl.control.sContent)
+  }
+}
+
+class CABEventRootUIComp extends UIComponent {
+  override def attach(entity: Entity, xmlNode: XmlNode, tmpl: UITemplate): Unit = {
+    entity.addComponent[CABEventRoot]()
   }
 }

@@ -11,9 +11,11 @@ trait IEventReceive {
 
 trait IBehavior extends IEventReceive {
   val eventReceives:js.Array[IEventReceive] = js.Array()
+
   def emit(evKey:String,evData:js.Array[SExpr]):Unit = {
     this.eventReceives.foreach(_.handleEvent(evKey,evData))
   }
+
   def addEventRecv(recv:IEventReceive) {
     this.eventReceives.push(recv)
   }

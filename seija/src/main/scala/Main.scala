@@ -2,13 +2,8 @@ import demo.DemoGame
 import seija.core.App
 import seija.data.Color
 import seija.s2d.{SWindow, Simple2d}
-import seija.data.{SContent, SExprInterp}
-import seija.data.{DynClass, DynObject}
-
-import scala.collection.mutable.HashMap
-import seija.ui2.EventBoard
-import seija.data.SExpr
-import seija.data.SNil
+import seija.data.SExprInterp
+import sled.SledWindow
 import slogging._
 
 
@@ -19,10 +14,10 @@ object Main {
     LoggerConfig.factory = PrintLoggerFactory()
     LoggerConfig.level = LogLevel.TRACE
 
-    val app = new App(new DemoGame,new Simple2d(new SWindow(
-      bgColor = Color.New(0.9f,0.9f,0.9f,1f),
-      width = 320,
-      height = 240
+    val app = new App(new SledWindow,new Simple2d(new SWindow(
+      bgColor = Color.New(1f,1f,1f,1f),
+      width = 1024,
+      height = 768
     )));
     app.run()
   }

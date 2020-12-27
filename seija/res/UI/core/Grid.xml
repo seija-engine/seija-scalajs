@@ -1,0 +1,12 @@
+<Grid>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform />
+                <Rect2D />
+                <GridLayout rows="(attr :rows)" cols="(attr :cols)" />
+            </Components>
+            <Slot.Children />
+        </Entity>
+    </Template>
+</Grid>

@@ -1,0 +1,20 @@
+<ImageControl>
+    <Template>
+        <Entity>
+            <Components>
+                <EventNode OnClick="#(emit :ClickImage)" />
+                <Transform  scale="(attr :scale)" />
+                <Rect2D />
+                <LayoutView size="(vec2 (attr :width) (attr :height))"
+                            margin="(attr :margin)"
+                            padding="(attr :padding)"
+                            position="(attr :position)"
+                            hor = "(attr :hor)"
+                            ver = "(attr :ver)"
+                />
+                <ImageRender texture="(env res.white)" color="(attr :color)" />
+                <Transparent />
+            </Components>
+        </Entity>
+    </Template>
+</ImageControl>

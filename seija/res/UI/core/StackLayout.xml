@@ -1,0 +1,20 @@
+<StackLayout>
+    <Template>
+        <Entity>
+            <Components>
+                <Transform  />
+                <Rect2D />
+                <StackLayout margin="(attr-bind :margin)"
+                             padding="(attr-bind :padding)"
+                             hor="(attr-bind :hor)"
+                             ver="(attr-bind :ver)"
+                             orientation="(attr-bind :orientation)"
+                             spacing="(attr :spacing)"
+                             size="(vec2 (attr :width) (attr :height))"
+                />
+                <Transparent />
+            </Components>
+            <Slot.Children />
+        </Entity>
+    </Template>
+</StackLayout>

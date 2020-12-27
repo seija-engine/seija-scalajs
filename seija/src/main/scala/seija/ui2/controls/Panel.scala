@@ -1,5 +1,9 @@
 package seija.ui2.controls
 import seija.ui2.Control
-class Panel extends Control {
 
+import scala.scalajs.js.Dictionary
+class Panel extends Control {
+  override def setParams(params: Dictionary[String]): Unit = {
+    PropertySet.setLayout(this,params)
+  }
 }

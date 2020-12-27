@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
 use serde_json::Value;
-use seija::{math::{Vector2,Vector3}, s2d::layout::{ContentView, GridCell}, specs::{Entity, World, WorldExt, WriteStorage}};
+use seija::{math::{Vector2,Vector3}, s2d::layout::{ContentView, GridCell, view::ViewType}, specs::{Entity, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
@@ -52,6 +52,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"setLayoutVer", set_layout_ver);
     reg_json_op_sync(rt,"setLayoutSize", set_layout_size);
     reg_json_op_sync(rt,"setLayoutPosition", set_layout_position);
+    reg_json_op_sync(rt, "setLayoutViewType", set_layout_view_type);
     reg_json_op_sync(rt,"addStackLayout",add_stack_layout);
     reg_json_op_sync(rt,"setStackOrientation",set_stack_orientation);
     reg_json_op_sync(rt,"setStackSpacing",set_stack_spacing);
@@ -464,6 +465,20 @@ fn set_layout_padding(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Resu
     Ok(Value::Null)
 }
 
+fn set_layout_view_type(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
+    let mut elems = world.write_storage::<LayoutElement>();
+    let elem = elems.get_mut(entity).unwrap();
+    let typ = arr[1].as_i64().unwrap() as u32;
+   
+    elem.fview_mut(|view| {
+        view.view_type = ViewType::from(typ);
+    });
+    Ok(Value::Null)
+}
+
 fn set_layout_hor(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
     let world = get_mut_world();
@@ -608,9 +623,9 @@ fn set_grid_rows(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         Some(LayoutElement::GridLayout(grid)) => {
             let rows_arr = arr[1].as_array().unwrap();
             let mut idx = 0;
-            dbg!(rows_arr.len());
+           
             while idx < rows_arr.len() {
-               dbg!(idx);
+             
                let t = rows_arr[idx].as_u64().unwrap();
                let num = rows_arr[idx + 1].as_f64().unwrap() as f32;
                if t == 0 {
@@ -635,9 +650,9 @@ fn set_grid_cols(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         Some(LayoutElement::GridLayout(grid)) => {
             let cols_arr = arr[1].as_array().unwrap();
             let mut idx = 0;
-            dbg!(cols_arr.len());
+            
             while idx < cols_arr.len() {
-               dbg!(idx);
+               
                let t = cols_arr[idx].as_u64().unwrap();
                let num = cols_arr[idx + 1].as_f64().unwrap() as f32;
                if t == 0 {
@@ -702,7 +717,6 @@ fn set_grid_cell(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Va
         cell.col = col;
         cell.row_span = row_span;
         cell.col_span = col_span;
-        dbg!(cell.row_span,cell.col_span,cell.row,cell.col);
     }
     Ok(Value::Null)
 }
