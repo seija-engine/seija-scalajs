@@ -75,10 +75,14 @@ class UITemplate(val xmlNode: XmlNode,val control: Control,val slots:js.Dictiona
     if(childrenSlot.isEmpty) {
       return Right(newEntity.get)
     }
-    for(child <- xmlNode.children.getOrElse(js.Array());if !child.tag.startsWith("Param."); if !child.tag.startsWith("Slot.")) {
-      this.parse(child,newEntity) match {
-        case Left(errString) => logger.error(errString)
-        case Right(e) => e.setParent(newEntity)
+    for(child <- xmlNode.children.getOrElse(js.Array());if !child.tag.startsWith("Param.")) {
+      if(child.tag.startsWith("Slot.")) {
+        this.slots.put(child.tag.substring("Slot.".length),newEntity.get)
+      } else {
+        this.parse(child,newEntity) match {
+          case Left(errString) => logger.error(errString)
+          case Right(e) => e.setParent(newEntity)
+        }
       }
     }
     Right(newEntity.get)

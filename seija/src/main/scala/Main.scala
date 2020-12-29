@@ -12,7 +12,7 @@ object Main {
     SExprInterp.init()
     seija.data.DynObject.init()
     LoggerConfig.factory = PrintLoggerFactory()
-    LoggerConfig.level = LogLevel.TRACE
+    LoggerConfig.level = LogLevel.INFO
 
     val app = new App(new SledWindow,new Simple2d(new SWindow(
       bgColor = Color.New(1f,1f,1f,1f),
