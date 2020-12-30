@@ -5,7 +5,7 @@
                 <Transform position="(attr :position)" scale="1,1,1"/>
                 <Rect2D />
 
-                <TextRender fontSize="(attr :fontSize)" text="(attr-bind :text)" font="(env res.font)" color="(attr :color)" />
+                <TextRender fontSize="(attr :fontSize)" text="(attr-bind :text)" font="(env res.font)" color="(attr-bind :color)" />
                 <Transparent />
                 <LayoutView size="(vec2 (attr :width) (attr :height))"
                             margin="(attr :margin)"

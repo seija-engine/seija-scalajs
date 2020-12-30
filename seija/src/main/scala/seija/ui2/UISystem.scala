@@ -2,7 +2,7 @@ package seija.ui2
 import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
-import seija.ui2.controls.{CheckBox, Grid, GridCell, ImageControl, LabelControl, ListView, Menu, Panel, SpriteControl, StackLayout}
+import seija.ui2.controls._
 
 import scalajs.js
 import seija.data.DynObject
@@ -11,6 +11,12 @@ import slogging.LazyLogging
 
 trait UIComponent {
   def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
+}
+
+trait ControlCreator[T] {
+  def name:String
+  def create():Control
+  def init():Unit
 }
 
 object UISystem extends LazyLogging {
@@ -25,16 +31,7 @@ object UISystem extends LazyLogging {
 
   def initCore(path:String):Unit = {
     rootPath = path
-    this.registerControl("ImageControl",() => new ImageControl)
-    this.registerControl("SpriteControl",() => new SpriteControl)
-    this.registerControl("CheckBox",() => new CheckBox)
-    this.registerControl("Panel",() => new Panel)
-    this.registerControl("ListView",() => new ListView)
-    this.registerControl("LabelControl",() => new LabelControl)
-    this.registerControl("StackLayout",() => new StackLayout)
-    this.registerControl("Grid", () => new Grid)
-    this.registerControl("GridCell",() => new GridCell)
-    this.registerControl("Menu",() => new Menu)
+
 
     this.registerComp("Transform",new TransformUIComp)
     this.registerComp("Rect2D",new Rect2DUIComp)
@@ -62,6 +59,21 @@ object UISystem extends LazyLogging {
     content.set("ctx-data",SNFunc(UISystemSFunc.dataF))
     content.set("num-rate",SNFunc(UISystemSFunc.numberRate))
     content.set("num-const",SNFunc(UISystemSFunc.numberConst))
+
+    this.registerControls()
+  }
+
+  private def registerControls():Unit = {
+    this.registerCreator[ImageControl]()
+    this.registerCreator[SpriteControl]()
+    this.registerCreator[CheckBox]()
+    this.registerCreator[Panel]()
+    this.registerCreator[ListView]()
+    this.registerCreator[LabelControl]()
+    this.registerCreator[StackLayout]()
+    this.registerCreator[Grid]()
+    this.registerCreator[GridCell]()
+    this.registerCreator[Menu]()
   }
 
   def getXml(path:String):Either[String,XmlNode] = {
@@ -91,15 +103,13 @@ object UISystem extends LazyLogging {
           control.nsDic.put(nsName,nsPath)
         }
       }
-      for(node <- xmlNode.children.get) {
-        if(node.tag == "Template") {
-          control.template = Some(new UITemplate(node,control))
-        }
+      for(node <- xmlNode.children.get; if node.tag.endsWith("Template")) {
+        if(!tmpls.contains(node.tag))  tmpls.put(node.tag,node)
       }
 
       control.dataContent = dataContent
-      control.setParams(args)
       control.setTemplates(tmpls)
+      control.setParams(args)
       control.init()
       
       control.OnEnter()
@@ -113,8 +123,9 @@ object UISystem extends LazyLogging {
     } yield control
   }
 
-  def registerControl(name:String,createFn:()=>Control):Unit = {
-    this.controlCreators.put(name,createFn)
+  def registerCreator[T]()(implicit creator:ControlCreator[T]):Unit = {
+    this.controlCreators.put(creator.name,() => creator.create())
+    creator.init()
   }
 
   def registerComp(compName: String,comp:UIComponent):Unit = {
@@ -123,6 +134,10 @@ object UISystem extends LazyLogging {
 
   def getUIComp(name:String):Option[UIComponent] = {
     this.comps.get(name)
+  }
+
+  def setSExpr(name:String,expr:SExpr):Unit = {
+    this.controlContent.foreach(content => content.set(name,expr))
   }
 
   def findEnv(name:String):Any = {
@@ -171,6 +186,7 @@ object UISystemSFunc {
            val arg = SExpr.fromAny(pValue)
            val evalExpr = sFunc.callByArgs(js.Array(arg),Some(control.sContent))
            val evalValue = SExprInterp.evalToValue(evalExpr,Some(control.sContent))
+
            setFunc(evalValue)
         }
         callFn(control.property.get(attrName).get)

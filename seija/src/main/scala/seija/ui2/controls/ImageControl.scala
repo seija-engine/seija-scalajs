@@ -2,7 +2,7 @@ package seija.ui2.controls
 
 import seija.data.{Color, SExpr, SInt, XmlNode}
 import seija.math.{Vector2, Vector3}
-import seija.ui2.{Control, UITemplate}
+import seija.ui2.{Control, ControlCreator, UITemplate}
 import seija.data.CoreRead._
 import seija.s2d.ImageType
 
@@ -32,6 +32,12 @@ class ImageControl extends Control {
       case _ => ()
     }
   }
+}
 
-
+object ImageControl {
+  implicit val imageCreator:ControlCreator[ImageControl] = new ControlCreator[ImageControl] {
+    override def name: String = "ImageControl"
+    override def create(): Control = new ImageControl
+    override def init(): Unit = {}
+  }
 }

@@ -6,8 +6,16 @@
     </Template>
     <ItemTemplate>
         <core:Frame width="50">
-            <core:Image texture="(env res.white)" color="#0000ff55" />
-            <core:Label  OnClick="#(emit :menu 'file')"  width="50" height="26" margin="0,0,0,0" fontSize="20" text="文件" />
+            <core:Image texture="(env res.white)" >
+                <Param.color>
+                    (attr-bind :isSelect #(if % color.blue color.transparent))
+                </Param.color>
+            </core:Image>
+            <core:Label  OnClick="#(emit :click-menu (ctx-data data.index))"  width="50" height="26" margin="0,0,0,0" fontSize="20" text="(ctx-data data.text)" >
+                <Param.color>
+                    (attr-bind :isSelect #(if % color.white color.black))
+                </Param.color>
+            </core:Label>
         </core:Frame>
     </ItemTemplate>
 </Menu>

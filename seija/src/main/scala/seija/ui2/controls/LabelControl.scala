@@ -1,6 +1,7 @@
 package seija.ui2.controls
 
-import seija.ui2.Control
+import seija.ui2.{Control, ControlCreator}
+
 import scala.scalajs.js.Dictionary
 import seija.data.CoreRead._
 import seija.math.Vector3
@@ -11,13 +12,16 @@ class LabelControl extends Control {
         PropertySet.setLayout(this,params)
         this.setParam[Vector3]("position",params,Some(Vector3.zero))
         this.setParam[String]("text",params,Some("Text"))
-        this.setParam[Color]("color",params,None)
+        this.setParam[Color]("color",params,Some(Color.New(0,0,0,1)))
         this.setParam[Int]("fontSize",params,Some(16))
-
         this.setEventParam("OnClick",params)
     }
+}
 
-    override def OnEnter(): Unit = {
-        //println("On LabelEnter:"+this.entity.get +"  "+this.entity.get.parent)
+object LabelControl {
+    implicit val LabelCreator:ControlCreator[LabelControl] = new ControlCreator[LabelControl] {
+        override def name: String = "LabelControl"
+        override def create(): Control = new LabelControl
+        override def init(): Unit = {}
     }
 }

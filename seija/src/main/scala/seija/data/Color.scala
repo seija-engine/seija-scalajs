@@ -53,6 +53,9 @@ object Color {
     def red:Color = Color.New(1,0,0,1)
     def green:Color = Color.New(0,1,0,1)
     def blue:Color = Color.New(0,0,1,1)
+    def transparent:Color = Color.New(0,0,0,0)
+    def black:Color = Color.New(0,0,0,1)
+    def white:Color = Color.New(1,1,1,1)
 
     def mblue:Color = Color.NewInt(27,161,226,255)
     def bron:Color = Color.NewInt(160,80,0,255)

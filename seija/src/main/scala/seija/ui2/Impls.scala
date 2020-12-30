@@ -36,7 +36,9 @@ class ImageRenderUIComp extends UIComponent {
     val image = entity.addComponent[ImageRender]()
     val dic = Utils.getXmlStringParam(xmlNode)
     UIComponent.initParam[Int]("texture",dic,tex => image.setTexture(new Image(tex)),tmpl.control.sContent)
-    UIComponent.initParam[Color]("color",dic,image.color = _,tmpl.control.sContent)
+    UIComponent.initParam[Color]("color",dic,color => {
+      image.color = color
+    },tmpl.control.sContent)
   }
 }
 
@@ -81,7 +83,6 @@ class EventNodeUIComp extends UIComponent {
               })
             case Right(f@SFunc(args, list)) =>
               eventNode.register(evType.get,isCapture = false, () => {
-                println("cccccccccc?")
                 f.call(Some(tmpl.control.sContent))
               })
             case Right(SNil) => ()

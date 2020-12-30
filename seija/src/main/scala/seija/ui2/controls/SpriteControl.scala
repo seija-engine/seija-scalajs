@@ -2,7 +2,7 @@ package seija.ui2.controls
 
 import seija.data.Color
 import seija.math.{Vector2, Vector3}
-import seija.ui2.Control
+import seija.ui2.{Control, ControlCreator}
 import seija.data.CoreRead._
 import seija.s2d.ImageType
 
@@ -23,6 +23,12 @@ class SpriteControl extends Control {
 
     this.setEventParam("OnClick",params)
   }
+}
 
-
+object SpriteControl {
+  implicit val spriteCreator:ControlCreator[SpriteControl] = new ControlCreator[SpriteControl] {
+    override def name: String = "SpriteControl"
+    override def create(): Control = new SpriteControl
+    override def init(): Unit = {}
+  }
 }

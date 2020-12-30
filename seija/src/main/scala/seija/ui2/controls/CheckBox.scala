@@ -1,7 +1,7 @@
 package seija.ui2.controls
 import seija.data.{SExpr, SString, XmlNode}
 import seija.math.Vector3
-import seija.ui2.{Control, UITemplate}
+import seija.ui2.{Control, ControlCreator, UITemplate}
 import seija.data.CoreRead._
 
 import scala.scalajs.js
@@ -13,7 +13,6 @@ class CheckBox extends Control {
 
   def enable:Boolean = this.property.get("Enable").getOrElse(true).asInstanceOf[Boolean]
   def enable_= (newValue:Boolean):Unit = this.setProperty("Enable",newValue)
-
 
   override def setParams(params: Dictionary[String]): Unit = {
     this.setParam[Boolean]("Checked",params,Some(false))
@@ -29,5 +28,13 @@ class CheckBox extends Control {
         }
       case _ => super.handleEvent(evKey,evData)
     }
+  }
+}
+
+object CheckBox {
+  implicit val checkBoxCreator:ControlCreator[CheckBox] = new ControlCreator[CheckBox] {
+    override def name: String = "CheckBox"
+    override def create(): Control = new Control
+    override def init(): Unit = {}
   }
 }

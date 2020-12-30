@@ -17,6 +17,7 @@ class TextRender(override val entity:Entity) extends BaseComponent(entity) {
 
   def color_= (newColor:Color):Unit = {
     _color = newColor
+    println(_color)
     this.colorToRust()
     _color.setCallback(this.colorToRust)
   }

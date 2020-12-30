@@ -32,6 +32,14 @@ sealed trait SExpr {
                 ""
         }
     }
+
+    def castString():String = {
+        this match {
+            case SString(value) => value
+            case _ => ""
+        }
+    }
+
     def castSingleAny():Any = {
         this match {
             case SBool(value) => value

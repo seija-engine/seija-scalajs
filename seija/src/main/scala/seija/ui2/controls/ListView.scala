@@ -1,11 +1,10 @@
 package seija.ui2.controls
 import demo.TDemoItem
-import seija.ui2.Control
+import seija.ui2.{Control, ControlCreator, UITemplate}
 
 import scala.scalajs.js.Dictionary
 import scala.scalajs.js
 import seija.data.XmlNode
-import seija.ui2.UITemplate
 import seija.core.Transform
 import seija.s2d.TextRender
 import seija.math.Vector2
@@ -30,6 +29,7 @@ class ListView extends Control {
     }
 
     override def setTemplates(temples: Dictionary[XmlNode]): Unit = {
+       super.setTemplates(temples)
        this.itemTemplate = temples.get("ItemTemplate")
     }
 
@@ -93,4 +93,12 @@ class ListView extends Control {
     }
 
    
+}
+
+object ListView {
+  implicit val listViewCreator:ControlCreator[ListView] = new ControlCreator[ListView] {
+    override def name: String = "ListView"
+    override def create(): Control = new ListView
+    override def init(): Unit = {}
+  }
 }

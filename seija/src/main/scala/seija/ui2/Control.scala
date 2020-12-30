@@ -7,6 +7,7 @@ import seija.ui2.UIComponent.cacheContent
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
 
+
 class Control extends IBehavior {
   var nsDic: js.Dictionary[String] = js.Dictionary()
   private var _parent: Option[Control] = None
@@ -94,7 +95,9 @@ class Control extends IBehavior {
 
   def setParams(params: js.Dictionary[String]): Unit = {}
 
-  def setTemplates(temples: js.Dictionary[XmlNode]): Unit = {}
+  def setTemplates(temples: js.Dictionary[XmlNode]): Unit = {
+    this.template =Some(new UITemplate(temples("Template"),this))
+  }
 
   def setParam[T](name: String, dic: js.Dictionary[String], defValue: Option[T])(implicit readT: Read[T]): Unit = {
     dic.get(name) match {
@@ -119,7 +122,9 @@ class Control extends IBehavior {
       cacheContent.parent = Some(this._parent.get.sContent)
       cacheContent.set("setFunc", SUserData(v => this.setProperty(name, v)))
       val retValue = SExprInterp.evalStringToValue(paramString.get, Some(cacheContent))
-      this.setProperty(name, retValue)
+      if(retValue != null) {
+        this.setProperty(name, retValue)
+      }
     } else if (defValue.isDefined) {
       this.property.put(name, defValue.get)
     }
