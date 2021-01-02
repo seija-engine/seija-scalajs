@@ -1,0 +1,7 @@
+<ContextMenu xmlns:core="/core/">
+    <Template>
+        <core:Frame position="0,-25,0" width="200" height="200" viewType="Absolute" >
+            <core:Image texture="(env res.white)" color="#aaaaaa" />
+        </core:Frame>
+    </Template>
+</ContextMenu>

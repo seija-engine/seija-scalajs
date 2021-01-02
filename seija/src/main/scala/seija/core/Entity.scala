@@ -62,11 +62,10 @@ class Entity(val id:Int) {
 
   private def removeFromParent(isDestroy:Boolean):Unit = {
     if(this._parent.isDefined) {
-        val index = this._parent.get._children.indexOf(this);
-        this._parent.get._children.remove(index);
+        val index = this._parent.get._children.indexOf(this)
+        this._parent.get._children.remove(index)
     }
     Foreign.treeRemove(this.id,isDestroy)
-
   }
 
   def destroy():Unit = {
@@ -79,10 +78,10 @@ class Entity(val id:Int) {
   }
 
   def clear():Unit = {
-    if(this.isDestroy) return;
-    if(this._parent.isEmpty) {
-       EventSystem.unRegEventNode(this.id)
-    }
+    if(this.isDestroy) return
+    //if(this._parent.isEmpty) {
+    EventSystem.removeEventNode(this.id)
+    //}
     for((_,v) <- this.components) {
       v.onDetach()
     }

@@ -30,6 +30,7 @@ class App(val game:IGame,val simple2d: Simple2d) {
          EventSystem.handleEvent(ev.asInstanceOf[js.Array[js.Any]])
       }
     }
+    
     this.game.onUpdate();
   }
 

@@ -53,6 +53,22 @@ object LayoutAlignment extends Enumeration {
   }
 }
 
+object ViewType extends Enumeration {
+  type ViewType = Value
+  val Static:ViewType = Value(0)
+  val Absolute:ViewType = Value(1)
+
+  implicit val readViewType:Read[ViewType] = new Read[ViewType] {
+    override def read(string: String): Option[ViewType] = {
+      string match {
+        case "Static" => Some(ViewType.Static)
+        case "Absolute" => Some(ViewType.Absolute)
+        case _ => None
+      }
+    }
+  }
+}
+
 object  Orientation extends Enumeration {
   type Orientation = Value
   val Horizontal:Orientation = Value(0)

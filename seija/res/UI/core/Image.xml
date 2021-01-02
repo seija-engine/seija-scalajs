@@ -2,8 +2,8 @@
     <Template>
         <Entity>
             <Components>
-                <EventNode OnClick="#(emit :ClickImage)" />
-                <Transform  scale="(attr :scale)" />
+                <EventNode  />
+                <Transform   scale="(attr :scale)" />
                 <Rect2D />
                 <LayoutView size="(vec2 (attr :width) (attr :height))"
                             margin="(attr :margin)"
@@ -11,6 +11,7 @@
                             position="(attr :position)"
                             hor = "(attr :hor)"
                             ver = "(attr :ver)"
+                            viewType = "(attr :viewType)"
                 />
                 <ImageRender texture="(env res.white)" color="(attr-bind :color)" />
                 <Transparent />

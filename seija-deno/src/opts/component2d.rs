@@ -52,7 +52,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"setLayoutVer", set_layout_ver);
     reg_json_op_sync(rt,"setLayoutSize", set_layout_size);
     reg_json_op_sync(rt,"setLayoutPosition", set_layout_position);
-    reg_json_op_sync(rt, "setLayoutViewType", set_layout_view_type);
+    reg_json_op_sync(rt,"setLayoutViewType", set_layout_view_type);
     reg_json_op_sync(rt,"addStackLayout",add_stack_layout);
     reg_json_op_sync(rt,"setStackOrientation",set_stack_orientation);
     reg_json_op_sync(rt,"setStackSpacing",set_stack_spacing);

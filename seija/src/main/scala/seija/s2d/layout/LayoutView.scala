@@ -2,6 +2,7 @@ package seija.s2d.layout
 import seija.core.{BaseComponent, Component, Entity, Foreign}
 import seija.math.{Vector2, Vector3}
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
+import seija.s2d.layout.ViewType.ViewType
 
 
 class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
@@ -11,7 +12,13 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
   protected var _ver:LayoutAlignment = LayoutAlignment.Fill
   protected var _size:Vector2 = Vector2.default()
   protected var _position:Vector3 = Vector3.default()
+  protected var _viewType:ViewType = ViewType.Static
 
+  def viewType:ViewType = _viewType
+  def setViewType(typ:ViewType): Unit = {
+    _viewType = typ
+    Foreign.setLayoutViewType(this.entity.id,_viewType.id)
+  }
   def margin():Thickness = _margin
   def setMargin(margin:Thickness):Unit = {
     _margin = margin

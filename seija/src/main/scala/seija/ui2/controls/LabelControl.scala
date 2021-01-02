@@ -15,6 +15,8 @@ class LabelControl extends Control {
         this.setParam[Color]("color",params,Some(Color.New(0,0,0,1)))
         this.setParam[Int]("fontSize",params,Some(16))
         this.setEventParam("OnClick",params)
+        this.setEventParam("OnMouseEnter",params)
+        this.setEventParam("OnTouchStart",params)
     }
 }
 

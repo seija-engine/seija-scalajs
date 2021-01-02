@@ -47,6 +47,16 @@ impl ToJsValue for GameEvent {
                 let v8_y = v8::Number::new(scope, *y).into();
                 v8::Array::new_with_elements(scope, &[v8_x ,v8_y]).into()
             }
+            GameEvent::TouchStart((x,y)) => {
+                let v8_x = v8::Number::new(scope, *x).into();
+                let v8_y = v8::Number::new(scope, *y).into();
+                v8::Array::new_with_elements(scope, &[v8_x ,v8_y]).into()
+            }
+            GameEvent::TouchEnd((x,y)) => {
+                let v8_x = v8::Number::new(scope, *x).into();
+                let v8_y = v8::Number::new(scope, *y).into();
+                v8::Array::new_with_elements(scope, &[v8_x ,v8_y]).into()
+            }
             _ => v8::String::new(scope, format!("{:?}",self).as_str()).unwrap().into()
         };
        unsafe {std::mem::transmute(local) } 

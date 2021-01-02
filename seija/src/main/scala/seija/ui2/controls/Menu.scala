@@ -1,73 +1,153 @@
 package seija.ui2.controls
-import seija.core.Entity
-import seija.data.{DynObject, SContent, SExpr, SExprInterp, SNFunc, SNil, SUserData, SVector, XmlNode}
+import seija.core.{Entity,Time}
+import seija.data._
+import seija.data.CoreRead._
 import seija.ui2.{Control, ControlCreator, UISystem, UITemplate}
 import slogging.LazyLogging
 
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
+import seija.core.event.EventSystem
+import seija.core.event.GameEventType
+import seija.core.event.GameEvent
 
-case class MenuItemData(val text:String,val children:js.Array[MenuItemData],var index:Int = 0)
+case class MenuItemData(text:String,children:js.Array[MenuItemData],var index:Int = 0)
+
 class MenuItem extends Control {
+  def isSelect:Boolean = this.property("isSelect").asInstanceOf[Boolean]
+  def isSelect_= (newVal:Boolean): Unit = this.setProperty("isSelect",newVal)
+
+
   override def init(): Unit = {
     this.property.put("isSelect",false)
     super.init()
   }
 
   override def handleEvent(evKey: String, evData: js.Array[SExpr]): Unit = {
-    this.setProperty("isSelect",true)
+    this.parent.foreach(_.handleEvent(evKey,evData))
   }
 }
 
 class Menu extends Control with LazyLogging {
   var itemTemplate:Option[XmlNode] = None
-  def selectIndex:Int = this.property("selectIndex").asInstanceOf[Int]
+  var selectIndex:Int = -1
+  val items:js.Array[MenuItem] = js.Array()
+  var isShowing:Boolean = false
+  var globalHandle:Option[IndexedRef] = None
+  var lastClickFrame:Int = -1
+  var contextMenu:Option[ContextMenu] = None
+
+  def contextMenuPath:String = this.property("contextMenu").asInstanceOf[String]
+  def menuDatas:js.Array[MenuItemData] = this.property("dataSource").asInstanceOf[js.Array[MenuItemData]]
 
   override def setParams(params: Dictionary[String]): Unit = {
     PropertySet.setLayout(this,params)
     this.setLispParam[js.Array[MenuItemData]]("dataSource",params,Some(js.Array()))
-    this.property.put("selectIndex",-1)
+    this.setParam[String]("contextMenu",params,Some("core/ContextMenu.xml"))
   }
 
   override def setTemplates(temples: Dictionary[XmlNode]): Unit = {
     super.setTemplates(temples)
     this.itemTemplate = temples.get("ItemTemplate")
-
+    
   }
 
-  override def init(): Unit = {
+  def unSelectAll() {
+    for(item <- this.items;if item.isSelect) {
+      item.isSelect = false
+    }
+  }
+
+  def selectMenu(index:Int) {
+    if(index == this.selectIndex) return
+    this.unSelectAll()
+    val curMenuItem = this.items(index)
+    curMenuItem.isSelect = true
+    this.selectIndex = index
+    this.contextMenu match {
+      case Some(value) =>
+        value.entity.get.setParent(this.items(index).entity)
+      case None =>
+        val newControl = UISystem.create(this.contextMenuPath,parent = Some(this)).toOption
+        newControl.get.entity.get.setParent(this.items(index).entity)
+        this.contextMenu = newControl.asInstanceOf[Option[ContextMenu]]
+    }
+  }
+
+  def unSelectMenu(): Unit = {
+    this.selectIndex = -1
+    this.contextMenu.foreach(_.destroy())
+    this.contextMenu = None
+  }
+
+  override def handleEvent(evKey: String, evData: js.Array[SExpr])  {
+    evKey match {
+      case ":click-menu" =>
+        if(lastClickFrame == Time.frame()) return
+        lastClickFrame = Time.frame()
+        if(this.isShowing) {
+          this.unSelectAll()
+          this.isShowing = false;
+          this.unSelectMenu()
+          this.globalHandle.foreach(EventSystem.removeGlobalEvent(GameEventType.TouchStart,_))
+          this.globalHandle = None
+
+          return
+        }
+        this.isShowing = true
+        this.globalHandle = EventSystem.addGlobalEvent(GameEventType.TouchStart,this.OnTouchStart)
+        val index = evData(0).castSingleAny().asInstanceOf[Int]
+
+        this.selectMenu(index)
+      case ":menu-enter" =>
+        val index = evData(0).castSingleAny().asInstanceOf[Int]
+        if(this.isShowing) {
+          this.selectMenu(index)
+        }
+    }
+  }
+
+  protected def OnTouchStart(ev:GameEvent) {
+     if(lastClickFrame == Time.frame()) {
+       return
+     }
+     lastClickFrame = Time.frame()
+     this.unSelectAll()
+     this.isShowing = false
+     this.globalHandle.foreach(idx => {
+       EventSystem.removeGlobalEvent(GameEventType.TouchStart,idx)
+     })
+    this.globalHandle = None
+    this.unSelectMenu()
+  }
+
+  override def init()  {
     super.init()
     val slotEntity:Option[Entity] = this.template.get.slots.get("Children")
     if (slotEntity.isEmpty) {
       logger.error("Slot.Children not found")
       return
     }
-    val menus:js.Array[MenuItemData] = this.property("dataSource").asInstanceOf[js.Array[MenuItemData]]
+    val menus:js.Array[MenuItemData] = this.menuDatas
     var idx = 0
+    this.items.clear()
     for(topItem <- menus) {
       topItem.index = idx
-      createMenuItem(topItem,slotEntity.get)
+      val item = createMenuItem(topItem,slotEntity.get)
+      this.items.push(item)
       idx += 1
     }
   }
 
-  def createMenuItem(data:MenuItemData,slot: Entity):Unit = {
+  def createMenuItem(data:MenuItemData,slot: Entity):MenuItem = {
     val newItem = new MenuItem()
     newItem.template = Some(new UITemplate(this.itemTemplate.get,newItem))
     newItem.nsDic = this.nsDic
     newItem.dataContent = Some(data)
-
     newItem.init()
     newItem.setParent(Some(this))
     newItem.entity.get.setParent(Some(slot))
-  }
-
-  override def handleEvent(evKey: String, evData: js.Array[SExpr]): Unit = {
-    evKey match {
-      case ":click-menu" =>
-        val index = evData(0).caseInt()
-        println(index)
-    }
+    newItem
   }
 }
 

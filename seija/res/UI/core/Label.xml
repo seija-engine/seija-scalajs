@@ -14,7 +14,7 @@
                             hor = "(attr :hor)"
                             ver = "(attr :ver)"
                 />
-                <EventNode OnClick="(node-ev-bind :OnClick)" />
+                <EventNode OnTouchStart="(node-ev-bind :OnTouchStart)" OnClick="(node-ev-bind :OnClick)" OnMouseEnter="(node-ev-bind :OnMouseEnter)" />
             </Components>
         </Entity>
     </Template>

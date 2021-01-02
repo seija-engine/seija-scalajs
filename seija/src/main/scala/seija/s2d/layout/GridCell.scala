@@ -23,7 +23,6 @@ class GridCell (override val entity:Entity) extends BaseComponent(entity) {
 
     def setRowSpan(rowSpan:Int):Unit = {
         _rowSpan = rowSpan
-        println(s"rownSppp ${_rowSpan}")
         updateToRust()
     }
 

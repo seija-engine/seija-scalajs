@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
-use seija::{common::{Tree, TreeNode}, specs::{WorldExt,Entity,world::Builder,Join}};
+use seija::{common::{Tree, TreeNode}, specs::{Entity, Join, WorldExt, WriteStorage, world::Builder}};
 use serde_json::Value;
 use seija::s2d::{S2DLoader,DefaultBackend};
 use seija::common::EntityInfo;
@@ -50,6 +50,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     
 
     reg_json_op_sync(rt, "getTimeDelta", get_time_delta);
+    reg_json_op_sync(rt, "getTimeFrame", get_time_frame);
     reg_json_op_sync(rt, "getTimeScale", get_time_scale);
     reg_json_op_sync(rt, "getAbsoluteTime", get_absolute_time);
     reg_json_op_sync(rt, "setTimeScale", set_time_scale);
@@ -102,21 +103,7 @@ fn add_event_node(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<V
     Ok(Value::Bool(false))
 }
 
-pub fn add_global_event_(eid:u32,ev_type:u32) -> bool {
-    let world = get_mut_world();
-    let entity = world.entities().entity(eid);
-    let mut global_storage = world.write_storage::<GlobalEventNode>();
-    if !global_storage.contains(entity) {
-       let mut event_node = GlobalEventNode::default();
-       let call_back = JSEventCallback {eid };
-       if let  Some(typ) = GameEventType::from(ev_type) {
-            event_node.insert(typ, Box::new(call_back));
-            global_storage.insert(entity, event_node).unwrap();
-            return true;
-       }
-    }
-    false
-}
+
 
 fn entity_childrens(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();
@@ -181,6 +168,12 @@ fn get_time_delta(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value
     let world = get_mut_world();
     let delta_time = world.read_resource::<Time>().delta_seconds();
     Ok(Value::from(delta_time))
+}
+
+fn get_time_frame(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let frame = world.read_resource::<Time>().frame_number();
+    Ok(Value::from(frame))
 }
 
 fn get_time_scale(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {

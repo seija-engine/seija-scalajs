@@ -11,7 +11,9 @@
                     (attr-bind :isSelect #(if % color.blue color.transparent))
                 </Param.color>
             </core:Image>
-            <core:Label  OnClick="#(emit :click-menu (ctx-data data.index))"  width="50" height="26" margin="0,0,0,0" fontSize="20" text="(ctx-data data.text)" >
+            <core:Label  OnTouchStart="#(emit :click-menu (ctx-data data.index))"  
+                         width="50" height="26" margin="0,0,0,0" fontSize="20" text="(ctx-data data.text)"
+                         OnMouseEnter="#(emit :menu-enter (ctx-data data.index))" >
                 <Param.color>
                     (attr-bind :isSelect #(if % color.white color.black))
                 </Param.color>

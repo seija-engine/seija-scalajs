@@ -155,7 +155,15 @@ class Control extends IBehavior {
 
 
   def destroy(): Unit = {
-    this.setParent(None);
+    this.setParent(None)
+    for(child <- this.children) {
+      //child.destroy()
+    }
+    this.children.length = 0
+    this.OnDestroy()
+  }
+
+  def OnDestroy():Unit = {
     if (this.entity.isDefined) {
       this.entity.get.destroy()
     }

@@ -74,6 +74,8 @@ object UISystem extends LazyLogging {
     this.registerCreator[Grid]()
     this.registerCreator[GridCell]()
     this.registerCreator[Menu]()
+    this.registerCreator[ContextMenu]()
+    this.registerCreator[EntityControl]()
   }
 
   def getXml(path:String):Either[String,XmlNode] = {
@@ -239,8 +241,9 @@ object UISystemSFunc {
     val eventNode:EventNode = content.find("event-node").get.asInstanceOf[SUserData].value.asInstanceOf[EventNode]
     val evName = evalArgs(0).castKeyword().tail
     val evValue = control.evProperty.get(evName)
+    
     if(evValue.isDefined) {
-      val evType = GameEventType.gameEventTypeRead.read(evName).get
+      val evType = GameEventType.gameEventTypeRead.read(evName.substring(2)).get
       eventNode.register(evType,evValue.get._1,evValue.get._2)
     }
     SNil

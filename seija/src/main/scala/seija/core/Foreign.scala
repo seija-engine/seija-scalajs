@@ -30,6 +30,8 @@ object Foreign {
 
   def getTimeScale:Float = Deno.core.jsonOpSync("getTimeScale").asInstanceOf[Float]
 
+  def getTimeFrame:Int = Deno.core.jsonOpSync("getTimeFrame").asInstanceOf[Int]
+
   def closeApp():Unit = Deno.core.jsonOpSync("closeApp")
 
   def newEntity:Int = Deno.core.jsonOpSync("newEntity").asInstanceOf[Int]
@@ -201,6 +203,9 @@ object Foreign {
 
   def setLayoutSize(entity: Int,w:Float,h:Float): Unit =
     Deno.core.jsonOpSync("setLayoutSize",js.Array(entity,w,h))
+
+  def setLayoutViewType(entity:Int,typ:Int):Unit =
+    Deno.core.jsonOpSync("setLayoutViewType",js.Array(entity,typ))
 
   def setLayoutPosition(entity: Int,x:Float,y:Float,z:Float): Unit =
     Deno.core.jsonOpSync("setLayoutPosition",js.Array(entity,x,y,z))

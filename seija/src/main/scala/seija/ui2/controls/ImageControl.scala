@@ -19,6 +19,7 @@ class ImageControl extends Control {
     this.setParam[Color]("color",params,Some(Color.New(1,1,1,1)))
     this.setParam[Int]("texture",params,None)
     this.setParam[Int]("Int",params,Some(0))
+    this.setParam[Vector3]("tPosition",params,Some(Vector3.zero))
     this.setParam[ImageType]("type",params,None)
   }
 

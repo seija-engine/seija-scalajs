@@ -1,4 +1,4 @@
-use seija::core::IGame;
+use seija::{core::IGame, event::global::GlobalEventNode, specs::WriteStorage};
 use seija::specs::{World,WorldExt,Builder};
 use deno_core::{v8,OpState};
 use seija::common::{Transform};
@@ -12,6 +12,8 @@ use std::collections::VecDeque;
 use once_cell::sync::Lazy;
 use crate::core::ToJsValue;
 use crate::core::event::GameMessage;
+
+use super::event::JSEventCallback;
 pub struct JSGame<'a> {
     start_func:v8::Local<'a,v8::Function>,
     update_func:v8::Local<'a,v8::Function>,
@@ -43,6 +45,18 @@ impl<'a> JSGame<'a> {
             events:vec![],
         }
     }
+
+    fn add_global_events(world:&mut World,eid:u32) {
+        let entity = world.entities().entity(eid);
+        let mut global_storage:WriteStorage<GlobalEventNode> = world.write_storage::<GlobalEventNode>();
+        let mut event_node = GlobalEventNode::default();
+
+        event_node.insert(GameEventType::KeyBoard, Box::new(JSEventCallback {eid }));
+        event_node.insert(GameEventType::TouchStart, Box::new(JSEventCallback {eid }));
+        event_node.insert(GameEventType::TouchEnd, Box::new(JSEventCallback {eid }));
+        global_storage.insert(entity, event_node).unwrap();    
+        
+    }
 }
 
 impl<'a> IGame for JSGame<'a> {
@@ -58,8 +72,8 @@ impl<'a> IGame for JSGame<'a> {
                                   .with(Camera::standard_2d(w, h))
                                   .build();
         world.insert(ActiveCamera {entity : Some(entity) });
-        let ev_typ_id = GameEventType::KeyBoard as u32;
-        crate::opts::core::add_global_event_(entity.id(), ev_typ_id);
+       
+        JSGame::add_global_events(world, entity.id());
         world.fetch::<S2DLoader>().env().set_fs_root("./res/");
         
         let box_world = Box::new(world as *mut World);
@@ -71,7 +85,8 @@ impl<'a> IGame for JSGame<'a> {
         self.start_func.call(&mut self.scope, self.local_value, &[world_res_id.into()]);
     }
 
-    fn update(&mut self,world:&mut World) {
+
+    fn update(&mut self,_world:&mut World) {
        
         unsafe {
             for msg in MESSAGES.iter() {

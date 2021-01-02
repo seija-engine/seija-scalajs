@@ -9,7 +9,8 @@
                              ver = "(attr :ver)"
                              margin="(attr :margin)"
                              padding="(attr :padding)"
-                             position="(attr :position)" />
+                             position="(attr :position)"
+                             viewType="(attr :viewType)" />
             </Components>
             <Slot.Children />
         </Entity>

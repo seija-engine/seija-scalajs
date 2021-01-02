@@ -10,6 +10,7 @@ import seija.data.CoreRead._
 import seija.s2d.assets.Font
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
 import seija.s2d.layout.Orientation.Orientation
+import seija.s2d.layout.ViewType.ViewType
 import seija.s2d.layout.{ContentView, GridCell, GridLayout, LNumber, LayoutView, StackLayout, Thickness}
 
 class TransformUIComp extends UIComponent {
@@ -67,13 +68,13 @@ class EventNodeUIComp extends UIComponent {
     for((k,v) <- dic) {
       val (head,tail) = k.splitAt(2)
       if(head == "On") {
-
         val evType = GameEventType.gameEventTypeRead.read(tail)
         if(evType.isDefined) {
           UIComponent.cacheContent.clear()
           UIComponent.cacheContent.parent = Some(tmpl.control.sContent)
           UIComponent.cacheContent.set("event-node",SUserData(eventNode))
           val evalValue = SExprInterp.evalString(v, Some(UIComponent.cacheContent))
+         
           evalValue match {
             case Right(SVector(list)) =>
               val isCapture = list(0).asInstanceOf[SBool].value
@@ -131,6 +132,7 @@ class LayoutViewUIComp extends UIComponent {
     UIComponent.initParam[Vector3]("position",dic,s => layoutView.setPosition(s),tmpl.control.sContent)
     UIComponent.initParam[Thickness]("margin",dic,t => layoutView.setMargin(t),tmpl.control.sContent)
     UIComponent.initParam[Thickness]("padding",dic,t => layoutView.setPadding(t),tmpl.control.sContent)
+    UIComponent.initParam[ViewType]("viewType",dic,t => layoutView.setViewType(t),tmpl.control.sContent)
   }
 }
 

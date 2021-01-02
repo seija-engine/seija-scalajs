@@ -6,4 +6,6 @@ object Time {
   def timeDelta():Float = Foreign.getTimeDelta
 
   def timeScale():Float = Foreign.getTimeScale
+
+  def frame():Int = Foreign.getTimeFrame
 }

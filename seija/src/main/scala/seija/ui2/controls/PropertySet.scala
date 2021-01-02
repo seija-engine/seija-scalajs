@@ -4,8 +4,9 @@ import seija.ui2.Control
 import scala.scalajs.js
 import seija.data.CoreRead._
 import seija.math.Vector3
-import seija.s2d.layout.{LayoutAlignment, Thickness}
+import seija.s2d.layout.{LayoutAlignment, Thickness, ViewType}
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment
+import seija.s2d.layout.ViewType.ViewType
 object PropertySet {
   def setEvent(control:Control,params:js.Dictionary[String]):Unit = {
     control.setEventParam("OnClick",params)
@@ -19,5 +20,6 @@ object PropertySet {
     control.setParam[Vector3]("position",params,Some(Vector3.zero))
     control.setParam[Thickness]("margin",params,Some(Thickness(0,0,0,0)))
     control.setParam[Thickness]("padding",params,Some(Thickness(0,0,0,0)))
+    control.setParam[ViewType]("viewType",params,Some(ViewType.Static))
   }
 }

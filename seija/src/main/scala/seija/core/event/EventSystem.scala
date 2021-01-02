@@ -1,60 +1,74 @@
 package seija.core.event
-
 import seija.core.Entity
+import GameEventType.GameEventType
 import seija.data.Read
 import seija.math.Vector3
-
 import scala.collection.mutable
-import scala.scalajs.js;
-object EventSystem {
-  var globalCallbacks:js.Array[() => Unit] = js.Array()
-  var nodeEvents:mutable.HashMap[Int,EventNode] = mutable.HashMap();
+import scala.scalajs.js
+import slogging.LazyLogging
+import seija.data.IndexedRef
+object EventSystem extends LazyLogging {
+  private val globalEvents:mutable.HashMap[GameEventType,js.Array[IndexedRef]] = mutable.HashMap()
+  private val rmGlobals:js.Array[(GameEventType,IndexedRef)] = js.Array()
+  private var nodeEvents:mutable.HashMap[Int,EventNode] = mutable.HashMap();
 
-  def handleEvent(event:js.Array[js.Any]):Unit = {
-    val typId = event(0).asInstanceOf[Int];
+  def handleEvent(eventData:js.Array[js.Any]):Unit = {
+    val typId = eventData(0).asInstanceOf[Int];
     typId match {
       case 0 =>
-        this.globalCallbacks.foreach(f => f())
+        val evTypeId = eventData(2).asInstanceOf[Int];
+        val gameEv = GameEvent.fromJs(evTypeId,eventData(4).asInstanceOf[js.Array[Any]]);
+        globalEvents.get(GameEventType(evTypeId)).foreach(arr => {
+          arr.foreach(ev => ev.value.asInstanceOf[GameEvent => Unit](gameEv))
+        })
+        for((evType,idxRef) <- this.rmGlobals) {
+          if(this.globalEvents.contains(evType)) {
+            val arr = this.globalEvents(evType)
+            arr.remove(idxRef.index)
+            for(idx <- 0 until arr.length) {
+              arr(idx).index = idx
+            }
+          }
+        }
+        this.rmGlobals.length = 0
       case 1 =>
-        val entityId = event(1).asInstanceOf[Int]
+        val entityId = eventData(1).asInstanceOf[Int]
         if(nodeEvents.contains(entityId)) {
-          val evTypeId = event(2).asInstanceOf[Int];
-          val ex0:Boolean = if (event(3).asInstanceOf[Int] == 0)  false else true;
+          val evTypeId = eventData(2).asInstanceOf[Int];
+          val ex0:Boolean = if (eventData(3).asInstanceOf[Int] == 0)  false else true;
           nodeEvents(entityId).fireEvent(GameEventType(evTypeId),ex0);
         }
-      case 3 => //delete Entity
-        val eid = event(1).asInstanceOf[Int];
-        if(nodeEvents.contains(eid) && nodeEvents(eid).entity.parent.isDefined) {
-          this.unRegEventNode(eid)
-        }
-        Entity.get(eid).foreach(_.clear())
+     
       case _ => ()
     }
-
   }
 
-  def regKeyBoard(f:() => Unit):Int = {
-    this.globalCallbacks.push(f)
+  
+
+  def addGlobalEvent(evType:GameEventType,callFn:(GameEvent) => ()): Option[IndexedRef] = {
+    if(!this.globalEvents.contains(evType)) {
+      this.globalEvents.put(evType,js.Array())
+    }
+    for(ev <- this.globalEvents(evType)) {
+      if(ev.value == callFn) return None
+    }
+    val refValue = IndexedRef(this.globalEvents(evType).length,callFn)
+    this.globalEvents(evType).push(refValue)
+    Some(refValue)
   }
 
-  def removeKeyBoard(f:() => Unit):Unit = {
-    var idx = 0;
-    for(cb <- this.globalCallbacks) {
-       if(cb == f) {
-         this.globalCallbacks.remove(idx)
-         return;
-       }
-      idx +=1;
-     }
+  def removeGlobalEvent(evType:GameEventType,idxRef:IndexedRef) {
+     if(!this.globalEvents.contains(evType)) return
+     this.rmGlobals.push((evType,idxRef))
   }
 
-  def regEventNode(eventNode: EventNode):Unit = {
+  def addEventNode(eventNode: EventNode):Unit = {
     if(!this.nodeEvents.contains(eventNode.entity.id)) {
       this.nodeEvents.put(eventNode.entity.id,eventNode)
     }
   }
 
-  def unRegEventNode(eId:Int):Unit = {
+  def removeEventNode(eId:Int):Unit = {
     this.nodeEvents.remove(eId)
   }
 }
@@ -80,3 +94,23 @@ object GameEventType extends Enumeration {
     case _ => Some(GameEventType.Click)
   }
 }
+
+sealed trait GameEvent
+object GameEvent {
+  def fromJs(typeId:Int,values:js.Array[Any]):GameEvent = {
+    val evType = GameEventType(typeId)
+    evType match {
+      case GameEventType.TouchStart => TouchStart(values(0).asInstanceOf[Float],values(1).asInstanceOf[Float])
+      case GameEventType.TouchEnd => TouchEnd(values(0).asInstanceOf[Float],values(1).asInstanceOf[Float])
+      case GameEventType.Click => Click(values(0).asInstanceOf[Float],values(1).asInstanceOf[Float])
+      case GameEventType.KeyBoard => KeyBoard(values(0).asInstanceOf[Int],values(1).asInstanceOf[Boolean])
+    }
+  }
+}
+case class TouchStart(val x:Float,val y:Float) extends GameEvent
+case class TouchEnd(val x:Float,val y:Float) extends GameEvent
+case class Click(val x:Float,val y:Float) extends GameEvent
+case class Move(val x:Float,val y:Float) extends GameEvent
+case class MouseEnter(val x:Float,val y:Float) extends GameEvent
+case class MouseLeave(val x:Float,val y:Float) extends GameEvent
+case class KeyBoard(val code:Int,val isDown:Boolean) extends GameEvent
