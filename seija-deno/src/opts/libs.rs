@@ -32,6 +32,7 @@ fn parse_xml_string(scope: &mut v8::HandleScope,args: v8::FunctionCallbackArgume
 
 
 fn xml_reader_to_v8<T>(mut reader:quick_xml::Reader<T>,scope:&mut v8::HandleScope,mut ret: v8::ReturnValue) where T:BufRead {
+    
     reader.trim_text(true);
     let mut buf = Vec::new();
     let mut stack:Vec<(v8::Local<v8::Object>,u32)> = vec![];
@@ -99,6 +100,8 @@ fn xml_reader_to_v8<T>(mut reader:quick_xml::Reader<T>,scope:&mut v8::HandleScop
                     let parent_children = parent.get(scope, children_name).unwrap().to_object(scope).unwrap();
                     parent_children.set_index(scope,*len, object.into());    
                     *len = *len + 1;     
+                } else {
+                    ret.set(object.into())
                 }
                 set_attr(empty,scope,&object,attrs_name);
             }

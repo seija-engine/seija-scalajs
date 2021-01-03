@@ -1,5 +1,5 @@
 package seija.ui2.controls
-import seija.data.CoreRead.floatRead
+import seija.data.Read.floatRead
 import seija.s2d.layout.Orientation
 import seija.s2d.layout.Orientation.Orientation
 import seija.ui2.{Control, ControlCreator}

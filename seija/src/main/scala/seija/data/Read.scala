@@ -4,7 +4,7 @@ trait Read[T] {
    def read(string:String):Option[T]
 }
 
-object CoreRead {
+object Read {
    implicit val stringRead: Read[String] = (string: String) => Some(string)
    implicit val intRead: Read[Int] = (string: String) => string.toIntOption
    implicit val floatRead:Read[Float] = (string:String) => string.toFloatOption

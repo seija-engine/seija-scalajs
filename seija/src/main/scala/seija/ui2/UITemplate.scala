@@ -32,7 +32,7 @@ class UITemplate(val xmlNode: XmlNode,val control: Control,val slots:js.Dictiona
             node.children.foreach(arr => {
               for(compNode <- arr) {
                 UISystem.getUIComp(compNode.tag) match {
-                  case Some(value) => value.attach(newEntity,compNode,this)
+                  case Some(value) => value.attach(newEntity,compNode,this.control)
                   case None => logger.error(s"not found ${compNode.tag} UIComponent")
                 }
               }

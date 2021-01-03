@@ -8,9 +8,10 @@ import seija.data.XmlNode
 import seija.core.Transform
 import seija.s2d.TextRender
 import seija.math.Vector2
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.data.SExpr
 import seija.math.Vector3
+import seija.ui2.ControlParams
 
 class ListItem extends Control {
 
@@ -33,8 +34,8 @@ class ListView extends Control {
        this.itemTemplate = temples.get("ItemTemplate")
     }
 
-    override def init(): Unit = {
-       super.init()
+    override def init(param:ControlParams,parent:Option[Control] = None): Unit = {
+       super.init(param)
        val eventRecv = this.property.get("eventRecv");
        if(eventRecv.isDefined && this.eventBoard.isDefined) {
           this.eventBoard.get.register(eventRecv.get.asInstanceOf[String],this.handleEvent);
@@ -61,7 +62,7 @@ class ListView extends Control {
       itemControl.template = Some(new UITemplate(this.itemTemplate.get,itemControl))
       itemControl.setParent(Some(this))
       itemControl.nsDic = this.nsDic
-      itemControl.init()
+      itemControl.init(ControlParams())
       itemControl.entity.get.setParent(this.entity)
       itemControl
     }

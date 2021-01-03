@@ -6,9 +6,14 @@ import seija.ui2.UIComponent.cacheContent
 
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary
+import slogging.LazyLogging
 
+case class ControlParams(paramStrings:js.Dictionary[String] = js.Dictionary(),
+                         paramXmls:js.Dictionary[XmlNode] = js.Dictionary(),
+                         var children:js.Array[XmlNode] = js.Array())
 
-class Control extends IBehavior {
+class Control extends IBehavior with LazyLogging {
+  val slots:js.Dictionary[Entity] = js.Dictionary()
   var nsDic: js.Dictionary[String] = js.Dictionary()
   private var _parent: Option[Control] = None
 
@@ -24,13 +29,14 @@ class Control extends IBehavior {
   var eventBoard: Option[EventBoard] = None
 
   val children: js.Array[Control] = js.Array()
+  
 
-
-  def init(): Unit = {
+  def init(param:ControlParams,parent:Option[Control] = None): Unit = {
+    this.template = param.paramXmls.get("Template").map(new UITemplate(_,this))
     this.sContent.set("control", SUserData(this))
     if (this.template.isDefined) {
       this.template.get.create() match {
-        case Left(value) => println(value)
+        case Left(value) => logger.error(value)
         case Right(value) => this.entity = Some(value)
       }
     }

@@ -2,7 +2,7 @@ package seija.ui2.controls
 import seija.data.{SExpr, SString, XmlNode}
 import seija.math.Vector3
 import seija.ui2.{Control, ControlCreator, UITemplate}
-import seija.data.CoreRead._
+import seija.data.Read._
 
 import scala.scalajs.js
 import scala.scalajs.js.Dictionary

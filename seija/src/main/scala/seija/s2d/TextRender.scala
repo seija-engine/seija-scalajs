@@ -2,7 +2,7 @@ package seija.s2d
 
 import seija.core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam}
 import seija.data.AnchorAlign.AnchorAlign
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.data.{Color, Read}
 import seija.s2d.assets.Font
 

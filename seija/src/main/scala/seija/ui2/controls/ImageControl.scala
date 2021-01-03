@@ -3,7 +3,7 @@ package seija.ui2.controls
 import seija.data.{Color, SExpr, SInt, XmlNode}
 import seija.math.{Vector2, Vector3}
 import seija.ui2.{Control, ControlCreator, UITemplate}
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.s2d.ImageType
 
 import scala.scalajs.js

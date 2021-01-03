@@ -1,0 +1,9 @@
+<Frame xmlns:core="/c/" margin="10,10,10,10">
+    <Param.Children>
+       <Frame>
+         <Param.Children>
+            <core:NewImage />
+         </Param.Children>
+       </Frame>
+    </Param.Children>
+</Frame>

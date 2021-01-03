@@ -2,7 +2,7 @@ package seija.ui2.controls
 import seija.ui2.Control
 
 import scala.scalajs.js
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.math.Vector3
 import seija.s2d.layout.{LayoutAlignment, Thickness, ViewType}
 import seija.s2d.layout.LayoutAlignment.LayoutAlignment

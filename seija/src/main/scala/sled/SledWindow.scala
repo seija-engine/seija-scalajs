@@ -4,25 +4,31 @@ import seija.core.event.CABEventRoot
 import seija.s2d.Rect2D
 import seija.s2d.layout.ContentView
 import slogging.LazyLogging
-import seija.ui2.UISystem
+import seija.ui.UISystem
 import scala.scalajs.js
+import seija.ui.ControlParams
 class SledWindow extends IGame with LazyLogging {
   
   override def onStart()  {
     Assets.init()
+
     UISystem.ENV.put("res",js.Dictionary(
       "sheet" -> Assets.chromeSheet.get.id,
       "white" -> Assets.white.get.id,
       "font" -> Assets.font.get.id
     ))
-    
-    
-    UISystem.initCore("./res/UI/")
-    UISystem.create("MainWindow.xml") match {
-      case Left(value) => logger.error(value)
-      case Right(control) =>
 
-    }
+    UISystem.init("./res/UI/")
+    UISystem.createByFile("NewPanel.xml",None, ControlParams())
+   
+    
+    
+    
+    //UISystem.initCore("./res/UI/")
+    //UISystem.createByFile("Rewrite.xml",None,ControlParams()) match {
+    //  case Left(value) => logger.error(value)
+    //  case Right(control) =>
+    //}
   }
 
   

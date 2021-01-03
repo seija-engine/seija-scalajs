@@ -42,33 +42,11 @@ function deleteEntity(eid) {
 var root = null;
 var childrenLst = [];
 function game_start(world_rid) {
-  worldId = world_rid;
-  console.log(worldId);
-  root = newEntity();
-  Deno.core.jsonOpSync("addCABEventRoot",root);
-  addTransform(root);
-  addRect2D(root,300,300);
-  addEventNode(root,0,true);
- 
- 
-  for(var i = 0;i< 10;i++) {
-    var e = newEntity();
-    childrenLst.push(e);
-    setParent(e,root);
-  }
- 
+  var ret = Seija.parseXML("a.xml");
+  console.log(JSON.stringify(ret))
 }
 
 function game_update(args) {
-  if(args.length > 0) {
-    if(childrenLst.length > 0) {
-      deleteEntity(childrenLst.shift());
-     
-    }
-    console.log(args[0] +" ----"+args.length);
-  }
- 
-  
 
 }
 
@@ -76,9 +54,8 @@ function game_quit() {
   console.log("game quit");
 }
 
-const _newline = new Uint8Array([10]);
 let s2d = Deno.core.jsonOpSync("newSimple2d",{
-window:{bg_color:[0.6,0.6,0.6,1],width:320,height:240 }
+  window:{bg_color:[0.6,0.6,0.6,1],width:320,height:240 }
 });
 
 Seija.runApp(s2d,game_start,game_update,game_quit);

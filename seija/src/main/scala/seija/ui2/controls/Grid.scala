@@ -1,5 +1,5 @@
 package seija.ui2.controls
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.s2d.layout.{LConst, LNumber, LRate}
 import seija.ui2.{Control, ControlCreator}
 

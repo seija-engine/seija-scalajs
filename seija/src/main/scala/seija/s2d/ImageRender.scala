@@ -2,14 +2,14 @@ package seija.s2d
 
 import seija.core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam}
 import seija.data.Color
-import seija.data.CoreRead.intRead
+import seija.data.Read.intRead
 import seija.s2d.assets.Image
 
 import scala.scalajs.js;
 class ImageRender(override val entity:Entity) extends BaseComponent(entity) with GenericImage[ImageRender] {
   
 
-  def setTexture(image:Image):Unit = {
+  def setTexture(image:Image) {
     Foreign.setImageTexture(this.entity.id,image.id)
   }
 

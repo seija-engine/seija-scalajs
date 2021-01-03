@@ -1,7 +1,7 @@
 package seija.ui2.controls
 import seija.core.{Entity,Time}
 import seija.data._
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.ui2.{Control, ControlCreator, UISystem, UITemplate}
 import slogging.LazyLogging
 
@@ -10,6 +10,7 @@ import scala.scalajs.js.Dictionary
 import seija.core.event.EventSystem
 import seija.core.event.GameEventType
 import seija.core.event.GameEvent
+import seija.ui2.ControlParams
 
 case class MenuItemData(text:String,children:js.Array[MenuItemData],var index:Int = 0)
 
@@ -18,9 +19,9 @@ class MenuItem extends Control {
   def isSelect_= (newVal:Boolean): Unit = this.setProperty("isSelect",newVal)
 
 
-  override def init(): Unit = {
+  override def init(param:ControlParams,parent:Option[Control] = None): Unit = {
     this.property.put("isSelect",false)
-    super.init()
+    super.init(param)
   }
 
   override def handleEvent(evKey: String, evData: js.Array[SExpr]): Unit = {
@@ -121,8 +122,8 @@ class Menu extends Control with LazyLogging {
     this.unSelectMenu()
   }
 
-  override def init()  {
-    super.init()
+  override def init(param:ControlParams,parent:Option[Control] = None)  {
+    super.init(param)
     val slotEntity:Option[Entity] = this.template.get.slots.get("Children")
     if (slotEntity.isEmpty) {
       logger.error("Slot.Children not found")
@@ -144,7 +145,7 @@ class Menu extends Control with LazyLogging {
     newItem.template = Some(new UITemplate(this.itemTemplate.get,newItem))
     newItem.nsDic = this.nsDic
     newItem.dataContent = Some(data)
-    newItem.init()
+    newItem.init(ControlParams())
     newItem.setParent(Some(this))
     newItem.entity.get.setParent(Some(slot))
     newItem

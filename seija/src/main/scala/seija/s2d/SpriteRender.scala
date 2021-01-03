@@ -3,7 +3,7 @@ package seija.s2d
 import scala.scalajs.js
 import seija.core.{BaseComponent, Component, Entity, Foreign, TemplateComponent, TemplateParam}
 import seija.data.Color
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.s2d.assets.SpriteSheet
 
 class SpriteRender(override val entity:Entity) extends BaseComponent(entity) with GenericImage[SpriteRender] {

@@ -3,14 +3,15 @@ import seija.core.Entity
 import seija.core.event.{EventNode, GameEventType}
 import seija.data._
 import seija.ui2.controls._
-
+import scalajs.js.Dictionary
 import scalajs.js
+import seija.data.XmlExt._
 import seija.data.DynObject
 import seija.s2d.layout.{LConst, LRate}
 import slogging.LazyLogging
 
 trait UIComponent {
-  def attach(entity: Entity,xmlNode:XmlNode,tmpl:UITemplate):Unit
+  def attach(entity: Entity,xmlNode:XmlNode,control:Control):Unit
 }
 
 trait ControlCreator[T] {
@@ -112,7 +113,7 @@ object UISystem extends LazyLogging {
       control.dataContent = dataContent
       control.setTemplates(tmpls)
       control.setParams(args)
-      control.init()
+      control.init(ControlParams())
       
       control.OnEnter()
       Right(control)
@@ -123,6 +124,59 @@ object UISystem extends LazyLogging {
       createFn <- this.controlCreators.get(xmlNode.tag).toRight(s"not found control creator ${xmlNode.tag}")
       control <- createByXmlNode(xmlNode,createFn)
     } yield control
+  }
+
+  /*
+      <Panel>
+         <Param.Template>     
+            <Image texture="white" color="(attr :bgcolor)" />
+            <Image texture="red" color="#ff0000" />
+            <Slot.Children />
+         </Param.Template>
+      </Panel>
+
+      <MainPanel>
+         <Param.Template>
+           <Panel bgcolor="#666666"> 
+             <Param.Children>
+                <Label text="Title" />
+                <Label text="Title" />
+             </Param.Children>
+           </Panel>
+         </Param.Template>
+      </MainPanel>
+    */
+  def createByFile(path:String,parent:Option[Control],param:ControlParams):Either[String,Control] = 
+    getXml(rootPath + path).flatMap(createByXml(_,parent,param))
+  
+  def createByXml(xmlNode:XmlNode,parent:Option[Control]
+                  ,param:ControlParams):Either[String,Control] = {
+    val creator = this.controlCreators.get(xmlNode.tag).toRight(s"not found control creator ${xmlNode.tag}")
+    if(creator.isLeft) return Left(creator.left.get)
+    val createFn = creator.getOrElse(null)
+    
+    for((k,v) <- xmlNode.attrs; if !param.paramStrings.contains(k)) { 
+      param.paramStrings.put(k,v) 
+    }
+    for(child <- xmlNode.children.getOrElse(js.Array())) {
+       child.tag match {
+         case tag if tag.startsWith("Param.") =>
+            val paramName = tag.substring("Param.".length())
+            if(child.children.isEmpty || child.children.get.length == 0) {
+              if(!param.paramStrings.contains(paramName)) 
+                  param.paramStrings.put(paramName,child.text.getOrElse(""))
+            } else {
+              if(!param.paramXmls.contains(paramName)) 
+                  param.paramXmls.put(paramName,child)
+              
+            }
+         case _ => ()
+       }
+    }
+    val newControl = createFn()
+    newControl.init(param,parent)
+
+    Right(newControl)
   }
 
   def registerCreator[T]()(implicit creator:ControlCreator[T]):Unit = {
@@ -198,7 +252,6 @@ object UISystemSFunc {
       control.property.get(attrName).foreach(v => setFunc(v))
       control.addPropertyListener(attrName,setFunc)
     }
-
     SNil
   }
 

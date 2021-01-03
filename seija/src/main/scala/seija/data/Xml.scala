@@ -20,7 +20,10 @@ object Xml {
   private def xmlRetToEither(loadData:js.Any):Either[String,XmlNode] = {
     if(js.typeOf(loadData) == "string") {
       Left(loadData.asInstanceOf[String])
-    } else {
+    } else if(js.typeOf(loadData) == "undefined") {
+      Left("xml format error")
+    }
+    else {
       Right(loadData.asInstanceOf[XmlNode])
     }
   }

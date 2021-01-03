@@ -3,7 +3,7 @@ package seija.ui2.controls
 import seija.ui2.{Control, ControlCreator}
 
 import scala.scalajs.js.Dictionary
-import seija.data.CoreRead._
+import seija.data.Read._
 import seija.math.Vector3
 import seija.data.Color
 
