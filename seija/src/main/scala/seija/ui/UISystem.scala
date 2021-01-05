@@ -6,6 +6,7 @@ import seija.data.XmlExt._
 import seija.ui.controls.Image
 import seija.ui.controls.Panel
 import seija.ui.controls.Frame
+import slogging.LazyLogging
 
 object UISystem {
   val ENV: js.Dictionary[Any] = js.Dictionary()
@@ -41,59 +42,18 @@ object UISystem {
       this.creators.put(creator.name,creator)
   }
 
+  def getCreator(name:String):Option[ControlCreator[Control]] = {
+    this.creators.get(name)
+  }
+
   def createByFile(path: String,parent: Option[Control],param: ControlParams): Either[String, Control] = {
-      this.getXml(rootPath + path).flatMap(this.createByXml(_,parent,param))
+      getXml(rootPath + path).flatMap(xmlNode => {
+        val fileScope = FileScope(xmlNode)
+        fileScope.create(parent)
+        fileScope.control.toRight("not found" + rootPath + path)
+      })
   }
 
-  def createByString(str:String,parent: Option[Control],param: ControlParams): Either[String, Control] = {
-      Xml.fromString(str).flatMap(createByXml(_,parent,param))
-  }
-
-  def createByXml(node: XmlNode,parent: Option[Control],param: ControlParams
-                 ,nsPaths:js.Dictionary[String] = js.Dictionary()): Either[String, Control] = {      
-      this.scanParams(node,param)
-      if(node.tag.indexOf(":") > 0) {
-        var arr = node.tag.split(":")
-        val prixPath = nsPaths.get(arr(0)).getOrElse("")
-        createByFile(prixPath + arr(1) + ".xml",parent,param)
-      } else {
-        this.create(node.tag,parent,param)
-      }
-  }
-
-  def create(controlName:String,parent:Option[Control],param:ControlParams):Either[String,Control] = {
-      val creator = this.creators.get(controlName)
-      if(creator.isEmpty) {
-          return Left(s"not found control creator $controlName")
-      }
-      val newControl = creator.get.create()
-      newControl.init(parent,param)
-      newControl.OnEnter()
-      Right(newControl)
-  }
-
-
-  def scanParams(xmlNode:XmlNode,param:ControlParams) {
-      for((attrKey,attrValue) <- xmlNode.attrs;if !param.paramStrings.contains(attrKey)) {
-        if(attrKey.startsWith("xmlns:")) {
-          val nsName = attrKey.substring("xmlns:".length())
-          param.nsPaths.put(nsName,attrValue)
-        } else {
-          param.paramStrings.put(attrKey,attrValue)
-        }
-      }
-      if(xmlNode.children.isEmpty) return
-      for(childNode <- xmlNode.children.get;if childNode.tag.startsWith("Param.")) {
-          val paramName = childNode.tag.substring("Param.".length())
-          if(childNode.children.isDefined && childNode.children.get.length > 0) {
-              if(!param.paramXmls.contains(paramName))
-                 param.paramXmls.put(paramName,childNode)
-          } else {
-              if(!param.paramStrings.contains(paramName))
-                 param.paramStrings.put(paramName,childNode.text.getOrElse(""))
-          }
-      }
-  }
 
   def findEnv(name:String):Any = {
     val nameArrays = name.split('.')
@@ -108,5 +68,45 @@ object UISystem {
       }
     }
     curValue
+  }
+}
+
+case class FileScope(xmlNode:XmlNode,nsPaths:js.Dictionary[String] = js.Dictionary(),var control:Option[Control] = None) extends LazyLogging {
+  def create(parent:Option[Control]) {
+    this.scanXmlns()
+    val controlParam = ControlParams()
+    this.scanParams(xmlNode,controlParam)
+    val creator = UISystem.getCreator(xmlNode.tag)
+    if(creator.isEmpty) {
+      logger.error(s"not find creator ${xmlNode.tag}")
+    }
+    val newControl = creator.get.create()
+    this.control = Some(newControl)
+    
+    newControl.init(parent,controlParam)
+  }
+
+
+  def scanParams(xmlNode:XmlNode,param:ControlParams) {
+      for((attrKey,attrValue) <- xmlNode.attrs;if !param.paramStrings.contains(attrKey)) {
+          param.paramStrings.put(attrKey,attrValue)
+      }
+      if(xmlNode.children.isEmpty) return
+      for(childNode <- xmlNode.children.get;if childNode.tag.startsWith("Param.")) {
+          val paramName = childNode.tag.substring("Param.".length())
+          if(childNode.children.isDefined && childNode.children.get.length > 0) {
+              if(!param.paramXmls.contains(paramName))
+                 param.paramXmls.put(paramName,childNode)
+          } else {
+              if(!param.paramStrings.contains(paramName))
+                 param.paramStrings.put(paramName,childNode.text.getOrElse(""))
+          }
+      }
+  }
+
+  def scanXmlns() {
+    for((k,v) <- this.xmlNode.attrs; if k.startsWith("xmlns:")) {
+      this.nsPaths.put(k.substring("xmlns:".length()),v)
+    }
   }
 }

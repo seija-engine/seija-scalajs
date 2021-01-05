@@ -50,17 +50,7 @@ class Control extends LazyLogging {
       this.sContext.set("control",SUserData(this))
    }
 
-   def createChild(params:ControlParams) {
-      val childXml = params.paramXmls.get("Children")
-      if(childXml.isEmpty || !this.slots.contains("Children")) return
-     
-      for(childNode <- childXml.get.children.getOrElse(js.Array())) { 
-         UISystem.createByXml(childNode,Some(this.slots("Children")),ControlParams(),params.nsPaths) match {
-            case Left(errString) => logger.error(errString)
-            case Right(control) => this.children.push(control)
-         }
-      }
-   }
+  
 
    def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T])(implicit read:Read[T]) {
       params.get(key) match {

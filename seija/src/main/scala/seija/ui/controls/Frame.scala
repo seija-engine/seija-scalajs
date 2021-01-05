@@ -27,8 +27,6 @@ class Frame extends Control with LayoutViewComp {
         entity.addComponent[Rect2D]()
         val contentView = entity.addComponent[ContentView]()
         this.slots.put("Children",this)
-
         this.initLayoutView(this,contentView,params)
-        this.createChild(params)
     }
 }
