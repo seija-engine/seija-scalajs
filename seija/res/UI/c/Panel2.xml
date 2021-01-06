@@ -1,0 +1,6 @@
+<Panel xmlns:core="/c/">
+    <Param.Template>
+       <Image OnEnter="(log ownerControl)" texture="(env res.white)" color="#111155" width="150" height="150"/>
+       <Slot.Children />
+    </Param.Template>
+</Panel>

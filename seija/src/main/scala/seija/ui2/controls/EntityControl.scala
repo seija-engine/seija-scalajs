@@ -12,7 +12,7 @@ class EntityControl extends Control {
   override def init(param:ControlParams,parent:Option[Control] = None) {
       this.entity = Some(Entity.New(parent.flatMap(_.entity)))
       this.slots.put("Children",this.entity.get)
-      println(param.paramXmls.keySet)
+      
       val components = param.paramXmls.get("Components")
       if(components.isDefined) {
         for(compXml <- components.get.children.getOrElse(js.Array())) {

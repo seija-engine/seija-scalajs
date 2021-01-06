@@ -1,5 +1,5 @@
 package seija.ui.controls
-
+import seija.data.XmlExt._
 import seija.ui.Control
 import seija.ui.ControlCreator
 import seija.ui.ControlParams
@@ -19,14 +19,15 @@ object Frame {
 }
 
 class Frame extends Control with LayoutViewComp {
-    override def init(parent: Option[Control], params: ControlParams) {
-        super.init(parent,params)
-        val entity = Entity.New(parent.map(_.getEntity))
+    override def init(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
+        this.slots.put("Children",this)
+        super.init(parent,params,ownerControl)
+        val entity = Entity.New(parent.flatMap(_.entity))
         this.entity = Some(entity)
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
         val contentView = entity.addComponent[ContentView]()
-        this.slots.put("Children",this)
-        this.initLayoutView(this,contentView,params)
+
+        this.createChild(params)
     }
 }

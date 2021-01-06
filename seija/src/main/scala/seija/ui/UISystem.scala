@@ -8,11 +8,11 @@ import seija.ui.controls.Panel
 import seija.ui.controls.Frame
 import slogging.LazyLogging
 
-object UISystem {
+object UISystem extends LazyLogging {
   val ENV: js.Dictionary[Any] = js.Dictionary()
 
   protected var rootPath: String = ""
-  def setRootPath(path: String) = rootPath = path
+  def setRootPath(path: String): Unit = rootPath = path
 
   protected val cacheXml: js.Dictionary[XmlNode] = js.Dictionary()
   protected val creators:js.Dictionary[ControlCreator[Control]] = js.Dictionary()
@@ -46,46 +46,26 @@ object UISystem {
     this.creators.get(name)
   }
 
-  def createByFile(path: String,parent: Option[Control],param: ControlParams): Either[String, Control] = {
-      getXml(rootPath + path).flatMap(xmlNode => {
-        val fileScope = FileScope(xmlNode)
-        fileScope.create(parent)
-        fileScope.control.toRight("not found" + rootPath + path)
-      })
+  def createByFile(path: String,parent: Option[Control],param: ControlParams,ownerControl:Option[Control]): Either[String, Control] = {
+   
+    getXml(rootPath + path).map(applyXmlNs).flatMap(createByXml(_,parent,param,None))
   }
 
-
-  def findEnv(name:String):Any = {
-    val nameArrays = name.split('.')
-    var curValue:Any = ENV
-    for(name <- nameArrays) {
-      val curDic = curValue.asInstanceOf[js.Dictionary[Any]]
-      curDic.get(name) match {
-        case Some(value) =>
-          curValue = value
-        case None =>
-          return null
+  def createByXml(xmlNode:XmlNode,parent:Option[Control],param:ControlParams,ownerControl:Option[Control]):Either[String,Control] = {
+    logger.trace(s"${xmlNode.tag}")
+    this.scanParams(xmlNode,param)
+    if(xmlNode.tag.indexOf(":") > 0) {
+       createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)
+    } else {
+      val creator = this.getCreator(xmlNode.tag)
+      if(creator.isEmpty) {
+        return Left(s"not found control ${xmlNode.tag}")
       }
+      val newControl = creator.get.create()
+      newControl.init(parent,param,ownerControl)
+      Right(newControl)
     }
-    curValue
   }
-}
-
-case class FileScope(xmlNode:XmlNode,nsPaths:js.Dictionary[String] = js.Dictionary(),var control:Option[Control] = None) extends LazyLogging {
-  def create(parent:Option[Control]) {
-    this.scanXmlns()
-    val controlParam = ControlParams()
-    this.scanParams(xmlNode,controlParam)
-    val creator = UISystem.getCreator(xmlNode.tag)
-    if(creator.isEmpty) {
-      logger.error(s"not find creator ${xmlNode.tag}")
-    }
-    val newControl = creator.get.create()
-    this.control = Some(newControl)
-    
-    newControl.init(parent,controlParam)
-  }
-
 
   def scanParams(xmlNode:XmlNode,param:ControlParams) {
       for((attrKey,attrValue) <- xmlNode.attrs;if !param.paramStrings.contains(attrKey)) {
@@ -104,9 +84,38 @@ case class FileScope(xmlNode:XmlNode,nsPaths:js.Dictionary[String] = js.Dictiona
       }
   }
 
-  def scanXmlns() {
-    for((k,v) <- this.xmlNode.attrs; if k.startsWith("xmlns:")) {
-      this.nsPaths.put(k.substring("xmlns:".length()),v)
+  def applyXmlNs(xmlNode: XmlNode): XmlNode = {
+    val nsPaths = xmlNode.attrs.filter(_._1.startsWith("xmlns:"))
+                               .foldLeft[js.Dictionary[String]](js.Dictionary())((d,v) => {d.put(v._1.substring("xmlns:".length()),v._2);d})
+    def depSearchApply(nsPaths:js.Dictionary[String],xmlNode:XmlNode) {
+      if(xmlNode.tag.indexOf(":") > 0) {
+        val karr = xmlNode.tag.split(":")
+        val v = nsPaths(karr(0)) + karr(1) + ".xml"
+        xmlNode.attrs.put("nsFilePath",v)
+      }
+      if(xmlNode.children.isDefined) {
+        for(child <- xmlNode.children.get) {
+          depSearchApply(nsPaths,child)
+        }
+      }
     }
+    depSearchApply(nsPaths,xmlNode)
+    xmlNode
+  }
+
+
+  def findEnv(name:String):Any = {
+    val nameArrays = name.split('.')
+    var curValue:Any = ENV
+    for(name <- nameArrays) {
+      val curDic = curValue.asInstanceOf[js.Dictionary[Any]]
+      curDic.get(name) match {
+        case Some(value) =>
+          curValue = value
+        case None =>
+          return null
+      }
+    }
+    curValue
   }
 }

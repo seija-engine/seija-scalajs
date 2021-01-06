@@ -23,10 +23,12 @@ trait ControlCreator[+T <: Control] {
 class Control extends LazyLogging {
    var parent:Option[Control] = None
    var children:js.Array[Control] = js.Array()
-   protected var entity:Option[Entity] = None
+   var entity:Option[Entity] = None
    def getEntity:Entity = entity.get
    val sContext:SContent = new SContent(Some(SExprContent.content))
    val slots:js.Dictionary[Control] = js.Dictionary()
+   var mainTemplate:Option[UITemplate] = None
+   var ownerControl:Option[Control] = None
    
    protected var property: js.Dictionary[Any] = js.Dictionary()
    protected var propertyListers:js.Dictionary[js.Array[IndexedRef]] = js.Dictionary()
@@ -45,12 +47,33 @@ class Control extends LazyLogging {
       }
    }
 
-   def init(parent:Option[Control],params:ControlParams) {
+   def init(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
       this.parent = parent
+      this.ownerControl = ownerControl
       this.sContext.set("control",SUserData(this))
+      ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
+      this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
+
+      this.initProperty[String]("OnEnter",params.paramStrings,None)
    }
 
-  
+   def createChild(params: ControlParams):Unit = {
+      if(!params.paramXmls.contains("Children")) return
+
+      val childArray = params.paramXmls("Children")
+      for(child <- childArray.children.getOrElse(js.Array())) {
+         if(child.tag.startsWith("Slot.")) {
+            if(ownerControl.isDefined) {
+               ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this.ownerControl.get)
+            }
+         } else {
+            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(),this.ownerControl) match {
+               case Left(value) => logger.error(value)
+               case Right(value) => ()
+            }
+         }
+      }
+   }
 
    def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T])(implicit read:Read[T]) {
       params.get(key) match {

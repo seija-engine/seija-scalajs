@@ -158,7 +158,7 @@ object Menu {
     override def create(): Control = new Menu
     override def init(): Unit = {
       UISystem.setSExpr("menu-item",SNFunc(menuItem))
-      DynObject.registerClass[MenuItemData]()
+      //DynObject.registerClass[MenuItemData]()
     }
   }
 

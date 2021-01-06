@@ -19,7 +19,7 @@ class SledWindow extends IGame with LazyLogging {
     ))
 
     UISystem.init("./res/UI/")
-    UISystem.createByFile("NewPanel.xml",None, ControlParams())
+    UISystem.createByFile("NewPanel.xml",None, ControlParams(),None)
    
     
     

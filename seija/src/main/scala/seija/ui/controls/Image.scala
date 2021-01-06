@@ -25,8 +25,8 @@ object Image {
 }
 
 class Image extends Control with LayoutViewComp {
-    override def init(parent: Option[Control], params: ControlParams) {
-        super.init(parent,params)
+    override def init(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
+        super.init(parent,params,ownerControl)
         val entity = Entity.New(parent.map(_.getEntity))
         this.entity = Some(entity)
         entity.addComponent[Transform]()
@@ -34,7 +34,6 @@ class Image extends Control with LayoutViewComp {
         entity.addComponent[Transparent]()
         val imageRender = entity.addComponent[ImageRender]()
         val view = entity.addComponent[LayoutView]()
-
         this.addPropertyLister[Int]("texture",(texId) => {
             imageRender.setTexture(new assets.Image(texId))
         })
