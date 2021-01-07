@@ -47,6 +47,11 @@ class Control extends LazyLogging {
       }
    }
 
+   def getProperty[T](key:String):Option[T] = {
+      this.property.get(key).map(_.asInstanceOf[T])
+   }
+
+  
    def init(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
       this.parent = parent
       this.ownerControl = ownerControl
@@ -54,14 +59,18 @@ class Control extends LazyLogging {
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
       this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
 
-      this.initProperty[String]("OnEnter",params.paramStrings,None)
+      this.initProperty[String]("OnEnter",params.paramStrings,None,None)
    }
 
    def createChild(params: ControlParams):Unit = {
-      if(!params.paramXmls.contains("Children")) return
+      if(!params.paramXmls.contains("Children") && params.children.length == 0) return
 
-      val childArray = params.paramXmls("Children")
-      for(child <- childArray.children.getOrElse(js.Array())) {
+      val childArray:js.Array[XmlNode] = if(params.children.length > 0) { 
+         params.children 
+      } else { 
+         params.paramXmls.get("Children").flatMap(_.children.toOption).getOrElse(js.Array())
+      }
+      for(child <- childArray) {
          if(child.tag.startsWith("Slot.")) {
             if(ownerControl.isDefined) {
                ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this.ownerControl.get)
@@ -75,7 +84,7 @@ class Control extends LazyLogging {
       }
    }
 
-   def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T])(implicit read:Read[T]) {
+   def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T],callFn:Option[T => ()])(implicit read:Read[T]) {
       params.get(key) match {
          case Some(strValue) =>
             Utils.parseParam(strValue,this.sContext) match {
@@ -86,7 +95,15 @@ class Control extends LazyLogging {
                      logger.error(s"read property error $key = $strValue")
                   }
                case Right(sExpr) =>
-                 SExprInterp.eval(sExpr,Some(sContext)) match {
+                 val callContext = callFn match {
+                    case Some(value) => 
+                      this.addPropertyLister(key,value)
+                      val newContext = new SContent(Some(this.sContext))
+                      newContext.set("setFunc",SUserData(value))
+                      Some(newContext)
+                    case None => Some(this.sContext)
+                 }
+                 SExprInterp.eval(sExpr,callContext) match {
                     case SNil => ()
                     case evalExpr => setProperty(key,evalExpr.toValue[Any])
                  }

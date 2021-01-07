@@ -29,7 +29,7 @@ class Panel extends Control with LayoutViewComp {
         newEntity.addComponent[Transform]()
         newEntity.addComponent[Rect2D]()
         val contentView = newEntity.addComponent[ContentView]()
-        this.initProperty[Color]("color",params.paramStrings,Some(Color.white))
+        this.initProperty[Color]("color",params.paramStrings,Some(Color.white),None)
         this.initLayoutView(this,contentView,params)
         
         

@@ -1,10 +1,5 @@
-<Panel xmlns:core="/c/" margin="200,0,0,0" width="200" height="200">
+<Panel xmlns:core="/c/" color="#555500" >
     <Param.Template>
-       <Image texture="(env res.white)" color="#222222"/>
-       <core:Panel2>
-          <Param.Children>
-            <Image texture="(env res.white)" width="100" height="100" color="#220000"/>
-          </Param.Children>
-       </core:Panel2>
+       <Image texture="(env res.white)" color="(attr :color)"/>
     </Param.Template>
 </Panel>

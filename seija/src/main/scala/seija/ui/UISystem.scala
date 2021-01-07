@@ -52,7 +52,7 @@ object UISystem extends LazyLogging {
   }
 
   def createByXml(xmlNode:XmlNode,parent:Option[Control],param:ControlParams,ownerControl:Option[Control]):Either[String,Control] = {
-    logger.trace(s"${xmlNode.tag}")
+    logger.info(s"${xmlNode.tag}")
     this.scanParams(xmlNode,param)
     if(xmlNode.tag.indexOf(":") > 0) {
        createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)
@@ -67,19 +67,24 @@ object UISystem extends LazyLogging {
     }
   }
 
-  def scanParams(xmlNode:XmlNode,param:ControlParams) {
+  def scanParams(xmlNode:XmlNode,param:ControlParams,autoChild:Boolean = true) {
       for((attrKey,attrValue) <- xmlNode.attrs;if !param.paramStrings.contains(attrKey)) {
           param.paramStrings.put(attrKey,attrValue)
       }
       if(xmlNode.children.isEmpty) return
-      for(childNode <- xmlNode.children.get;if childNode.tag.startsWith("Param.")) {
-          val paramName = childNode.tag.substring("Param.".length())
-          if(childNode.children.isDefined && childNode.children.get.length > 0) {
-              if(!param.paramXmls.contains(paramName))
-                 param.paramXmls.put(paramName,childNode)
-          } else {
-              if(!param.paramStrings.contains(paramName))
-                 param.paramStrings.put(paramName,childNode.text.getOrElse(""))
+      
+      for(childNode <- xmlNode.children.get) {
+          if(childNode.tag.startsWith("Param.")) {
+             val paramName = childNode.tag.substring("Param.".length())
+             if(childNode.children.isDefined && childNode.children.get.length > 0) {
+                 if(!param.paramXmls.contains(paramName))
+                  param.paramXmls.put(paramName,childNode)
+               } else {
+                   if(!param.paramStrings.contains(paramName))
+                    param.paramStrings.put(paramName,childNode.text.getOrElse(""))
+              }
+          } else if(childNode.tag.indexOf(".") <= 0) {
+            param.children.push(childNode)
           }
       }
   }

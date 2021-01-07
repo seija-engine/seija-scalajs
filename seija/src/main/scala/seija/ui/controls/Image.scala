@@ -34,22 +34,19 @@ class Image extends Control with LayoutViewComp {
         entity.addComponent[Transparent]()
         val imageRender = entity.addComponent[ImageRender]()
         val view = entity.addComponent[LayoutView]()
-        this.addPropertyLister[Int]("texture",(texId) => {
+        
+        this.initProperty[Int]("texture",params.paramStrings,None,Some((texId) => {
             imageRender.setTexture(new assets.Image(texId))
-        })
-        this.addPropertyLister[Color]("color",(color) => {
+        }))
+        this.initProperty[Color]("color",params.paramStrings,None,Some((color) => {
             imageRender.color = color
-        })
-        this.addPropertyLister[ImageType]("imageType",(typ) => {
+        }))
+        this.initProperty[ImageType]("imageType",params.paramStrings,None,Some((typ) => {
             imageRender.setImageType(typ)
-        })
-        this.addPropertyLister[Float]("fillValue",(value) => {
-            imageRender.setFilledValue(value)
-        })
-        this.initProperty[Int]("texture",params.paramStrings,None)
-        this.initProperty[Color]("color",params.paramStrings,None)
-        this.initProperty[ImageType]("imageType",params.paramStrings,None)
-        this.initProperty[Float]("fillValue",params.paramStrings,None)
+        }))
+        this.initProperty[Float]("fillValue",params.paramStrings,None,Some((value) => {
+           imageRender.setFilledValue(value)
+        }))
         this.initLayoutView(this,view,params)
     }
 }

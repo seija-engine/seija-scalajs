@@ -17,8 +17,20 @@ object  SExprContent {
    }
 
    def attr(args:js.Array[SExpr],content:SContent):SExpr = {
-      val ownerControl = content.find("ownerControl");
-      println(ownerControl.isDefined)
+      val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+      val attrName = evalArgs(0).castKeyword().substring(1)
+      val ownerControlExpr = content.find("ownerControl");
+      val setFuncExpr = content.find("setFunc")
+      if(setFuncExpr.isEmpty) return SNil
+      if(ownerControlExpr.isDefined) {
+        val control = ownerControlExpr.get.castSingleAny().asInstanceOf[Control]
+        val setFunc = setFuncExpr.get.castSingleAny().asInstanceOf[(Any) => Unit]
+        val getValue = control.getProperty(attrName)
+        if(getValue.isDefined) {
+           setFunc(getValue.get)
+        }
+        control.addPropertyLister[Any](attrName,setFunc)
+      }
       SNil
    }
 }

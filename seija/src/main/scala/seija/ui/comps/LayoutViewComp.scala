@@ -9,33 +9,26 @@ import seija.math.Vector3
 
 trait LayoutViewComp {
     def initLayoutView(control:Control,view:LayoutView,param:ControlParams) {
-        control.addPropertyLister[Thickness]("margin",(margin) => {
+        control.initProperty[Thickness]("margin",param.paramStrings,None,Some((margin) => {
             view.setMargin(margin)
-        })
-        control.addPropertyLister[Thickness]("padding",(padding) => {
+        }))
+        control.initProperty[Thickness]("padding",param.paramStrings,None,Some((padding) => {
             view.setPadding(padding)
-        })
-        control.addPropertyLister[LayoutAlignment]("hor",(hor) => {
+        }))
+        control.initProperty[LayoutAlignment]("hor",param.paramStrings,None,Some((hor) => {
             view.setHor(hor)
-        })
-        control.addPropertyLister[LayoutAlignment]("ver",(ver) => {
+        }))
+        control.initProperty[LayoutAlignment]("ver",param.paramStrings,None,Some((ver) => {
             view.setVer(ver)
-        })
-        control.addPropertyLister[Float]("width",(w) => {
-            view.setSize(Vector2.New(w,view.size.y) )
-        })
-        control.addPropertyLister[Float]("height",(h) => {
-            view.setSize(Vector2.New(view.size.x,h) )
-        })
-        control.addPropertyLister[Vector3]("position",(pos) => {
+        }))
+        control.initProperty[Vector3]("position",param.paramStrings,None,Some((pos) => {
             view.setPosition(pos)
-        })
-        control.initProperty[Thickness]("margin",param.paramStrings,None)
-        control.initProperty[Thickness]("padding",param.paramStrings,None)
-        control.initProperty[LayoutAlignment]("hor",param.paramStrings,None)
-        control.initProperty[LayoutAlignment]("ver",param.paramStrings,None)
-        control.initProperty[Vector3]("position",param.paramStrings,None)
-        control.initProperty[Float]("width",param.paramStrings,None)
-        control.initProperty[Float]("height",param.paramStrings,None)
+        }))
+        control.initProperty[Float]("width",param.paramStrings,None,Some((w) => {
+            view.setSize(Vector2.New(w,view.size.y) )
+        }))
+        control.initProperty[Float]("height",param.paramStrings,None,Some((h) => {
+            view.setSize(Vector2.New(view.size.x,h) )
+        }))
     }
 }
