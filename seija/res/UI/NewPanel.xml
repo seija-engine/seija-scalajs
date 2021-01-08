@@ -1,5 +1,7 @@
-<Panel xmlns:core="/c/" color="#555500" >
+<Grid xmlns:core="/c/" rows="1*,1*" cols="1*,1*">
     <Param.Template>
-       <Image texture="(env res.white)" color="(attr :color)"/>
+        <GridCell row="0" colSpan="2"  col="0">
+            <Menu />
+        </GridCell>
     </Param.Template>
-</Panel>
+</Grid>

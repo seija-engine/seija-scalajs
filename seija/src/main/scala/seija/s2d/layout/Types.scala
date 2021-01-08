@@ -107,4 +107,21 @@ object LNumber {
     }
     retArr
   }
+
+  implicit val lNumberArrayRead:Read[js.Array[LNumber]] = new Read[js.Array[LNumber]] {
+      def read(string:String):Option[js.Array[LNumber]] = {
+        val array = string.split(',')
+        val larr:js.Array[LNumber] = js.Array()
+        for(str <- array) {
+          if(str.endsWith("*")) {
+            val mayNumber = str.substring(0,str.length() - 1).toFloatOption
+            mayNumber.foreach(n => larr.push(LRate(n)))
+          } else {
+            val mayNumber = str.toFloatOption
+            mayNumber.foreach(n => larr.push(LConst(n)))
+          }
+        }
+        Some(larr)
+      }
+  }
 }

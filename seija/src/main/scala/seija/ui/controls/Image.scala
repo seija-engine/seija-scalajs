@@ -25,10 +25,8 @@ object Image {
 }
 
 class Image extends Control with LayoutViewComp {
-    override def init(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
-        super.init(parent,params,ownerControl)
-        val entity = Entity.New(parent.map(_.getEntity))
-        this.entity = Some(entity)
+    override def OnInit(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
+        val entity = this.entity.get
         entity.addComponent[Transform]()
         val rect = entity.addComponent[Rect2D]()
         entity.addComponent[Transparent]()

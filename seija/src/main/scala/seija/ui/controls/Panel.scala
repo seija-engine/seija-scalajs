@@ -22,18 +22,13 @@ object Panel {
 
 class Panel extends Control with LayoutViewComp {
     var template:Option[UITemplate] = None
-    override def init(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
-        super.init(parent,params,ownerControl)
-        val newEntity = Entity.New(parent.flatMap(_.entity))
-        this.entity = Some(newEntity)
+    override def OnInit(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
+        val newEntity = this.entity.get
         newEntity.addComponent[Transform]()
         newEntity.addComponent[Rect2D]()
         val contentView = newEntity.addComponent[ContentView]()
         this.initProperty[Color]("color",params.paramStrings,Some(Color.white),None)
         this.initLayoutView(this,contentView,params)
         
-        
-        this.mainTemplate.foreach(_.create())
-        this.createChild(params)
     }
 }

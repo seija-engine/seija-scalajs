@@ -1,6 +1,8 @@
 package seija.ui
 import scala.scalajs.js
 import seija.data._
+import seija.s2d.layout.LRate
+import seija.s2d.layout.LConst
 
 object  SExprContent {
    val content:SContent = new SContent(Some(SExprInterp.rootContent))
@@ -8,9 +10,12 @@ object  SExprContent {
    def init() {
        content.set("env",SNFunc(env))
        content.set("attr",SNFunc(attr))
+       content.set("num-rate",SNFunc(numRate))
+       content.set("num-const",SNFunc(numConst))
    }
 
    def env(args:js.Array[SExpr],content:SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     val envName = args(0).asInstanceOf[SSymbol].value
     val findValue = UISystem.findEnv(envName)
     SUserData(findValue)
@@ -32,5 +37,15 @@ object  SExprContent {
         control.addPropertyLister[Any](attrName,setFunc)
       }
       SNil
+   }
+
+   def numRate(args:js.Array[SExpr],content:SContent):SExpr = {
+      val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+      SUserData(LRate(evalArgs(0).castFloat()))
+   }
+
+   def numConst(args:js.Array[SExpr],content:SContent):SExpr = {
+      val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+      SUserData(LConst(evalArgs(0).castFloat()))
    }
 }

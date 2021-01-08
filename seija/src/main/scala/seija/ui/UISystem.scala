@@ -7,6 +7,10 @@ import seija.ui.controls.Image
 import seija.ui.controls.Panel
 import seija.ui.controls.Frame
 import slogging.LazyLogging
+import seija.ui.controls.{Grid,GridCell}
+import seija.ui.controls.Menu
+
+
 
 object UISystem extends LazyLogging {
   val ENV: js.Dictionary[Any] = js.Dictionary()
@@ -24,6 +28,9 @@ object UISystem extends LazyLogging {
       this.addCreator[Image]()
       this.addCreator[Panel]()
       this.addCreator[Frame]()
+      this.addCreator[Grid]()
+      this.addCreator[GridCell]()
+      this.addCreator[Menu]()
   }
   
   def getXml(path: String): Either[String, XmlNode] = {
@@ -52,7 +59,6 @@ object UISystem extends LazyLogging {
   }
 
   def createByXml(xmlNode:XmlNode,parent:Option[Control],param:ControlParams,ownerControl:Option[Control]):Either[String,Control] = {
-    logger.info(s"${xmlNode.tag}")
     this.scanParams(xmlNode,param)
     if(xmlNode.tag.indexOf(":") > 0) {
        createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)
@@ -68,6 +74,7 @@ object UISystem extends LazyLogging {
   }
 
   def scanParams(xmlNode:XmlNode,param:ControlParams,autoChild:Boolean = true) {
+      logger.trace(s"${xmlNode.tag}")
       for((attrKey,attrValue) <- xmlNode.attrs;if !param.paramStrings.contains(attrKey)) {
           param.paramStrings.put(attrKey,attrValue)
       }

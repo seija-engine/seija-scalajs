@@ -58,9 +58,22 @@ class Control extends LazyLogging {
       this.sContext.set("control",SUserData(this))
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
       this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
-
       this.initProperty[String]("OnEnter",params.paramStrings,None,None)
+      val entity = Entity.New(parent.flatMap(_.entity))
+      this.entity = Some(entity)
+
+      this.OnInit(parent,params,ownerControl)
+
+      this.mainTemplate.foreach(_.create())
+      this.createChild(params)
+      this.OnEnter()
    }
+
+   def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
+
+   }
+
+
 
    def createChild(params: ControlParams):Unit = {
       if(!params.paramXmls.contains("Children") && params.children.length == 0) return
@@ -93,6 +106,10 @@ class Control extends LazyLogging {
                   readValue.foreach(setProperty(key,_))
                   if(readValue.isEmpty) {
                      logger.error(s"read property error $key = $strValue")
+                  }
+                  if(callFn.isDefined) {
+                     callFn.get(readValue.get)
+                     this.addPropertyLister(key,callFn.get)
                   }
                case Right(sExpr) =>
                  val callContext = callFn match {
