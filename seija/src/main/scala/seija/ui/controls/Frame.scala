@@ -9,6 +9,7 @@ import seija.s2d.Rect2D
 import seija.s2d.layout.ContentView
 import seija.ui.UISystem
 import seija.ui.comps.LayoutViewComp
+import seija.ui.comps.EventNodeComp
 
 object Frame {
     implicit val imageCreator:ControlCreator[Frame] = new ControlCreator[Frame] {
@@ -18,7 +19,7 @@ object Frame {
     }
 }
 
-class Frame extends Control with LayoutViewComp {
+class Frame extends Control with LayoutViewComp with EventNodeComp {
     override def OnInit(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
         this.slots.put("Children",this)
         val entity = this.entity.get
@@ -26,5 +27,6 @@ class Frame extends Control with LayoutViewComp {
         entity.addComponent[Rect2D]()
         val contentView = entity.addComponent[ContentView]()
         initLayoutView(this,contentView,params)
+        initEventComp(this,params)
     }
 }

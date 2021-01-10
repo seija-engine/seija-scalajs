@@ -1,21 +1,21 @@
-<Panel xmlns:core="/core/" xmlns:m="/chrome/">
-    <Template>
-        <Entity>
-            <Components>
-                <Transform />
-                <Rect2D width="1024" height="768"/>
-                <CABEventRoot />
-                <ContentView size="1024,768" />
-                <EventBoard name="RootBorad" />
-            </Components>
-            <m:Panel>
-                <core:Grid rows="[(num-rate 2) (num-rate 8)]" cols="[(num-const 25) (num-rate 1)]">
-                    <core:GridCell row="0" col="0" rowSpan="2" >
-                        <core:Image margin="0,24,0,0" texture="(env res.white)" color="#666666"/>
-                        <Menu dataSource="[(menu-item '文件' [(menu-item '新建数据库')]) (menu-item '设置') (menu-item '关于')]" />
-                    </core:GridCell>
-                </core:Grid>
-            </m:Panel>
-        </Entity>
-    </Template>
-</Panel>
+<Grid  xmlns:core="/core/" rows="25,1*" cols="1*,1*">
+    <Param.Template>
+        <GridCell row="0" colSpan="2"  col="0">
+            <core:Menu >
+                <Param.dataSource>
+                    [
+                     (menu-item '文件' [(menu-item '新建项目'),(menu-item '打开项目')]),
+                     (menu-item '设置'),
+                     (menu-item '编辑'),
+                     (menu-item '选择'),
+                     (menu-item '查看'),
+                     (menu-item '转到'),
+                     (menu-item '运行'),
+                     (menu-item '终端'),
+                     (menu-item '帮助')
+                    ]
+                </Param.dataSource>
+            </core:Menu>
+        </GridCell>
+    </Param.Template>
+</Grid>

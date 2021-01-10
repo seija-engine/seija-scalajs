@@ -6,6 +6,7 @@ import seija.s2d.layout.LayoutView
 import seija.s2d.layout.LayoutAlignment._
 import seija.math.Vector2
 import seija.math.Vector3
+import seija.s2d.layout.ViewType._
 
 trait LayoutViewComp {
     def initLayoutView(control:Control,view:LayoutView,param:ControlParams) {
@@ -29,6 +30,9 @@ trait LayoutViewComp {
         }))
         control.initProperty[Float]("height",param.paramStrings,None,Some((h) => {
             view.setSize(Vector2.New(view.size.x,h) )
+        }))
+        control.initProperty[ViewType]("viewType",param.paramStrings,None,Some((vt) => {
+            view.setViewType(vt)
         }))
     }
 }

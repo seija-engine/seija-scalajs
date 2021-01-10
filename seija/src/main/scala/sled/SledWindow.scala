@@ -19,7 +19,7 @@ class SledWindow extends IGame with LazyLogging {
     ))
 
     UISystem.init("./res/UI/")
-    UISystem.createByFile("NewPanel.xml",None, ControlParams(),None) match {
+    UISystem.createByFile("MainWindow.xml",None, ControlParams(),None) match {
       case Left(errString) => logger.error(errString)
       case Right(control) => control.entity.get.addComponent[CABEventRoot]()
     }

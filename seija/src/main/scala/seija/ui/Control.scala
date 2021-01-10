@@ -61,9 +61,7 @@ class Control extends LazyLogging {
       this.initProperty[String]("OnEnter",params.paramStrings,None,None)
       val entity = Entity.New(parent.flatMap(_.entity))
       this.entity = Some(entity)
-
       this.OnInit(parent,params,ownerControl)
-
       this.mainTemplate.foreach(_.create())
       this.createChild(params)
       this.OnEnter()
@@ -73,11 +71,16 @@ class Control extends LazyLogging {
 
    }
 
+   def setParent(parent:Option[Control]) {
+      if(this.parent == parent) return
+      this.parent = parent
+      this.entity.get.setParent(parent.get.entity)
+   }
+
 
 
    def createChild(params: ControlParams):Unit = {
       if(!params.paramXmls.contains("Children") && params.children.length == 0) return
-
       val childArray:js.Array[XmlNode] = if(params.children.length > 0) { 
          params.children 
       } else { 
@@ -86,7 +89,7 @@ class Control extends LazyLogging {
       for(child <- childArray) {
          if(child.tag.startsWith("Slot.")) {
             if(ownerControl.isDefined) {
-               ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this.ownerControl.get)
+               ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this)
             }
          } else {
             UISystem.createByXml(child,this.slots.get("Children"),ControlParams(),this.ownerControl) match {
@@ -125,7 +128,11 @@ class Control extends LazyLogging {
                     case evalExpr => setProperty(key,evalExpr.toValue[Any])
                  }
             }
-         case None => defValue.foreach(setProperty(key,_))
+         case None => 
+         if(callFn.isDefined) {
+            this.addPropertyLister(key,callFn.get)
+         }
+         defValue.foreach(setProperty(key,_))
       }
    }
 
@@ -147,10 +154,17 @@ class Control extends LazyLogging {
          arr(idx).index = idx
       }
    }
+
+   def handleEvent(evKey: String, evData: js.Array[SExpr]): Unit = {
+      this.parent.foreach(_.handleEvent(evKey,evData))
+   }
    
    def OnEnter() {}
 
-   def destroy() {}
+   def destroy() {
+      this.entity.foreach(_.destroy())
+      this.OnDestroy()
+   }
 
    def OnDestroy() {}
 }

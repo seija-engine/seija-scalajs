@@ -8,8 +8,8 @@ import scala.scalajs.js
 import seija.core.{BaseComponent, Component, Entity, Foreign}
 
 class EventNode(override val entity:Entity) extends BaseComponent(entity) {
-  var captureEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
-  var bubbleEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
+  protected var captureEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
+  protected var bubbleEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
 
   def register(evType:GameEventType,isCapture:Boolean,callFn:() => Unit):EventHandle = {
     

@@ -1,0 +1,18 @@
+<Menu>
+    <Param.Template>
+        <Image texture="(env res.white)" margin="0,24,0,0" color="#222222" />
+        <Stack>
+            <Slot.Children />
+        </Stack>
+    </Param.Template>
+    <Param.ItemTemplate>
+        <Frame width="50">
+            <Image  texture="(env res.white)" 
+                    color="(attr-fbind :IsSelect #(if % color.blue color.transparent))" />
+            <Label OnTouchStart="#(emit :select-menu)"  margin="0,1,0,0"
+                   OnMouseEnter="#(emit :select-menu-enter)" 
+                   fontSize="20" color="(attr-fbind :IsSelect #(if % color.white color.black))"
+                   text="(attr-bind :Name)" font="(env res.font)" />
+        </Frame>
+    </Param.ItemTemplate>
+</Menu>

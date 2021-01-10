@@ -63,5 +63,7 @@ class GridCell extends Control with LayoutViewComp {
         this.initProperty[Int]("col",params.paramStrings,Some(1),Some((col) => gridCell.setCol(col)))
         this.initProperty("rowSpan",params.paramStrings,Some(0),Some((rowSpan) => gridCell.setRowSpan(rowSpan)))
         this.initProperty("colSpan",params.paramStrings,Some(0),Some((colSpan) => gridCell.setColSpan(colSpan)))
+
+        
     }
 }

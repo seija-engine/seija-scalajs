@@ -9,6 +9,9 @@ import seija.ui.controls.Frame
 import slogging.LazyLogging
 import seija.ui.controls.{Grid,GridCell}
 import seija.ui.controls.Menu
+import seija.ui.controls.Stack
+import seija.ui.controls.Label
+import seija.ui.controls.ContextMenu
 
 
 
@@ -28,9 +31,12 @@ object UISystem extends LazyLogging {
       this.addCreator[Image]()
       this.addCreator[Panel]()
       this.addCreator[Frame]()
+      this.addCreator[Stack]()
       this.addCreator[Grid]()
       this.addCreator[GridCell]()
       this.addCreator[Menu]()
+      this.addCreator[Label]()
+      this.addCreator[ContextMenu]()
   }
   
   def getXml(path: String): Either[String, XmlNode] = {
@@ -91,6 +97,8 @@ object UISystem extends LazyLogging {
                     param.paramStrings.put(paramName,childNode.text.getOrElse(""))
               }
           } else if(childNode.tag.indexOf(".") <= 0) {
+            param.children.push(childNode)
+          } else if(childNode.tag.startsWith("Slot.")) {
             param.children.push(childNode)
           }
       }

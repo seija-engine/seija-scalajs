@@ -15,6 +15,7 @@ import scala.scalajs.js
 import seija.data.Color
 import seija.s2d.ImageType
 import seija.ui.comps.LayoutViewComp
+import seija.ui.comps.EventNodeComp
 
 object Image {
     implicit val imageCreator:ControlCreator[Image] = new ControlCreator[Image] {
@@ -24,11 +25,11 @@ object Image {
     }
 }
 
-class Image extends Control with LayoutViewComp {
+class Image extends Control with LayoutViewComp with EventNodeComp {
     override def OnInit(parent: Option[Control], params: ControlParams,ownerControl:Option[Control] = None) {
         val entity = this.entity.get
         entity.addComponent[Transform]()
-        val rect = entity.addComponent[Rect2D]()
+        entity.addComponent[Rect2D]()
         entity.addComponent[Transparent]()
         val imageRender = entity.addComponent[ImageRender]()
         val view = entity.addComponent[LayoutView]()
@@ -45,6 +46,8 @@ class Image extends Control with LayoutViewComp {
         this.initProperty[Float]("fillValue",params.paramStrings,None,Some((value) => {
            imageRender.setFilledValue(value)
         }))
+        
         this.initLayoutView(this,view,params)
+        initEventComp(this,params)
     }
 }
