@@ -21,6 +21,8 @@ import seija.core.event.GameEventType
 import seija.core.event.GameEvent
 import seija.core.Time
 import seija.ui.UISystem
+import seija.core.event.CABEventRoot
+import seija.math.Vector3
 
 object Menu {
     implicit val menuCreator:ControlCreator[Menu] = new ControlCreator[Menu] {
@@ -104,14 +106,19 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         }
         val selectItem = this.menuItems(this.selectIndex)
         if(contextMenu.isDefined) {
-            this.contextMenu.get.setParent(Some(selectItem))
+            this.contextMenu.get.setParent(None)
         } else {
-            UISystem.createByFile("/core/ContextMenu.xml",Some(selectItem),ControlParams(),None) match {
+            UISystem.createByFile("/core/ContextMenu.xml",None,ControlParams(),None) match {
             case Left(errString) => logger.error(errString)
             case Right(contextMenu) =>
+              contextMenu.entity.get.addComponent[CABEventRoot]()
               this.contextMenu = Some(contextMenu.asInstanceOf[ContextMenu])
             }
         }
+        val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
+
+        val sizeX = selectItem.entity.get.getComponent[Rect2D]().get.size.x
+        view.get.setPosition(Vector3.New(this.selectIndex * sizeX,0,0))
         this.contextMenu.get.setProperty("dataSource",this.menuDatas(this.selectIndex).children)
     }
 

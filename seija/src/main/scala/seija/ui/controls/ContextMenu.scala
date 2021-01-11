@@ -24,6 +24,7 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
     var menuDatas:js.Array[MenuItemData] = js.Array()
     var menuItems:js.Array[MenuItem] = js.Array()
     var itemTemplate:Option[XmlNode] = None
+    
 
     override def OnInit(parent: Option[Control], params: ControlParams, ownerControl: Option[Control]): Unit = {
         this.itemTemplate = params.paramXmls.get("ItemTemplate")
@@ -41,7 +42,6 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
         case ":select-menu" | ":select-menu-enter" =>
           val index = evData(0).caseInt()
           println("context:"+index)
-          this.menuItems(index).isSelect = true
         case _ => ()
       }
     }

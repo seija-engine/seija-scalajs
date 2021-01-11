@@ -25,6 +25,7 @@ class MenuItem extends Control with LayoutViewComp {
         this.initProperty[js.Array[MenuItemData]]("Children",params.paramStrings,Some(js.Array()),None)
         this.initProperty[Boolean]("IsSelect",params.paramStrings,Some(false),None)
         this.initProperty[Int]("Index",params.paramStrings,Some(0),None)
+        this.initProperty[Boolean]("IsHover",params.paramStrings,Some(false),None)
 
         val entity = this.entity.get
         entity.addComponent[Transform]()
@@ -53,7 +54,12 @@ class MenuItem extends Control with LayoutViewComp {
       evKey match {
           case ":select-menu" | ":select-menu-enter" =>
             this.parent.foreach(_.handleEvent(evKey,js.Array(SInt(this.Index))))
+          case ":menu-enter"  => 
+            this.setProperty("IsHover",true)
+          case ":menu-leave" => 
+            this.setProperty("IsHover",false)
           case _ => this.parent.foreach(_.handleEvent(evKey,evData))
+          
       }
     }
 }
