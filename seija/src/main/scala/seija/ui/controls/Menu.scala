@@ -83,7 +83,10 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         for(child <- this.menuDatas) {
             val menuItem = new MenuItem()
             menuItem.init(this.slots.get("Children"),
-                         ControlParams(paramXmls = js.Dictionary("Template" -> this.itemTemplate.get)),
+                         ControlParams(
+                             paramXmls = js.Dictionary("Template" -> this.itemTemplate.get),
+                             paramStrings = js.Dictionary("zIndex" -> idx.toString())
+                         ),
                          Some(menuItem))
             menuItem.setName(child.name)
             menuItem.setChildren(child.children)
@@ -118,7 +121,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
 
         val sizeX = selectItem.entity.get.getComponent[Rect2D]().get.size.x
-        view.get.setPosition(Vector3.New(this.selectIndex * sizeX,0,0))
+        view.get.setPosition(Vector3.New(this.selectIndex * sizeX,0,100))
         this.contextMenu.get.setProperty("dataSource",this.menuDatas(this.selectIndex).children)
     }
 

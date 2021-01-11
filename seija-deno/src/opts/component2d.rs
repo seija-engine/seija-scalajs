@@ -101,6 +101,8 @@ fn set_image_color(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Re
     if let Some(image) = mimage {
         image.set_color(r, g, b, a);
         update_mesh_2d(world, entity);
+    } else {
+        eprintln!("miss image: {}",entity.id())
     }
     Ok(Value::Null)
 }

@@ -1,24 +1,24 @@
 <ContextMenu width="111" margin="0,24,0,0" viewType="Absolute" ver="Start" >
     <Param.Template>
         <Frame >
-            <Image position="0,0,0.3" texture="(env res.white)" margin="0,0,0,0" color="#000000" />
-            <Image position="0,0,0.2" texture="(env res.white)" margin="1,1,1,1" color="#eeeeee" />
-            <Stack position="0,0,0.1" orientation="Vertical" OnTouchStart="#(log 123)" padding="1,6.5,0,10">
+            <Image texture="(env res.white)" margin="0,0,0,0" color="#000000" />
+            <Image texture="(env res.white)" margin="1,1,1,1" color="#eeeeee" />
+            <Stack orientation="Vertical" OnTouchStart="#(log 123)" padding="1,6.5,0,10">
                 <Slot.Children />
             </Stack>
         </Frame>
     </Param.Template>
     <Param.ItemTemplate>
-        <Frame  width="100" height="30" position="0,0,-0.1">
-            <Image  texture="(env res.white)" margin="6,0,0,0" position="0,0,0.01"
-                    color="(attr-fbind :IsHover #(if % color.blue color.transparent))" />
+        <Frame  width="100" height="30">
+            <Image  texture="(env res.white)" margin="6,0,0,0"
+                    color="(attr-fbind :IsHover #(do (log %) (if % color.blue color.green)))" />
             <Image  texture="(env res.white)" 
                     color="#666666" margin="6,29,0,0" />
-            <Label OnTouchStart="#(emit :select-menu)"  margin="0,1,0,0"
+            <Label  OnTouchStart="#(emit :select-menu)"  margin="0,1,0,0"
                     OnMouseEnter="#(emit :menu-enter)" 
                     OnMouseLeave="#(emit :menu-leave)" 
-                   fontSize="20" color="(attr-fbind :IsHover #(if % color.white color.black))"
-                   text="(attr-bind :Name)" font="(env res.font)" />
+                    fontSize="20" 
+                    text="(attr-bind :Name)" font="(env res.font)" />
         </Frame>
     </Param.ItemTemplate>
-</ContextMenu>
+</ContextMenu><!--color="(attr-fbind :IsHover #(if % color.white color.black))"-->

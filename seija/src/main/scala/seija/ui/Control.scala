@@ -86,19 +86,25 @@ class Control extends LazyLogging {
       } else { 
          params.paramXmls.get("Children").flatMap(_.children.toOption).getOrElse(js.Array())
       }
+      var zIndex = 0
       for(child <- childArray) {
          if(child.tag.startsWith("Slot.")) {
             if(ownerControl.isDefined) {
                ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this)
             }
          } else {
-            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(),this.ownerControl) match {
+            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(
+               paramStrings = js.Dictionary("zIndex" -> zIndex.toString())
+            ),this.ownerControl) match {
                case Left(value) => logger.error(value)
                case Right(value) => ()
             }
+            zIndex += 1
          }
       }
    }
+
+
 
    def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T],callFn:Option[T => ()])(implicit read:Read[T]) {
       params.get(key) match {
@@ -162,6 +168,7 @@ class Control extends LazyLogging {
    def OnEnter() {}
 
    def destroy() {
+      this.children.foreach(_.destroy())
       this.entity.foreach(_.destroy())
       this.OnDestroy()
    }
