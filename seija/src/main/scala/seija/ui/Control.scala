@@ -54,6 +54,7 @@ class Control extends LazyLogging {
   
    def init(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
       this.parent = parent
+      this.parent.foreach(_.children.push(this))
       this.ownerControl = ownerControl
       this.sContext.set("control",SUserData(this))
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
@@ -73,7 +74,14 @@ class Control extends LazyLogging {
 
    def setParent(parent:Option[Control]) {
       if(this.parent == parent) return
+      if(this.parent.isDefined) {
+         val index = this.parent.get.children.indexOf(this);
+         this.parent.get.children.remove(index)
+      }
       this.parent = parent
+      if(parent.isDefined) {
+         parent.get.children.push(this)
+      }
       this.entity.get.setParent(parent.get.entity)
    }
 
