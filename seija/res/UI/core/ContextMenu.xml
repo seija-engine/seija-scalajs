@@ -1,4 +1,4 @@
-<ContextMenu width="111" margin="0,24,0,0" viewType="Absolute" ver="Start" >
+<ContextMenu layer="NormalMenu" width="111" margin="0,24,0,0" viewType="Absolute" ver="Start" >
     <Param.Template>
         <Frame >
             <Image texture="(env res.white)" margin="0,0,0,0" color="#000000" />

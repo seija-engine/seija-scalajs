@@ -1,0 +1,3 @@
+<Panel layer="Dialog">
+    <Image width="200" height="480" texture="(env res.white)" color="#000000"/>
+</Panel>

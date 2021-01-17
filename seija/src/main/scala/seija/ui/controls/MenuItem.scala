@@ -31,6 +31,7 @@ class MenuItem extends Control with LayoutViewComp {
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
         val view = entity.addComponent[ContentView]()
+        this._view = Some(view)
         initLayoutView(this,view,params)
     }
 

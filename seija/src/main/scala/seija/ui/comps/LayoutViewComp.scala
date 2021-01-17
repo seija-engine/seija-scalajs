@@ -10,8 +10,7 @@ import seija.s2d.layout.ViewType._
 
 trait LayoutViewComp {
     def initLayoutView(control:Control,view:LayoutView,param:ControlParams) {
-        val zIndex = param.paramStrings.get("zIndex")
-        
+        val zIndex = control.getProperty("zIndex").getOrElse(0)
         control.initProperty[Thickness]("margin",param.paramStrings,None,Some((margin) => {
             view.setMargin(margin)
         }))
@@ -36,10 +35,11 @@ trait LayoutViewComp {
         control.initProperty[ViewType]("viewType",param.paramStrings,None,Some((vt) => {
             view.setViewType(vt)
         }))
-
-        if(zIndex.isDefined) {
-            val offset = (zIndex.get.toFloat + 1f) * 0.0001f;
-            view.setPosition(Vector3.New(view.position.x,view.position.y,-offset))
-        }
+        
+        
+        
+       val offset = (zIndex.toFloat + 1f) * 0.0001f  ;
+       view.setPosition(Vector3.New(view.position.x,view.position.y,-offset))
+        
     }
 }

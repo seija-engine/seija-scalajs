@@ -5,7 +5,7 @@ import slogging.LazyLogging
 case class UITemplate(val xmlNode:XmlNode,ownerControl:Control) extends LazyLogging {
     
     def create() {
-        var zIndex = 0
+        var zIndex = ownerControl.zIndex
         for(childNode <- xmlNode.children.getOrElse(js.Array())) {
           if(childNode.tag.startsWith("Slot.")) {
             ownerControl.slots.put(childNode.tag.substring("Slot.".length()),ownerControl)

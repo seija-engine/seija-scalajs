@@ -12,8 +12,8 @@ use seija::math::Vector3;
 use seija::core::Time;
 use byteorder::{ByteOrder,NativeEndian};
 use seija::rendy::hal::image::{SamplerDesc,Filter,WrapMode};
-use seija::event::{global::GlobalEventNode,GameEventType,EventNode,cb_event::CABEventRoot};
-use crate::core::event::{JSEventCallback,GameMessage};
+use seija::event::{GameEventType,EventNode,cb_event::CABEventRoot};
+use crate::core::event::{GameMessage};
 use crate::core::game::MESSAGES;
 
 pub fn init_json_func(rt:&mut JsRuntime) {
@@ -58,6 +58,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "updateWorld", update_world);
 
     reg_json_op_sync(rt, "addEventNode", add_event_node);
+    reg_json_op_sync(rt, "setEventThrough", set_event_through);
     reg_json_op_sync(rt, "addCABEventRoot", add_cabevent_root);
 }
 
@@ -103,7 +104,16 @@ fn add_event_node(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<V
     Ok(Value::Bool(false))
 }
 
-
+fn set_event_through(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let arr = value.as_array().unwrap();
+    let world = get_mut_world();
+    let e:Entity = world.entities().entity(arr[0].as_i64().unwrap() as u32);
+    let mut ev_nodes:WriteStorage<EventNode> = world.write_storage::<EventNode>();
+    if let Some(ev_node) = ev_nodes.get_mut(e) {
+        ev_node.is_through = arr[1].as_bool().unwrap_or(false)
+    }
+    Ok(Value::Null)
+}
 
 fn entity_childrens(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
     let arr = value.as_array().unwrap();

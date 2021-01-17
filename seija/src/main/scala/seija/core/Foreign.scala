@@ -183,6 +183,10 @@ object Foreign {
 
   def addEventNode(entity:Int):Boolean =
     Deno.core.jsonOpSync("addEventNode",js.Array(entity)).asInstanceOf[Boolean]
+
+  def setEventThrough(entity:Int,b:Boolean) = 
+    Deno.core.jsonOpSync("setEventThrough",js.Array(entity,b))
+  
   def regEventNodeEvent(entity:Int,evType:Int,isCapture:Boolean): Boolean =
     Deno.core.jsonOpSync("addEventNode",js.Array(entity,evType,isCapture)).asInstanceOf[Boolean]
 

@@ -29,6 +29,7 @@ class Label extends Control with LayoutViewComp with EventNodeComp {
         entity.addComponent[Transparent]()
         val view = entity.addComponent[LayoutView]()
         val label = entity.addComponent[TextRender]()
+        this._view = Some(view)
         initLayoutView(this,view,params)
         initEventComp(this,params)
         initProperty[String]("text",params.paramStrings,Some("Text"),Some(text => {
