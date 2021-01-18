@@ -528,9 +528,8 @@ fn set_layout_position(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
     let elem = elems.get_mut(entity).unwrap();
     let x = arr[1].as_f64().unwrap() as f32;
     let y = arr[2].as_f64().unwrap() as f32;
-    let z = arr[3].as_f64().unwrap() as f32;
     elem.fview_mut(|view| {
-        view.pos.set(Vector3::new(x,y,z));
+        view.pos.set(Vector2::new(x,y));
     });
     Ok(Value::Null)
 }

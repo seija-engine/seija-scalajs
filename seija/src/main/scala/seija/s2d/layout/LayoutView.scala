@@ -11,7 +11,7 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
   protected var _hor:LayoutAlignment = LayoutAlignment.Fill
   protected var _ver:LayoutAlignment = LayoutAlignment.Fill
   protected var _size:Vector2 = Vector2.default()
-  protected var _position:Vector3 = Vector3.default()
+  protected var _position:Vector2 = Vector2.default()
   protected var _viewType:ViewType = ViewType.Static
 
   def viewType:ViewType = _viewType
@@ -49,8 +49,8 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
     updateSize()
   }
 
-  def position:Vector3 = _position
-  def setPosition(pos:Vector3):Unit = {
+  def position:Vector2 = _position
+  def setPosition(pos:Vector2):Unit = {
     _position = pos
     updatePosition()
   }
@@ -60,7 +60,7 @@ class LayoutView (override val entity:Entity) extends BaseComponent(entity) {
   protected def updateHor():Unit = Foreign.setLayoutHor(entity.id,_hor.id)
   protected def updateVer():Unit = Foreign.setLayoutVer(entity.id,_ver.id)
   protected def updateSize():Unit = Foreign.setLayoutSize(entity.id,_size.x,_size.y)
-  protected def updatePosition():Unit = Foreign.setLayoutPosition(entity.id,_position.x,_position.y,_position.z)
+  protected def updatePosition():Unit = Foreign.setLayoutPosition(entity.id,_position.x,_position.y)
 }
 
 

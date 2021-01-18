@@ -23,6 +23,7 @@ import seija.core.Time
 import seija.ui.UISystem
 import seija.core.event.CABEventRoot
 import seija.math.Vector3
+import seija.math.Vector2
 
 object Menu {
     implicit val menuCreator:ControlCreator[Menu] = new ControlCreator[Menu] {
@@ -118,7 +119,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
 
         val sizeX = selectItem.entity.get.getComponent[Rect2D]().get.size.x
-        view.get.setPosition(Vector3.New(this.selectIndex * sizeX,0,0))
+        view.get.setPosition(Vector2.New(this.selectIndex * sizeX,0))
         this.contextMenu.get.setProperty("dataSource",this.menuDatas(this.selectIndex).children)
     }
 

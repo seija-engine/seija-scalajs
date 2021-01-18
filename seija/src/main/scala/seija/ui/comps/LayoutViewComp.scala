@@ -22,7 +22,7 @@ trait LayoutViewComp {
         control.initProperty[LayoutAlignment]("ver",param.paramStrings,None,Some((ver) => {
             view.setVer(ver)
         }))
-        control.initProperty[Vector3]("position",param.paramStrings,None,Some((pos) => {
+        control.initProperty[Vector2]("position",param.paramStrings,None,Some((pos) => {
             view.setPosition(pos)
         }))
         control.initProperty[Float]("width",param.paramStrings,None,Some((w) => {

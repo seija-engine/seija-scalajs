@@ -207,8 +207,8 @@ object Foreign {
   def setLayoutViewType(entity:Int,typ:Int):Unit =
     Deno.core.jsonOpSync("setLayoutViewType",js.Array(entity,typ))
 
-  def setLayoutPosition(entity: Int,x:Float,y:Float,z:Float): Unit =
-    Deno.core.jsonOpSync("setLayoutPosition",js.Array(entity,x,y,z))
+  def setLayoutPosition(entity: Int,x:Float,y:Float): Unit =
+    Deno.core.jsonOpSync("setLayoutPosition",js.Array(entity,x,y))
 
   def addStackLayout(entity: Int):Boolean =
     Deno.core.jsonOpSync("addStackLayout",entity).asInstanceOf[Boolean]

@@ -41,7 +41,6 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
       evKey match {
         case ":select-menu" | ":select-menu-enter" =>
           val index = evData(0).caseInt()
-          println("context:"+index)
         case _ => ()
       }
     }
