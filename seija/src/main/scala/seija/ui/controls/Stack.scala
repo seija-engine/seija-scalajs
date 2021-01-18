@@ -26,6 +26,7 @@ class Stack extends Control with LayoutViewComp with EventNodeComp {
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
         val stack = entity.addComponent[StackLayout]()
+        this._view = Some(stack)
         initLayoutView(this,stack,params)
         initEventComp(this,params)
         initProperty[Float]("spacing",params.paramStrings,None,Some((spacing) => {

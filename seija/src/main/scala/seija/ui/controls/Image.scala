@@ -33,7 +33,7 @@ class Image extends Control with LayoutViewComp with EventNodeComp {
         entity.addComponent[Transparent]()
         val imageRender = entity.addComponent[ImageRender]()
         val view = entity.addComponent[LayoutView]()
-        
+        this._view = Some(view)
         this.initProperty[Int]("texture",params.paramStrings,None,Some((texId) => {
             imageRender.setTexture(new assets.Image(texId))
         }))

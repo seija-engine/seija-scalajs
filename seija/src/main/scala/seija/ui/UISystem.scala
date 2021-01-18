@@ -12,7 +12,13 @@ import seija.ui.controls.Menu
 import seija.ui.controls.Stack
 import seija.ui.controls.Label
 import seija.ui.controls.ContextMenu
-
+import seija.core.Entity
+import seija.core.Transform
+import seija.s2d.Rect2D
+import seija.core.event.EventNode
+import seija.s2d.layout.ContentView
+import seija.core.event.CABEventRoot
+import seija.math.Vector3
 
 
 object UISystem extends LazyLogging {
@@ -23,9 +29,12 @@ object UISystem extends LazyLogging {
 
   protected val cacheXml: js.Dictionary[XmlNode] = js.Dictionary()
   protected val creators:js.Dictionary[ControlCreator[Control]] = js.Dictionary()
+  protected val layers:js.Dictionary[Int] = js.Dictionary()
+  val layerEntitys:js.Dictionary[Entity] = js.Dictionary()
+ 
 
   
-  def init(path:String) {
+  def init(path:String,layerNames:js.Array[String] = js.Array()) {
       setRootPath(path)
       SExprContent.init()
       this.addCreator[Image]()
@@ -37,6 +46,42 @@ object UISystem extends LazyLogging {
       this.addCreator[Menu]()
       this.addCreator[Label]()
       this.addCreator[ContextMenu]()
+
+      this.createLayers(layerNames)
+  }
+
+  def createLayers(layerNames:js.Array[String]) {
+     for(idx <- 0 to layerNames.length - 1) {
+       this.layers.put(layerNames(idx),idx)
+     }
+
+
+     val root = Entity.New()
+     root.addComponent[Transform]()
+     root.addComponent[Rect2D]()
+     root.addComponent[ContentView]()
+     root.addComponent[CABEventRoot]()
+     for((name,idx) <- this.layers) {
+       val layerEntity = Entity.New(Some(root))
+       layerEntity.addComponent[Transform]()
+       layerEntity.addComponent[Rect2D]()
+       val evNode = layerEntity.addComponent[EventNode]()
+       evNode.setThrough(true)
+       val view = layerEntity.addComponent[ContentView]()
+       this.layerEntitys.put(name,layerEntity)
+       view.setPosition(Vector3.New(0,0,getLayerZ(name)))
+     } 
+  }
+
+  def getLayerZ(layerName:String): Float = {
+    val count = this.layers.size + 1
+    val zStart = count
+    this.layers.get(layerName) match {
+      case Some(layerIndex) => 
+         (zStart - layerIndex) * 100
+      case None =>
+         zStart * 100
+    }
   }
   
   def getXml(path: String): Either[String, XmlNode] = {
@@ -59,12 +104,18 @@ object UISystem extends LazyLogging {
     this.creators.get(name)
   }
 
-  def createByFile(path: String,parent: Option[Control],param: ControlParams,ownerControl:Option[Control]): Either[String, Control] = {
-   
+  def createByFile(path:String,
+                   parent: Option[Control],
+                   param: ControlParams,
+                   ownerControl:Option[Control]): Either[String, Control] = {
+    
     getXml(rootPath + path).map(applyXmlNs).flatMap(createByXml(_,parent,param,None))
   }
 
-  def createByXml(xmlNode:XmlNode,parent:Option[Control],param:ControlParams,ownerControl:Option[Control]):Either[String,Control] = {
+  def createByXml(xmlNode:XmlNode,
+                  parent:Option[Control],
+                  param:ControlParams,
+                  ownerControl:Option[Control]):Either[String,Control] = {
     this.scanParams(xmlNode,param)
     if(xmlNode.tag.indexOf(":") > 0) {
        createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)

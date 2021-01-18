@@ -11,6 +11,10 @@ class EventNode(override val entity:Entity) extends BaseComponent(entity) {
   protected var captureEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
   protected var bubbleEvents:mutable.HashMap[Int,js.Array[EventHandle]] = mutable.HashMap();
 
+  def setThrough(b:Boolean) {
+    Foreign.setEventThrough(this.entity.id,b)
+  }
+
   def register(evType:GameEventType,isCapture:Boolean,callFn:() => Unit):EventHandle = {
     
     Foreign.regEventNodeEvent(entity.id,evType.id,isCapture)

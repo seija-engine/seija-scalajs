@@ -7,6 +7,12 @@ import slogging.LazyLogging
 import seija.ui.UISystem
 import scala.scalajs.js
 import seija.ui.ControlParams
+import seija.core.Entity
+import seija.core.Transform
+import seija.core.event.EventNode
+import seija.s2d.layout.LayoutView
+import seija.s2d.layout.LayoutAlignment
+import seija.math.Vector3
 class SledWindow extends IGame with LazyLogging {
   
   override def onStart()  {
@@ -18,20 +24,15 @@ class SledWindow extends IGame with LazyLogging {
       "font" -> Assets.font.get.id
     ))
 
-    UISystem.init("./res/UI/")
+    UISystem.init("./res/UI/",js.Array("Normal","NormalMenu","Dialog","DialogMenu"))
+
     UISystem.createByFile("MainWindow.xml",None, ControlParams(),None) match {
       case Left(errString) => logger.error(errString)
-      case Right(control) => control.entity.get.addComponent[CABEventRoot]()
+      case Right(control) => 
+         
     }
    
-    
-    
-    
-    //UISystem.initCore("./res/UI/")
-    //UISystem.createByFile("Rewrite.xml",None,ControlParams()) match {
-    //  case Left(value) => logger.error(value)
-    //  case Right(control) =>
-    //}
+
   }
 
   

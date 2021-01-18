@@ -11,6 +11,7 @@ import seija.s2d.layout.ContentView
 import seija.ui.comps.LayoutViewComp
 import seija.data.SExpr
 import seija.ui.comps.EventNodeComp
+import seija.ui.UISystem
 
 object ContextMenu {
   implicit val imageCreator:ControlCreator[ContextMenu] = new ControlCreator[ContextMenu] {
@@ -31,8 +32,8 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
         val entity = this.entity.get
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
-        val view = entity.addComponent[ContentView]()
-        initLayoutView(this,view,params)
+        this._view = Some(entity.addComponent[ContentView]())
+        initLayoutView(this,this._view.get,params)
         initEventComp(this,params)
         initProperty[js.Array[MenuItemData]]("dataSource",params.paramStrings,None,Some(onSetDataSource))
     }
@@ -41,6 +42,8 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
       evKey match {
         case ":select-menu" | ":select-menu-enter" =>
           val index = evData(0).caseInt()
+          UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
+          println("create:"+index)
         case _ => ()
       }
     }

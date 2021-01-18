@@ -1,4 +1,4 @@
-<ContextMenu width="111" margin="0,24,0,0" viewType="Absolute" ver="Start" >
+<ContextMenu layer="NormalMenu" width="111" margin="0,24,0,0" viewType="Absolute" ver="Start" >
     <Param.Template>
         <Frame >
             <Image  texture="(env res.white)" margin="0,0,0,0" color="#000000" />
@@ -14,11 +14,12 @@
                     color="(attr-fbind :IsHover #(if % color.blue color.transparent))" />
             <Image  texture="(env res.white)" 
                     color="#666666" margin="6,29,0,0" />
-            <Label OnTouchStart="#(emit :select-menu)"  margin="0,1,0,0"
+            <Label  OnTouchStart="#(emit :select-menu)"  margin="0,1,0,0"
                     OnMouseEnter="#(emit :menu-enter)" 
                     OnMouseLeave="#(emit :menu-leave)" 
-                   fontSize="20" color="(attr-fbind :IsHover #(if % color.white color.black))"
-                   text="(attr-bind :Name)" font="(env res.font)" />
+                    fontSize="20" 
+                    color="(attr-fbind :IsHover #(if % color.white color.black))"
+                    text="(attr-bind :Name)" font="(env res.font)" />
         </Frame>
     </Param.ItemTemplate>
 </ContextMenu>

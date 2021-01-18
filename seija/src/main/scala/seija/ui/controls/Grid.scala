@@ -31,6 +31,7 @@ class Grid extends Control with LayoutViewComp {
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
         val gridLayout = entity.addComponent[GridLayout]()
+        this._view = Some(gridLayout)
         initLayoutView(this,gridLayout,params)
         initProperty[js.Array[LNumber]]("rows",params.paramStrings,Some(js.Array(LRate(1))),Some((rows) => {
             gridLayout.setRows(rows)
@@ -57,8 +58,8 @@ class GridCell extends Control with LayoutViewComp {
         entity.addComponent[Rect2D]()
         val contentView = entity.addComponent[ContentView]()
         val gridCell = entity.addComponent[layout.GridCell]()
+        this._view = Some(contentView)
         this.initLayoutView(this,contentView,params)
-
         this.initProperty[Int]("row",params.paramStrings,Some(0),Some((row) => gridCell.setRow(row)))
         this.initProperty[Int]("col",params.paramStrings,Some(1),Some((col) => gridCell.setCol(col)))
         this.initProperty("rowSpan",params.paramStrings,Some(0),Some((rowSpan) => gridCell.setRowSpan(rowSpan)))

@@ -92,7 +92,7 @@ fn set_image_color(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Re
     let world = get_mut_world();
     let entity = world.entities().entity( value.as_i64().unwrap() as u32);
     let bytes =  &mut *buffer[0];
-    let r  = NativeEndian::read_f32(bytes);
+    let r = NativeEndian::read_f32(bytes);
     let g = NativeEndian::read_f32(&mut bytes[4..8]);
     let b = NativeEndian::read_f32(&mut bytes[8..12]);
     let a = NativeEndian::read_f32(&mut bytes[12..16]);
@@ -101,6 +101,8 @@ fn set_image_color(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf]) -> Re
     if let Some(image) = mimage {
         image.set_color(r, g, b, a);
         update_mesh_2d(world, entity);
+    } else {
+        eprintln!("miss image: {}",entity.id())
     }
     Ok(Value::Null)
 }

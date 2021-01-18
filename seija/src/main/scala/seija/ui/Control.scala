@@ -5,7 +5,8 @@ import seija.data._
 import seija.ui.SExprContent
 import seija.data.SUserData
 import slogging.LazyLogging
-
+import seija.s2d.layout.LayoutView
+import seija.math.Vector3
 
 
 case class ControlParams(paramStrings:js.Dictionary[String] = js.Dictionary(),
@@ -25,6 +26,8 @@ class Control extends LazyLogging {
    var children:js.Array[Control] = js.Array()
    var entity:Option[Entity] = None
    def getEntity:Entity = entity.get
+   protected var _view:Option[LayoutView] = None
+   def getView:Option[LayoutView] = _view
    val sContext:SContent = new SContent(Some(SExprContent.content))
    val slots:js.Dictionary[Control] = js.Dictionary()
    var mainTemplate:Option[UITemplate] = None
@@ -32,6 +35,10 @@ class Control extends LazyLogging {
    
    protected var property: js.Dictionary[Any] = js.Dictionary()
    protected var propertyListers:js.Dictionary[js.Array[IndexedRef]] = js.Dictionary()
+   def layerName:String = this.getProperty("layer").getOrElse("Default")
+
+   def zIndex:Int = this.getProperty("zIndex").getOrElse(0)
+   def setZIndex(newIdx:Int) = this.setProperty("zIndex",newIdx)
 
    def setProperty(key:String,value:Any) {
       if(this.property.contains(key)) {
@@ -51,29 +58,55 @@ class Control extends LazyLogging {
       this.property.get(key).map(_.asInstanceOf[T])
    }
 
-  
-   def init(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
+   
+   def init(parent:Option[Control],
+            params:ControlParams,
+            ownerControl:Option[Control] = None) {
       this.parent = parent
+      this.parent.foreach(_.children.push(this))
       this.ownerControl = ownerControl
       this.sContext.set("control",SUserData(this))
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
       this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
       this.initProperty[String]("OnEnter",params.paramStrings,None,None)
+      this.initProperty[String]("layer",params.paramStrings,Some("Default"),None)
+      this.initProperty[Int]("zIndex",params.paramStrings,Some(0),None)
       val entity = Entity.New(parent.flatMap(_.entity))
       this.entity = Some(entity)
+      this.offsetByLayer()
       this.OnInit(parent,params,ownerControl)
       this.mainTemplate.foreach(_.create())
       this.createChild(params)
       this.OnEnter()
    }
 
-   def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
+   protected def offsetByLayer() {
+      if(this.parent == None) 
+      {
+         UISystem.layerEntitys.get(this.layerName) match {
+            case Some(entity) =>
+              this.entity.get.setParent(Some(entity)) 
+            case None =>
+             ()
+         }
+      }
+   }
 
+   def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
    }
 
    def setParent(parent:Option[Control]) {
       if(this.parent == parent) return
+      if(this.parent.isDefined) {
+         val index = this.parent.get.children.indexOf(this);
+         this.parent.get.children.remove(index)
+      }
       this.parent = parent
+      if(this.parent.isDefined) {
+         this.parent.get.children.push(this)
+      } else {
+         offsetByLayer()
+      }
       this.entity.get.setParent(parent.get.entity)
    }
 
@@ -86,19 +119,25 @@ class Control extends LazyLogging {
       } else { 
          params.paramXmls.get("Children").flatMap(_.children.toOption).getOrElse(js.Array())
       }
+      var zIndex = 0
       for(child <- childArray) {
          if(child.tag.startsWith("Slot.")) {
             if(ownerControl.isDefined) {
                ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this)
             }
          } else {
-            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(),this.ownerControl) match {
+            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(
+               paramStrings = js.Dictionary("zIndex" -> zIndex.toString())
+            ),this.ownerControl) match {
                case Left(value) => logger.error(value)
                case Right(value) => ()
             }
+            zIndex += 1
          }
       }
    }
+
+
 
    def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T],callFn:Option[T => ()])(implicit read:Read[T]) {
       params.get(key) match {
@@ -162,6 +201,7 @@ class Control extends LazyLogging {
    def OnEnter() {}
 
    def destroy() {
+      this.children.foreach(_.destroy())
       this.entity.foreach(_.destroy())
       this.OnDestroy()
    }

@@ -26,6 +26,7 @@ class Frame extends Control with LayoutViewComp with EventNodeComp {
         entity.addComponent[Transform]()
         entity.addComponent[Rect2D]()
         val contentView = entity.addComponent[ContentView]()
+        this._view = Some(contentView)
         initLayoutView(this,contentView,params)
         initEventComp(this,params)
     }
