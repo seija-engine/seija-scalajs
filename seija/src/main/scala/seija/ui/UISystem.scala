@@ -63,14 +63,16 @@ object UISystem extends LazyLogging {
      root.addComponent[CABEventRoot]()
      for((name,idx) <- this.layers) {
        val layerEntity = Entity.New(Some(root))
-       layerEntity.addComponent[Transform]()
+       val t =  layerEntity.addComponent[Transform]()
        layerEntity.addComponent[Rect2D]()
        val evNode = layerEntity.addComponent[EventNode]()
        evNode.setThrough(true)
-       val view = layerEntity.addComponent[ContentView]()
+       layerEntity.addComponent[ContentView]()
        this.layerEntitys.put(name,layerEntity)
-       view.setPosition(Vector3.New(0,0,getLayerZ(name)))
-     } 
+       val layerZ = getLayerZ(name);
+       t.localPosition.set(t.localPosition.x,t.localPosition.y,layerZ)
+     }
+     
   }
 
   def getLayerZ(layerName:String): Float = {

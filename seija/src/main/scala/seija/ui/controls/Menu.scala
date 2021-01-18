@@ -121,7 +121,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         }
         val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
         val sizeX = selectItem.entity.get.getComponent[Rect2D]().get.size.x
-        view.get.setPosition(Vector2.New(this.selectIndex * sizeX,0))
+        view.get.setMargin(new Thickness(this.selectIndex * sizeX,24,0,0))
         this.contextMenu.get.setProperty("dataSource",this.menuDatas(this.selectIndex).children)
     }
 

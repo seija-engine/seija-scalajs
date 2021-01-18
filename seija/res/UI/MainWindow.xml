@@ -1,4 +1,4 @@
-<Grid layer="Normal" position="0,0,100" xmlns:core="/core/" rows="25,1*" cols="1*,1*">
+<Grid layer="Normal"  xmlns:core="/core/" rows="25,1*" cols="1*,1*">
     <Param.Template>
         <GridCell row="0" colSpan="2"  col="0">
             <core:Menu >
