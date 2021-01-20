@@ -12,7 +12,6 @@ import seija.ui.ControlCreator
 import seija.s2d.layout.ContentView
 import seija.s2d.layout.LNumber
 import seija.data.Read
-import  seija.s2d.layout.LNumber
 import seija.s2d.layout.LRate
 
 object Grid {

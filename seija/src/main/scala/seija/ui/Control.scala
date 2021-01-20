@@ -32,14 +32,14 @@ class Control extends LazyLogging {
    val slots:js.Dictionary[Control] = js.Dictionary()
    var mainTemplate:Option[UITemplate] = None
    var ownerControl:Option[Control] = None
-   
    protected var property: js.Dictionary[Any] = js.Dictionary()
    protected var propertyListers:js.Dictionary[js.Array[IndexedRef]] = js.Dictionary()
    def layerName:String = this.getProperty("layer").getOrElse("Default")
 
-   def zIndex:Int = this.getProperty("zIndex").getOrElse(0)
-   def setZIndex(newIdx:Int) = this.setProperty("zIndex",newIdx)
-
+   var ZIndexStart:Int = 0
+   var ZCount:Int = 1
+   
+   
    def setProperty(key:String,value:Any) {
       if(this.property.contains(key)) {
          this.property.update(key,value)
@@ -70,7 +70,6 @@ class Control extends LazyLogging {
       this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
       this.initProperty[String]("OnEnter",params.paramStrings,None,None)
       this.initProperty[String]("layer",params.paramStrings,Some("Default"),None)
-      this.initProperty[Int]("zIndex",params.paramStrings,Some(0),None)
       val entity = Entity.New(parent.flatMap(_.entity))
       this.entity = Some(entity)
       this.offsetByLayer()
@@ -78,6 +77,7 @@ class Control extends LazyLogging {
       this.mainTemplate.foreach(_.create())
       this.createChild(params)
       this.OnEnter()
+      
    }
 
    protected def offsetByLayer() {
@@ -111,7 +111,6 @@ class Control extends LazyLogging {
    }
 
 
-
    def createChild(params: ControlParams):Unit = {
       if(!params.paramXmls.contains("Children") && params.children.length == 0) return
       val childArray:js.Array[XmlNode] = if(params.children.length > 0) { 
@@ -119,20 +118,16 @@ class Control extends LazyLogging {
       } else { 
          params.paramXmls.get("Children").flatMap(_.children.toOption).getOrElse(js.Array())
       }
-      var zIndex = 0
       for(child <- childArray) {
          if(child.tag.startsWith("Slot.")) {
             if(ownerControl.isDefined) {
                ownerControl.get.slots.put(child.tag.substring("Slot.".length()),this)
             }
          } else {
-            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(
-               paramStrings = js.Dictionary("zIndex" -> zIndex.toString())
-            ),this.ownerControl) match {
+            UISystem.createByXml(child,this.slots.get("Children"),ControlParams(),this.ownerControl) match {
                case Left(value) => logger.error(value)
                case Right(value) => ()
             }
-            zIndex += 1
          }
       }
    }
