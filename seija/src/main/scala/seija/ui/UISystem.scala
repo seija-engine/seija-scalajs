@@ -191,4 +191,9 @@ object UISystem extends LazyLogging {
     }
     curValue
   }
+
+  def OnControlDirty(control:Control) = {
+    
+  }
+
 }

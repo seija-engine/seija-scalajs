@@ -70,6 +70,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
     }
 
     override def OnEnter(): Unit = {
+       super.OnEnter()
        val dataSource = this.property.get("dataSource")
        if(dataSource.isDefined) {
            onSetDataSource(dataSource.get.asInstanceOf[js.Array[MenuItemData]])

@@ -24,6 +24,8 @@ trait ControlCreator[+T <: Control] {
 class Control extends LazyLogging {
    var parent:Option[Control] = None
    var children:js.Array[Control] = js.Array()
+   private var childIndex:Int = 0
+   def getChildIndex:Int = childIndex
    var entity:Option[Entity] = None
    def getEntity:Entity = entity.get
    protected var _view:Option[LayoutView] = None
@@ -35,9 +37,6 @@ class Control extends LazyLogging {
    protected var property: js.Dictionary[Any] = js.Dictionary()
    protected var propertyListers:js.Dictionary[js.Array[IndexedRef]] = js.Dictionary()
    def layerName:String = this.getProperty("layer").getOrElse("Default")
-
-   var ZIndexStart:Int = 0
-   var ZCount:Int = 1
    
    
    def setProperty(key:String,value:Any) {
@@ -62,8 +61,7 @@ class Control extends LazyLogging {
    def init(parent:Option[Control],
             params:ControlParams,
             ownerControl:Option[Control] = None) {
-      this.parent = parent
-      this.parent.foreach(_.children.push(this))
+      parent.foreach(_.addChild(this))
       this.ownerControl = ownerControl
       this.sContext.set("control",SUserData(this))
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
@@ -76,8 +74,35 @@ class Control extends LazyLogging {
       this.OnInit(parent,params,ownerControl)
       this.mainTemplate.foreach(_.create())
       this.createChild(params)
-      this.OnEnter()
-      
+      this.OnEnter()  
+   }
+
+   def getChildSort():js.Array[Int] = {
+      var array:js.Array[Int] = js.Array();
+      var curControl:Option[Control] = Some(this);
+      while(curControl.isDefined) {
+         array.push(curControl.get.childIndex)
+         curControl = curControl.get.parent
+      }
+      array.reverseInPlace()
+   }
+
+   def addChild(child:Control) {
+      child.parent = Some(this)
+      this.children.push(child)
+      child.entity.foreach(_.setParent(this.entity))
+      for(idx <- 0 to this.children.length - 1) {
+         this.children(idx).childIndex = idx
+      }
+   }
+
+   def removeChild(child:Control) {
+      val index = this.children.indexOf(child);
+      this.children.remove(index)
+      child.entity.foreach(_.setParent(None))
+      for(idx <- 0 to this.children.length - 1) {
+         this.children(idx).childIndex = idx
+      }
    }
 
    protected def offsetByLayer() {
@@ -92,23 +117,21 @@ class Control extends LazyLogging {
       }
    }
 
-   def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {
-   }
+   def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {}
 
+   /*
    def setParent(parent:Option[Control]) {
       if(this.parent == parent) return
       if(this.parent.isDefined) {
-         val index = this.parent.get.children.indexOf(this);
-         this.parent.get.children.remove(index)
+         parent.get.removeChild(this)
       }
       this.parent = parent
       if(this.parent.isDefined) {
-         this.parent.get.children.push(this)
+         this.parent.get.addChild(this)
       } else {
          offsetByLayer()
       }
-      this.entity.get.setParent(parent.get.entity)
-   }
+   }*/
 
 
    def createChild(params: ControlParams):Unit = {
@@ -131,8 +154,6 @@ class Control extends LazyLogging {
          }
       }
    }
-
-
 
    def initProperty[T](key:String,params:js.Dictionary[String],defValue:Option[T],callFn:Option[T => ()])(implicit read:Read[T]) {
       params.get(key) match {
@@ -193,7 +214,10 @@ class Control extends LazyLogging {
       this.parent.foreach(_.handleEvent(evKey,evData))
    }
    
-   def OnEnter() {}
+   def OnEnter() {
+
+      logger.info(this.getChildSort().toString())
+   }
 
    def destroy() {
       this.children.foreach(_.destroy())
