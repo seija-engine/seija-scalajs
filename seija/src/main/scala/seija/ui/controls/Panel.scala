@@ -31,7 +31,6 @@ class Panel extends Control with LayoutViewComp {
         
         this._view = Some(contentView)
         this.initProperty[Color]("color",params.paramStrings,Some(Color.white),None)
-        println(params.paramStrings.keySet)
         this.initLayoutView(this,contentView,params)
         
     }

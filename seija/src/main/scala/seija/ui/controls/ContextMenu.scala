@@ -43,7 +43,6 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
         case ":select-menu" | ":select-menu-enter" =>
           val index = evData(0).caseInt()
           UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
-          println("create:"+index)
         case _ => ()
       }
     }

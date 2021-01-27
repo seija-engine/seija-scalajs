@@ -63,7 +63,9 @@ class Entity(val id:Int) {
   private def removeFromParent(isDestroy:Boolean):Unit = {
     if(this._parent.isDefined) {
         val index = this._parent.get._children.indexOf(this)
-        this._parent.get._children.remove(index)
+        if(index >= 0) {
+          this._parent.get._children.remove(index)
+        }
     }
     Foreign.treeRemove(this.id,isDestroy)
   }

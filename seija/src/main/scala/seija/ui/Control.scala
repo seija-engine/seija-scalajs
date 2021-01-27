@@ -7,6 +7,7 @@ import seija.data.SUserData
 import slogging.LazyLogging
 import seija.s2d.layout.LayoutView
 import seija.math.Vector3
+import seija.core.Transform
 
 
 case class ControlParams(paramStrings:js.Dictionary[String] = js.Dictionary(),
@@ -23,8 +24,10 @@ trait ControlCreator[+T <: Control] {
 
 class Control extends LazyLogging {
    var parent:Option[Control] = None
-   var children:js.Array[Control] = js.Array()
-   private var childIndex:Int = 0
+   protected var children:js.Array[Control] = js.Array()
+   def getChild(idx:Int):Control = this.children(idx)
+   def childCount:Int = this.children.length
+   private var childIndex:Int = -1
    def getChildIndex:Int = childIndex
    var entity:Option[Entity] = None
    def getEntity:Entity = entity.get
@@ -37,7 +40,19 @@ class Control extends LazyLogging {
    protected var property: js.Dictionary[Any] = js.Dictionary()
    protected var propertyListers:js.Dictionary[js.Array[IndexedRef]] = js.Dictionary()
    def layerName:String = this.getProperty("layer").getOrElse("Default")
-   
+   var _zIndex:Int = -1
+   def zIndex = _zIndex
+   def zIndex_=(newVal:Int) = {
+      _zIndex = newVal
+      val t = this.entity.get.getComponent[Transform]();
+      this.parent match {
+         case Some(parent) =>
+            t.get.localPosition.z = (_zIndex - parent.zIndex) * -0.01f; 
+         case None => 
+            t.get.localPosition.z = _zIndex * -0.01f;
+      }
+      //logger.info(s"set Z ${_zIndex}: ${this} = ${t.get.localPosition.z}")
+   }
    
    def setProperty(key:String,value:Any) {
       if(this.property.contains(key)) {
@@ -61,20 +76,30 @@ class Control extends LazyLogging {
    def init(parent:Option[Control],
             params:ControlParams,
             ownerControl:Option[Control] = None) {
-      parent.foreach(_.addChild(this))
+      if(parent.isDefined) {
+         this.setProperty("layer",parent.get.layerName);
+         parent.get.addChild(this);
+      }
       this.ownerControl = ownerControl
       this.sContext.set("control",SUserData(this))
       ownerControl.foreach(oc => this.sContext.set("ownerControl",SUserData(oc)))
       this.mainTemplate = params.paramXmls.get("Template").map(xmlNode => new UITemplate(xmlNode,this));
       this.initProperty[String]("OnEnter",params.paramStrings,None,None)
-      this.initProperty[String]("layer",params.paramStrings,Some("Default"),None)
+      if(this.property.get("layer").isEmpty) {
+         this.initProperty[String]("layer",params.paramStrings,Some("Default"),None)
+      }
       val entity = Entity.New(parent.flatMap(_.entity))
       this.entity = Some(entity)
-      this.offsetByLayer()
+      
       this.OnInit(parent,params,ownerControl)
       this.mainTemplate.foreach(_.create())
       this.createChild(params)
-      this.OnEnter()  
+
+      if(parent.isEmpty) {
+         UISystem.getLayer(this.layerName).foreach(_.addControl(this))
+      }
+
+      this.OnEnter()
    }
 
    def getChildSort():js.Array[Int] = {
@@ -87,6 +112,8 @@ class Control extends LazyLogging {
       array.reverseInPlace()
    }
 
+   
+
    def addChild(child:Control) {
       child.parent = Some(this)
       this.children.push(child)
@@ -94,28 +121,27 @@ class Control extends LazyLogging {
       for(idx <- 0 to this.children.length - 1) {
          this.children(idx).childIndex = idx
       }
+      UISystem.getLayer(this.layerName).foreach(_.DiffUpdateDirty(child))
    }
 
-   def removeChild(child:Control) {
+   def removeChild(child:Control,isDestroy:Boolean = true) {
+      UISystem.getLayer(this.layerName).foreach(_.OnRemoveControl(child))
       val index = this.children.indexOf(child);
-      this.children.remove(index)
-      child.entity.foreach(_.setParent(None))
+      if(index > 0) {
+         this.children.remove(index)
+      }
+     
       for(idx <- 0 to this.children.length - 1) {
          this.children(idx).childIndex = idx
       }
-   }
-
-   protected def offsetByLayer() {
-      if(this.parent == None) 
-      {
-         UISystem.layerEntitys.get(this.layerName) match {
-            case Some(entity) =>
-              this.entity.get.setParent(Some(entity)) 
-            case None =>
-             ()
-         }
+      if(isDestroy) {
+         child._destroy()
+      } else {
+          child.entity.foreach(_.setParent(None))
       }
    }
+
+  
 
    def OnInit(parent:Option[Control],params:ControlParams,ownerControl:Option[Control] = None) {}
 
@@ -215,13 +241,23 @@ class Control extends LazyLogging {
    }
    
    def OnEnter() {
-
-      logger.info(this.getChildSort().toString())
+      //logger.info(this.getChildSort().toString())
    }
 
    def destroy() {
-      this.children.foreach(_.destroy())
+      this.parent match {
+         case Some(parent) =>
+            parent.removeChild(this,false)
+         case None =>
+            UISystem.getLayer(this.layerName).foreach(_.removeControl(this))
+      }
+      this._destroy()
+   }
+
+   protected def _destroy() {
+      this.children.foreach(_._destroy())
       this.entity.foreach(_.destroy())
+      this.children.clear();
       this.OnDestroy()
    }
 

@@ -31,14 +31,14 @@ class SledWindow extends IGame with LazyLogging {
       case Right(control) => 
          
     }
-   
 
+    UISystem.Update()
   }
 
   
 
   override def onUpdate() {
-
+    UISystem.Update()
   }
 
   override def onQuit()  {

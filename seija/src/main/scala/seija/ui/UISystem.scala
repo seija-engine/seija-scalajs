@@ -3,15 +3,8 @@ import scala.scalajs.js
 import seija.data.XmlNode
 import seija.data.Xml
 import seija.data.XmlExt._
-import seija.ui.controls.Image
-import seija.ui.controls.Panel
-import seija.ui.controls.Frame
+import seija.ui.controls._
 import slogging.LazyLogging
-import seija.ui.controls.{Grid,GridCell}
-import seija.ui.controls.Menu
-import seija.ui.controls.Stack
-import seija.ui.controls.Label
-import seija.ui.controls.ContextMenu
 import seija.core.Entity
 import seija.core.Transform
 import seija.s2d.Rect2D
@@ -29,9 +22,10 @@ object UISystem extends LazyLogging {
 
   protected val cacheXml: js.Dictionary[XmlNode] = js.Dictionary()
   protected val creators:js.Dictionary[ControlCreator[Control]] = js.Dictionary()
-  protected val layers:js.Dictionary[Int] = js.Dictionary()
-  val layerEntitys:js.Dictionary[Entity] = js.Dictionary()
- 
+  
+  protected var layers:js.Array[UILayer] = js.Array()
+  val layerNameDic:js.Dictionary[UILayer] = js.Dictionary()
+  protected var uiRoot:Option[Entity] = None
 
   
   def init(path:String,layerNames:js.Array[String] = js.Array()) {
@@ -47,43 +41,27 @@ object UISystem extends LazyLogging {
       this.addCreator[Label]()
       this.addCreator[ContextMenu]()
 
-      this.createLayers(layerNames)
+      val root = Entity.New(None)
+      root.addComponent[Transform]()
+      root.addComponent[Rect2D]()
+      root.addComponent[ContentView]()
+      root.addComponent[CABEventRoot]()
+      this.uiRoot = Some(root)
+      this.createLayers(root,layerNames)
   }
 
-  def createLayers(layerNames:js.Array[String]) {
-     for(idx <- 0 to layerNames.length - 1) {
-       this.layers.put(layerNames(idx),idx)
-     }
-
-
-     val root = Entity.New()
-     root.addComponent[Transform]()
-     root.addComponent[Rect2D]()
-     root.addComponent[ContentView]()
-     root.addComponent[CABEventRoot]()
-     for((name,idx) <- this.layers) {
-       val layerEntity = Entity.New(Some(root))
-       val t =  layerEntity.addComponent[Transform]()
-       layerEntity.addComponent[Rect2D]()
-       val evNode = layerEntity.addComponent[EventNode]()
-       evNode.setThrough(true)
-       layerEntity.addComponent[ContentView]()
-       this.layerEntitys.put(name,layerEntity)
-       val layerZ = getLayerZ(name);
-       t.localPosition.set(t.localPosition.x,t.localPosition.y,layerZ)
-     }
-     
-  }
-
-  def getLayerZ(layerName:String): Float = {
-    val count = this.layers.size + 1
-    val zStart = count
-    this.layers.get(layerName) match {
-      case Some(layerIndex) => 
-         (zStart - layerIndex) * 100
-      case None =>
-         zStart * 100
+  def createLayers(parent:Entity,layerNames:js.Array[String]) {
+    var idx = layerNames.length;
+    for(name <- layerNames) {
+        val layer = UILayer.create(parent,name,idx);
+        layers.push(layer)
+        this.layerNameDic.put(name,layer)
+        idx -=1
     }
+  }
+
+  def getLayer(layerName:String):Option[UILayer] = {
+    this.layerNameDic.get(layerName)
   }
   
   def getXml(path: String): Either[String, XmlNode] = {
@@ -192,8 +170,6 @@ object UISystem extends LazyLogging {
     curValue
   }
 
-  def OnControlDirty(control:Control) = {
-    
-  }
+  def Update() = this.layers.foreach(_.UpdateDirtyZOrder())
 
 }
