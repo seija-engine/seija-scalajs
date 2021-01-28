@@ -40,6 +40,7 @@ object UISystem extends LazyLogging {
       this.addCreator[Menu]()
       this.addCreator[Label]()
       this.addCreator[ContextMenu]()
+      this.addCreator[Sprite]()
 
       val root = Entity.New(None)
       root.addComponent[Transform]()
