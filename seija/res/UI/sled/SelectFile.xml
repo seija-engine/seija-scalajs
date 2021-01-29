@@ -1,10 +1,10 @@
 <Panel layer="Dialog" >
     <Frame width="640" height="480" ver="Center" hor="Center">
-        <Sprite type="Sliced(1,1,1,1)" sheet="(env res.sheet)" spriteName="frame-notebook" />
+        <Image texture="(env res.white)" color="#999999" />
         <Label hor="Center" fontSize="20" height="30" width="80" color="#000000" font="(env res.font)"  text="选择文件夹" />
         <Label fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="End" ver="Start" text="@[ x ]" />
         <Frame  margin="0,30,0,0">
-            <Sprite type="Sliced(1,1,1,1)" sheet="(env res.sheet)" spriteName="frame-notebook" />
+            <Image texture="(env res.white)" color="#eeeeee" />
             <Frame>
                 <Label margin="10,5,0,0" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="Start" text="路径:" />
             </Frame>

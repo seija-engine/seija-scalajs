@@ -1,0 +1,5 @@
+<SelectBox>
+    <Param.Template>
+        <Image texture="(env res.white)" color="#ff0000"/>
+    </Param.Template>
+</SelectBox>

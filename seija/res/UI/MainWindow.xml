@@ -1,4 +1,4 @@
-<Grid layer="Normal"  xmlns:core="/core/" rows="25,1*" cols="1*,1*">
+<Grid layer="Normal"  xmlns:core="/core/" xmlns:s="/sled/" rows="25,1*" cols="1*,1*">
     <Param.Template>
         <GridCell row="0" colSpan="2"  col="0">
             <core:Menu >
@@ -16,6 +16,9 @@
                     ]
                 </Param.dataSource>
             </core:Menu>
+        </GridCell>
+        <GridCell row="1" colSpan="2"  col="0">
+            <s:SelectBox width="100" height="100" />
         </GridCell>
     </Param.Template>
 </Grid>

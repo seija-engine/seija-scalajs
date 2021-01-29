@@ -31,7 +31,7 @@ class SledWindow extends IGame with LazyLogging {
       case Right(control) => 
          
     }
-
+    logger.info(seija.os.pwd.toString())
     UISystem.Update()
   }
 

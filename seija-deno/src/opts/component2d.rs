@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
 use serde_json::Value;
-use seija::{math::{Vector2,Vector3}, s2d::layout::{ContentView, GridCell, view::ViewType}, specs::{Entity, World, WorldExt, WriteStorage}};
+use seija::{math::{Vector2}, s2d::layout::{ContentView, GridCell, view::ViewType}, specs::{Entity, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;

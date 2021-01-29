@@ -14,7 +14,7 @@ import seija.s2d.assets.SpriteSheet
 import seija.s2d.ImageType
 
 object Sprite {
-    implicit val imageCreator:ControlCreator[Sprite] = new ControlCreator[Sprite] {
+    implicit val spriteCreator:ControlCreator[Sprite] = new ControlCreator[Sprite] {
         val name: String = "Sprite"
         def init(): Unit = {}
         def create(): Sprite = new Sprite

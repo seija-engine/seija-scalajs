@@ -39,11 +39,15 @@ function deleteEntity(eid) {
   return Deno.core.jsonOpSync("deleteEntity",[worldId,eid]);
 }
 
+function fs_root() {
+  return Deno.core.jsonOpSync("fs_root",[]);
+}
+
 var root = null;
 var childrenLst = [];
 function game_start(world_rid) {
-  var ret = Seija.parseXML("a.xml");
-  console.log(JSON.stringify(ret))
+
+  console.log(fs_root())
 }
 
 function game_update(args) {

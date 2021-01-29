@@ -1,6 +1,7 @@
 pub mod app;
 pub mod core;
 mod libs;
+mod fs;
 pub mod component2d;
 use deno_core::{JsRuntime,ZeroCopyBuf,json_op_sync,OpState,OpId};
 use deno_core::error::AnyError;
@@ -17,6 +18,7 @@ pub fn init(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "op_resources", deno_core::op_resources);
     app::init_json_func(rt);
     core::init_json_func(rt);
+    fs::init_fs_func(rt);
     component2d::init_json_func(rt);
 
     let gctx = rt.global_context();
