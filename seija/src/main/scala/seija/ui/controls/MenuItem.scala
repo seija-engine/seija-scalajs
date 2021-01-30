@@ -11,7 +11,7 @@ import seija.ui.comps.LayoutViewComp
 import seija.data.SExpr
 import seija.data.SInt
 
-case class MenuItemData(name:String,children:js.Array[MenuItemData])
+case class MenuItemData(name:String,key:String = "",children:js.Array[MenuItemData] = js.Array())
 
 object MenuItem {
     implicit val readMenuItemData:Read[js.Array[MenuItemData]] = (string: String) => None

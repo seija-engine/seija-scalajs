@@ -39,10 +39,11 @@ object Menu {
     def menuItem(args:js.Array[SExpr],content:SContent):SExpr = {
         val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
         val menuName = evalArgs(0).castString()
-        val child:js.Array[MenuItemData] = if(evalArgs.length > 1) {
-            evalArgs(1).toValue[js.Array[MenuItemData]]
+        val key = evalArgs(1).castString()
+        val child:js.Array[MenuItemData] = if(evalArgs.length > 2) {
+            evalArgs(2).toValue[js.Array[MenuItemData]]
         } else { js.Array() }
-        SUserData(MenuItemData(menuName,child))
+        SUserData(MenuItemData(menuName,key,child))
     }
 }
 
@@ -89,7 +90,6 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
             menuItem.init(this.slots.get("Children"),
                          ControlParams(
                              paramXmls = js.Dictionary("Template" -> this.itemTemplate.get),
-                             paramStrings = js.Dictionary("zIndex" -> idx.toString())
                          ),
                          Some(menuItem))
             menuItem.setName(child.name)
@@ -113,11 +113,14 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         }
         val selectItem = this.menuItems(this.selectIndex)
         if(!contextMenu.isDefined)  {
-            UISystem.createByFile("/core/ContextMenu.xml",None,ControlParams(),None) match {
+            val params = ControlParams();
+            params.paramStrings.put("layer",this.layerName + "Menu");
+            UISystem.createByFile("/core/ContextMenu.xml",None,params,None) match {
             case Left(errString) => logger.error(errString)
-            case Right(contextMenu) =>
-              contextMenu.entity.get.addComponent[CABEventRoot]()
-              this.contextMenu = Some(contextMenu.asInstanceOf[ContextMenu])
+            case Right(control) =>
+               val contextMenu = control.asInstanceOf[ContextMenu];
+               contextMenu.OnSelectMenu = Some(this.OnSelectContextMenu)
+               this.contextMenu = Some(contextMenu)
             }
         }
         val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
@@ -166,5 +169,14 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         this.globalIdxRef.foreach(idxRef => {
             EventSystem.removeGlobalEvent(GameEventType.TouchStart,idxRef)
         });
+    }
+
+    def OnSelectContextMenu(index:Int,key:String) {
+        key match {
+            case "newProject" => 
+                UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
+            case _ => logger.info(key)
+        }
+        
     }
 }

@@ -12,6 +12,8 @@ import seija.s2d.TextRender
 import seija.data.Color
 import seija.s2d.assets.Font
 import seija.ui.comps.EventNodeComp
+import seija.data.AnchorAlign._
+import seija.s2d.LineMode._
 
 object Label {
   implicit val stackCreator:ControlCreator[Label] = new ControlCreator[Label] {
@@ -43,6 +45,12 @@ class Label extends Control with LayoutViewComp with EventNodeComp {
         }))
         initProperty[Int]("fontSize",params.paramStrings,None,Some(fontSize => {
             label.setFontSize(fontSize)
+        }))
+        initProperty[AnchorAlign]("anchor",params.paramStrings,None,Some(anchor => {
+            label.setAnchor(anchor)
+        }))
+        initProperty[LineMode]("lineMode",params.paramStrings,None,Some(lineMode => {
+            label.setLineMode(lineMode)
         }))
     }
 }

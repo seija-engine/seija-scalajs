@@ -258,8 +258,14 @@ fn set_text_anchor(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<
     let entity = world.entities().entity( arr[0].as_i64().unwrap() as u32);
     let anchor:AnchorAlign = (arr[1].as_i64().unwrap() as u32).into();
     let mut storage = world.write_storage::<TextRender>();
+    let mut ah:Option<[f32;2]> = None;
     if let Some(text) = storage.get_mut(entity) {
         text.set_anchor(anchor);
+        ah = Some(text.anchor.to_anchor());
+    }
+    let mut rects:WriteStorage<Rect2D> = world.write_storage::<Rect2D>();
+    if let Some(rect) = rects.get_mut(entity) {
+        rect.anchor = ah.unwrap();
     }
     Ok(Value::Null)
 }

@@ -2,7 +2,7 @@ use deno_core::v8;
 use seija::event::{GameEventCallBack,GameEvent};
 use crate::core::game::MESSAGES;
 use crate::core::ToJsValue;
-
+#[derive(Debug)]
 pub struct GameMessage {
    pub type_id:u32,
    pub entity_id:u32,

@@ -4,21 +4,21 @@
             <core:Menu >
                 <Param.dataSource>
                     [
-                     (menu-item '文件' [(menu-item '新建项目'),(menu-item '打开项目')]),
-                     (menu-item '设置'),
-                     (menu-item '编辑'),
-                     (menu-item '选择'),
-                     (menu-item '查看'),
-                     (menu-item '转到'),
-                     (menu-item '运行'),
-                     (menu-item '终端'),
-                     (menu-item '帮助')
+                     (menu-item '文件' '' [(menu-item '新建项目' 'newProject'),(menu-item '打开项目' 'openProject')]),
+                     (menu-item '设置' ''),
+                     (menu-item '编辑' ''),
+                     (menu-item '选择' ''),
+                     (menu-item '查看' ''),
+                     (menu-item '转到' ''),
+                     (menu-item '运行' ''),
+                     (menu-item '终端' ''),
+                     (menu-item '帮助' '')
                     ]
                 </Param.dataSource>
             </core:Menu>
         </GridCell>
         <GridCell row="1" colSpan="2"  col="0">
-            <s:SelectBox width="100" height="100" />
+            
         </GridCell>
     </Param.Template>
 </Grid>

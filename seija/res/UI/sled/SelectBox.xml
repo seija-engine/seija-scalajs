@@ -1,5 +1,9 @@
 <SelectBox>
     <Param.Template>
-        <Image texture="(env res.white)" color="#ff0000"/>
+        <Image texture="(env res.white)" color="#000000"/>
+        <Image margin="1,1,1,1" texture="(env res.white)" color="#ffffff"/>
+        <Label text="(attr-bind :curValue)" fontSize="18" margin="5,1,0,0" anchor="Left" color="#000000" font="(env res.font)" />
+        <Sprite margin="0,0,3,0" ver="Center" hor="End" sheet="(env res.sheet)" width="20" height="20" spriteName="pan-down" />
+        <Frame OnTouchStart="#(emit :click-box)" />
     </Param.Template>
 </SelectBox>

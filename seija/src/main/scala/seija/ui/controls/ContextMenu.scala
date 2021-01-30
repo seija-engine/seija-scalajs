@@ -26,6 +26,7 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
     var menuItems:js.Array[MenuItem] = js.Array()
     var itemTemplate:Option[XmlNode] = None
     
+    var OnSelectMenu:Option[(Int,String) => Unit] = None 
 
     override def OnInit(parent: Option[Control], params: ControlParams, ownerControl: Option[Control]): Unit = {
         this.itemTemplate = params.paramXmls.get("ItemTemplate")
@@ -40,9 +41,11 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
 
     override def handleEvent(evKey: String, evData: scala.scalajs.js.Array[SExpr]): Unit = {
       evKey match {
-        case ":select-menu" | ":select-menu-enter" =>
+        case ":select-menu" =>
           val index = evData(0).caseInt()
-          UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
+          val key = this.menuDatas(index).key;
+          this.OnSelectMenu.foreach(f => f(index,key))
+          //UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
         case _ => ()
       }
     }

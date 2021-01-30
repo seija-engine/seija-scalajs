@@ -1,4 +1,4 @@
-<Panel layer="Dialog" >
+<Panel layer="Dialog" xmlns:s="/sled/">
     <Frame width="640" height="480" ver="Center" hor="Center">
         <Image texture="(env res.white)" color="#999999" />
         <Label hor="Center" fontSize="20" height="30" width="80" color="#000000" font="(env res.font)"  text="选择文件夹" />
@@ -6,7 +6,12 @@
         <Frame  margin="0,30,0,0">
             <Image texture="(env res.white)" color="#eeeeee" />
             <Frame>
-                <Label margin="10,5,0,0" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="Start" text="路径:" />
+                <Label margin="10,15,0,0" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="Start" text="路径:" />
+                <s:SelectBox margin="60,15,0,0" width="100" height="25" >
+                    <Param.dataSource>
+                        [(menu-item 'C:' 'C:'),(menu-item 'D:' 'D:'),(menu-item 'E:' 'E:'),(menu-item 'F:' 'F:')]
+                    </Param.dataSource>
+                </s:SelectBox>
             </Frame>
         </Frame>
     </Frame>
