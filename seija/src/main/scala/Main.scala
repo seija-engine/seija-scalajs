@@ -5,6 +5,7 @@ import seija.s2d.{SWindow, Simple2d}
 import seija.data.SExprInterp
 import sled.SledWindow
 import slogging._
+import seija.os.RawPath
 
 
 object Main {
@@ -14,6 +15,8 @@ object Main {
     LoggerConfig.factory = PrintLoggerFactory()
     LoggerConfig.level = LogLevel.INFO
 
+
+   
     val app = new App(new SledWindow,new Simple2d(new SWindow(
       bgColor = Color.New(1f,1f,1f,1f),
       width = 1024,

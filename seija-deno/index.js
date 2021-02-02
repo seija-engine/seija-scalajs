@@ -43,11 +43,14 @@ function fs_root() {
   return Deno.core.jsonOpSync("fs_root",[]);
 }
 
+function fs_split_path(path) {
+  return Deno.core.jsonOpSync("fs_split_path",path);
+}
+
 var root = null;
 var childrenLst = [];
 function game_start(world_rid) {
 
-  console.log(fs_root())
 }
 
 function game_update(args) {

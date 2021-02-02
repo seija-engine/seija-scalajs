@@ -13,6 +13,11 @@ import seija.core.event.EventNode
 import seija.s2d.layout.LayoutView
 import seija.s2d.layout.LayoutAlignment
 import seija.math.Vector3
+import seija.os
+import seija.os._
+import seija.os.PathChunk._
+import seija.os.{PathChunk,Path}
+import seija.os.PathConvertible._
 class SledWindow extends IGame with LazyLogging {
   
   override def onStart()  {
@@ -31,7 +36,8 @@ class SledWindow extends IGame with LazyLogging {
       case Right(control) => 
          
     }
-    logger.info(seija.os.pwd.toString())
+    
+   
     UISystem.Update()
   }
 

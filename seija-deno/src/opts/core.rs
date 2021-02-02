@@ -1,7 +1,9 @@
+use std::borrow::Borrow;
+
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use deno_core::error::AnyError;
 use crate::opts::{reg_json_op_sync,get_mut_world,json_to_vec3,write_vec3_to_buffer};
-use seija::{common::{Tree, TreeNode}, specs::{Entity, Join, WorldExt, WriteStorage, world::Builder}};
+use seija::{common::{Tree, TreeNode}, math::{Matrix, Matrix4, RowVector4, Vector4}, specs::{Entity, Join, WorldExt, WriteStorage, world::Builder}};
 use serde_json::Value;
 use seija::s2d::{S2DLoader,DefaultBackend};
 use seija::common::EntityInfo;
@@ -36,6 +38,7 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "setEntityName",set_entity_name);
     reg_json_op_sync(rt, "addTransform", add_transform);
     reg_json_op_sync(rt, "getTransformPosition", get_transform_position);
+    reg_json_op_sync(rt, "getTransformGlobalPosition", get_transform_global_position);
     reg_json_op_sync(rt, "getTransformScale", get_transform_scale);
     reg_json_op_sync(rt, "getTransformRotation", get_transform_rotation);
     reg_json_op_sync(rt, "getTransformPositionRef", get_transform_position_ref);
@@ -367,6 +370,14 @@ fn  get_transform_position(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]
     get_transform_attr(state,value,z,|t| {
         let pos = t.position();
         vec![pos.x.into(),pos.y.into(),pos.z.into()]
+    })
+}
+
+fn  get_transform_global_position(state: &mut OpState,value: Value,z:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    get_transform_attr(state,value,z,|t| {
+        let pos:&Matrix4<f32> = t.global_matrix();
+        let col3:_ = pos.column(3);
+        vec![col3[0].into(),col3[1].into(),col3[2].into()]
     })
 }
 

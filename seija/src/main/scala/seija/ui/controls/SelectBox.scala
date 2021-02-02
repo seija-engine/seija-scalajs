@@ -46,6 +46,7 @@ class SelectBox extends Control with LayoutViewComp {
             ""
         }
         initProperty[String]("curValue",params.paramStrings,Some(firstValue),None);
+        initProperty[String]("cmPath",params.paramStrings,Some("/core/ContextMenu.xml"),None)
     }
 
 
@@ -67,13 +68,15 @@ class SelectBox extends Control with LayoutViewComp {
         params.paramStrings.put("layer",menuLayer)
         val width = this.getProperty[Float]("width").getOrElse(100f);
         params.paramStrings.put("width",width.toString());
-        UISystem.createByFile("/core/ContextMenu.xml",None,params,None) match {
+        params.paramAny.put("attach",this);
+        
+
+        UISystem.createByFile(this.getProperty("cmPath").get,None,params,None) match {
             case Left(errString) => logger.error(errString)
             case Right(control) => 
                 val contextMenu = control.asInstanceOf[ContextMenu];
                 contextMenu.OnSelectMenu = Some(this.OnSelectContextMenu)
                 this.contextMenu = Some(contextMenu)
-                control.getView.get.setMargin(Thickness(252,213,0,0))
                 control.setProperty("dataSource",this.getProperty("dataSource").getOrElse(js.Array()))
         }
         this.globalIdxRef = EventSystem.addGlobalEvent(GameEventType.TouchStart,this.onGlobalTouch)

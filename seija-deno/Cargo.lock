@@ -1711,6 +1711,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5d65c4d95931acda4498f675e332fcbdc9a06705cd07086c510e9b6009cd1c1"
 
 [[package]]
+name = "path-absolutize"
+version = "3.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a6ab2aaa5faefed84db46e4398eab15fa51325606462b5da8b0e230af3ac59a"
+dependencies = [
+ "path-dedot",
+]
+
+[[package]]
+name = "path-dedot"
+version = "3.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "658c6e985fce9c25289fe7c86c08a3cbe82c19a3cd5b3bc5945c8c632552e460"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
 name = "pathfinder_geometry"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2378,6 +2396,7 @@ dependencies = [
  "deno_core",
  "home",
  "once_cell",
+ "path-absolutize",
  "quick-xml",
  "seija",
  "serde_json",

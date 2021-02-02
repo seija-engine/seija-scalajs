@@ -63,6 +63,9 @@ object Foreign {
   def getTransformPosition(entity: Int):js.Array[Float] =
     Deno.core.jsonOpSync("getTransformPosition",entity).asInstanceOf[js.Array[Float]]
 
+  def getTransformGlobalPostion(entity:Int):js.Array[Float] = 
+    Deno.core.jsonOpSync("getTransformGlobalPosition",entity).asInstanceOf[js.Array[Float]]
+
   def setTransformPositionRef(entity: Int,pos:Float32Array):Unit =
     Deno.core.jsonOpSync("setTransformPositionRef",entity,pos)
 

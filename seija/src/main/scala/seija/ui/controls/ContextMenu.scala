@@ -12,6 +12,8 @@ import seija.ui.comps.LayoutViewComp
 import seija.data.SExpr
 import seija.ui.comps.EventNodeComp
 import seija.ui.UISystem
+import seija.math.Vector2
+import seija.s2d.layout.Thickness
 
 object ContextMenu {
   implicit val imageCreator:ControlCreator[ContextMenu] = new ControlCreator[ContextMenu] {
@@ -37,6 +39,16 @@ class ContextMenu extends Control with LayoutViewComp with EventNodeComp {
         initLayoutView(this,this._view.get,params)
         initEventComp(this,params)
         initProperty[js.Array[MenuItemData]]("dataSource",params.paramStrings,None,Some(onSetDataSource))
+
+        if(params.paramAny.contains("attach")) {
+          val attachControl = params.paramAny("attach").asInstanceOf[Control];
+          this.updateAttach(attachControl); 
+        }
+    }
+
+    def updateAttach(attachControl:Control) {
+      val attachPos:Vector2 = attachControl.minPos().getOrElse(Vector2.zero)
+      _view.get.setMargin(new Thickness(attachPos.x,attachPos.y - 1f,0,0));
     }
 
     override def handleEvent(evKey: String, evData: scala.scalajs.js.Array[SExpr]): Unit = {

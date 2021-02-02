@@ -15,6 +15,11 @@ class Transform(override val entity:Entity) extends BaseComponent(entity) {
     this._localPosition
   }
 
+  def globalPosition:Vector3 = {
+    val posArr = Foreign.getTransformGlobalPostion(this.entity.id);
+    Vector3.New(posArr(0),posArr(1),posArr(2))
+  }
+
   def localPosition_= (newVal:Vector3): Unit = {
     this._localPosition = newVal
     newVal.setCallBack(this.positionToRust);

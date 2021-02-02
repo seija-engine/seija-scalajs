@@ -114,6 +114,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
         val selectItem = this.menuItems(this.selectIndex)
         if(!contextMenu.isDefined)  {
             val params = ControlParams();
+            params.paramAny.put("attach",selectItem);
             params.paramStrings.put("layer",this.layerName + "Menu");
             UISystem.createByFile("/core/ContextMenu.xml",None,params,None) match {
             case Left(errString) => logger.error(errString)
@@ -123,9 +124,7 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
                this.contextMenu = Some(contextMenu)
             }
         }
-        val view = this.contextMenu.get.entity.get.getComponent[ContentView]();
-        val sizeX = selectItem.entity.get.getComponent[Rect2D]().get.size.x
-        view.get.setMargin(new Thickness(this.selectIndex * sizeX,24,0,0))
+        this.contextMenu.get.updateAttach(selectItem)
         this.contextMenu.get.setProperty("dataSource",this.menuDatas(this.selectIndex).children)
     }
 
