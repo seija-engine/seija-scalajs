@@ -31,7 +31,6 @@ object  SExprContent {
       if(ownerControlExpr.isEmpty) return SNil
       val control = ownerControlExpr.get.castSingleAny().asInstanceOf[Control]
       control.handleEvent(evName,evalArgs.tail)
-      
       SNil
    }
 

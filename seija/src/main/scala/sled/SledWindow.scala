@@ -18,11 +18,12 @@ import seija.os._
 import seija.os.PathChunk._
 import seija.os.{PathChunk,Path}
 import seija.os.PathConvertible._
+import sled.controls.SledPanel
 class SledWindow extends IGame with LazyLogging {
   
   override def onStart()  {
     Assets.init()
-
+    UISystem.addCreator[SledPanel]()
     UISystem.ENV.put("res",js.Dictionary(
       "sheet" -> Assets.chromeSheet.get.id,
       "white" -> Assets.white.get.id,
@@ -30,7 +31,6 @@ class SledWindow extends IGame with LazyLogging {
     ))
 
     UISystem.init("./res/UI/",js.Array("Normal","NormalMenu","Dialog","DialogMenu"))
-
     UISystem.createByFile("MainWindow.xml",None, ControlParams(),None) match {
       case Left(errString) => logger.error(errString)
       case Right(control) => 

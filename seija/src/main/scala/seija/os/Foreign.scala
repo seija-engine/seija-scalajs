@@ -16,6 +16,7 @@ object Foreign extends LazyLogging {
     def isDir(path:String):Boolean = Deno.core.jsonOpSync("fsIsDir",path).asInstanceOf[Boolean]
     def isLink(path:String):Boolean = Deno.core.jsonOpSync("fsIsLink",path).asInstanceOf[Boolean]
     def listDir(path:String):js.Array[String] = Deno.core.jsonOpSync("fsListDir",path).asInstanceOf[js.Array[String]]
+    def getRoots():js.Array[String] = Deno.core.jsonOpSync("fsGetRoots").asInstanceOf[js.Array[String]]
 
     def createDirectory(path:String,isAll:Boolean):Boolean = {
         val fName = if(isAll) "fsCreateDirAll" else "fsCreateDir";

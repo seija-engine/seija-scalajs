@@ -1,24 +1,28 @@
-<Grid layer="Normal"  xmlns:core="/core/" xmlns:s="/sled/" rows="25,1*" cols="1*,1*">
+<SledPanel layer="Normal"  xmlns:core="/core/" xmlns:s="/sled/">
     <Param.Template>
-        <GridCell row="0" colSpan="2"  col="0">
-            <core:Menu >
-                <Param.dataSource>
-                    [
-                     (menu-item '文件' '' [(menu-item '新建项目' 'newProject'),(menu-item '打开项目' 'openProject')]),
-                     (menu-item '设置' ''),
-                     (menu-item '编辑' ''),
-                     (menu-item '选择' ''),
-                     (menu-item '查看' ''),
-                     (menu-item '转到' ''),
-                     (menu-item '运行' ''),
-                     (menu-item '终端' ''),
-                     (menu-item '帮助' '')
-                    ]
-                </Param.dataSource>
-            </core:Menu>
-        </GridCell>
-        <GridCell row="1" colSpan="2"  col="0">
-            
-        </GridCell>
+        <Grid  rows="25,1*" cols="1*,1*">
+            <Param.Template>
+                <GridCell row="0" colSpan="2"  col="0">
+                    <core:Menu >
+                        <Param.dataSource>
+                            [
+                             (menu-item '文件' '' [(menu-item '新建项目' 'newProject'),(menu-item '打开项目' 'openProject')]),
+                             (menu-item '设置' ''),
+                             (menu-item '编辑' ''),
+                             (menu-item '选择' ''),
+                             (menu-item '查看' ''),
+                             (menu-item '转到' ''),
+                             (menu-item '运行' ''),
+                             (menu-item '终端' ''),
+                             (menu-item '帮助' '')
+                            ]
+                        </Param.dataSource>
+                    </core:Menu>
+                </GridCell>
+                <GridCell row="1" colSpan="2"  col="0">
+                    
+                </GridCell>
+            </Param.Template>
+        </Grid>
     </Param.Template>
-</Grid>
+</SledPanel>

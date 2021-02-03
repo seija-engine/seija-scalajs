@@ -171,11 +171,8 @@ class Menu extends Control with LayoutViewComp with LazyLogging {
     }
 
     def OnSelectContextMenu(index:Int,key:String) {
-        key match {
-            case "newProject" => 
-                UISystem.createByFile("sled/SelectFile.xml",None,ControlParams(),None)
-            case _ => logger.info(key)
-        }
+        this.parent.foreach(_.handleEvent(":click-menu",js.Array(SString(key))))
+       
         
     }
 }

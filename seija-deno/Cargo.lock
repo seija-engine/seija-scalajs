@@ -2400,6 +2400,7 @@ dependencies = [
  "quick-xml",
  "seija",
  "serde_json",
+ "winapi 0.3.9",
 ]
 
 [[package]]

@@ -46,6 +46,9 @@ object SExprInterp {
     this.rootContent.set("log",SNFunc(InterpCoreFunction.logF))
     this.rootContent.set("str",SNFunc(InterpCoreFunction.strF))
     this.rootContent.set("match",SNFunc(InterpCoreFunction.matchF))
+    this.rootContent.set("map",SNFunc(InterpCoreFunction.mapF))
+
+    this.rootContent.set("fs-roots",SNFunc(InterpCoreFunction.fsRoots))
   }
 
   def eval(expr:SExpr,context: Option[SContent] = None):SExpr = {
@@ -244,6 +247,27 @@ private object InterpCoreFunction {
       idx += 2
     }
     SNil
+  }
+
+  def mapF(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    val f = evalArgs(0).castFunc();
+    val lst = evalArgs(1) match {
+      case SList(list) => list
+      case SVector(list) => list
+      case _ => js.Array()
+    };
+    val retList:js.Array[SExpr] = js.Array();
+    for(item <- lst) {
+      val sExpr = f.callByArgs(js.Array(item),Some(content))
+      retList.push(sExpr)
+    }
+    SVector(retList)
+  }
+
+  def fsRoots(args:js.Array[SExpr],content: SContent):SExpr = {
+    val list:js.Array[SExpr] = seija.os.list.roots().map(_.toString()).map(SString(_));
+    SVector(list)
   }
 }
 

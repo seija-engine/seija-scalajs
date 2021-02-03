@@ -244,6 +244,21 @@ class Control extends LazyLogging {
       }
    }
 
+   def initSValue(key:String,params:js.Dictionary[String],isEval:Boolean = false) {
+      if(!params.contains(key)) return;
+      val valueString = params(key);
+      SExprParser.parse(valueString) match {
+         case Left(errString) => logger.error(errString)
+         case Right(expr) =>
+            if(isEval) {
+               val evalExpr = SExprInterp.eval(expr,Some(this.sContext))
+               this.setProperty(key,evalExpr)
+            } else {
+               this.setProperty(key,expr)
+            }
+      }
+   }
+
    def addPropertyLister[T](key:String,callFn:T => ()):IndexedRef = {
       if(!this.propertyListers.contains(key)) {
          this.propertyListers.put(key,js.Array())

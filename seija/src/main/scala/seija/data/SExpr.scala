@@ -16,6 +16,14 @@ sealed trait SExpr {
                 0
         }
     }
+    def castFunc():SFunc = {
+        this match {
+            case f@SFunc(args, list) => f
+            case _ =>  
+            throw new ClassCastException(s"$this cast NFunc error")
+            null
+        }
+    }
     def caseInt():Int = {
         this match {
             case SInt(value) => value

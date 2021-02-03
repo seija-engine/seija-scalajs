@@ -16,6 +16,8 @@ import seija.core.event.GameEventType
 import seija.core.event.GameEvent
 import seija.core.Time
 import seija.ui.controls.MenuItem._
+import seija.data.SFunc
+import seija.data.SString
 
 object SelectBox {
     implicit val selectBoxCreator:ControlCreator[SelectBox] = new ControlCreator[SelectBox] {
@@ -28,8 +30,8 @@ object SelectBox {
 class SelectBox extends Control with LayoutViewComp {
     var globalIdxRef:Option[IndexedRef] = None
     var contextMenu:Option[ContextMenu] = None
-    
     var createFrame:Int = -1
+
     override def OnInit(parent: Option[Control], params: ControlParams, ownerControl: Option[Control]): Unit = {
         val entity = this.entity.get
         entity.addComponent[Transform]()
@@ -40,19 +42,20 @@ class SelectBox extends Control with LayoutViewComp {
         initProperty[js.Array[MenuItemData]]("dataSource",params.paramStrings,None,None)
 
         val dataList = this.getProperty[js.Array[MenuItemData]]("dataSource").getOrElse(js.Array());
-        val firstValue = if(dataList.length > 0) {
-            dataList(0).name
-        } else {
-            ""
-        }
+        val firstValue = if(dataList.length > 0)  dataList(0).name else ""
+        
         initProperty[String]("curValue",params.paramStrings,Some(firstValue),None);
         initProperty[String]("cmPath",params.paramStrings,Some("/core/ContextMenu.xml"),None)
+        
+        initSValue("OnValueChange",params.paramStrings);
+
+        if(firstValue != "") {
+            this.callValueChange(firstValue)
+        }
     }
 
 
     override def handleEvent(evKey: String, evData: scala.scalajs.js.Array[SExpr]): Unit = {
-        logger.info(evKey)
-       
         evKey match {
             case ":click-box" =>
                 this.createMenu()
@@ -84,7 +87,6 @@ class SelectBox extends Control with LayoutViewComp {
 
     def onGlobalTouch(ev:GameEvent) {
         if(this.createFrame == Time.frame()) return;
-       
         this.contextMenu.foreach(_.destroy())
         this.globalIdxRef.foreach(idxRef => {
             EventSystem.removeGlobalEvent(GameEventType.TouchStart,idxRef)
@@ -92,8 +94,15 @@ class SelectBox extends Control with LayoutViewComp {
         this.contextMenu = None;
     }
 
+    def callValueChange(key:String) {
+        if(this.property.contains("OnValueChange")) {
+           val sFunc = this.getProperty[SFunc]("OnValueChange")
+           sFunc.get.callByArgs(js.Array(SString(key)),Some(this.sContext))
+        }
+    }
+
     def OnSelectContextMenu(index:Int,key:String) {
         this.setProperty("curValue",key)
-        logger.info(key)
+        this.callValueChange(key)
     }
 }

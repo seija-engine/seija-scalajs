@@ -42,6 +42,8 @@ object UISystem extends LazyLogging {
       this.addCreator[ContextMenu]()
       this.addCreator[Sprite]()
       this.addCreator[SelectBox]()
+      this.addCreator[Dialog]()
+      this.addCreator[SelectFile]()
 
       val root = Entity.New(None)
       root.addComponent[Transform]()
@@ -91,7 +93,7 @@ object UISystem extends LazyLogging {
                    param: ControlParams,
                    ownerControl:Option[Control]): Either[String, Control] = {
     
-    getXml(rootPath + path).map(applyXmlNs).flatMap(createByXml(_,parent,param,None))
+    getXml(rootPath + path).map(applyXmlNs).flatMap(createByXml(_,parent,param,ownerControl))
   }
 
   def createByXml(xmlNode:XmlNode,
@@ -100,13 +102,20 @@ object UISystem extends LazyLogging {
                   ownerControl:Option[Control]):Either[String,Control] = {
     this.scanParams(xmlNode,param)
     if(xmlNode.tag.indexOf(":") > 0) {
-       createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)
+       if(xmlNode.attrs.contains("nsFilePath")) {
+          createByFile(xmlNode.attrs("nsFilePath"),parent,param,ownerControl)
+       } else {
+         val errString = s"not found nsFilePath ${xmlNode.tag}";
+         Left(errString)
+       }
+      
     } else {
       val creator = this.getCreator(xmlNode.tag)
       if(creator.isEmpty) {
         return Left(s"not found control ${xmlNode.tag}")
       }
       val newControl = creator.get.create()
+      //logger.error(s"${xmlNode.tag} = ${ownerControl.toString()}")
       newControl.init(parent,param,ownerControl)
       Right(newControl)
     }
@@ -143,8 +152,10 @@ object UISystem extends LazyLogging {
     def depSearchApply(nsPaths:js.Dictionary[String],xmlNode:XmlNode) {
       if(xmlNode.tag.indexOf(":") > 0) {
         val karr = xmlNode.tag.split(":")
-        val v = nsPaths(karr(0)) + karr(1) + ".xml"
-        xmlNode.attrs.put("nsFilePath",v)
+        if(nsPaths.contains(karr(0))) {
+          val v = nsPaths(karr(0)) + karr(1) + ".xml"
+          xmlNode.attrs.put("nsFilePath",v)
+        }
       }
       if(xmlNode.children.isDefined) {
         for(child <- xmlNode.children.get) {

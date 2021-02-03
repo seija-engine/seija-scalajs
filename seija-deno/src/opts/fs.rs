@@ -4,6 +4,7 @@ use deno_core::{JsRuntime, OpState, ZeroCopyBuf};
 use path_absolutize::Absolutize;
 use serde_json::Value;
 use deno_core::error::AnyError;
+use std::collections::HashMap;
 
 pub fn init_fs_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt, "fsRoot", fs_root);
@@ -20,6 +21,7 @@ pub fn init_fs_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"fsIsDir",fs_is_dir);
     reg_json_op_sync(rt,"fsIsLink",fs_is_link);
     reg_json_op_sync(rt,"fsListDir",fs_list_dir);
+    reg_json_op_sync(rt,"fsGetRoots",fs_get_root);
 }
 
 fn fs_root(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
@@ -143,13 +145,29 @@ fn fs_list_dir(_: &mut OpState,values: Value,_:&mut [ZeroCopyBuf]) -> Result<Val
     Ok(Value::Array(out_path_list))
 }
 
+fn fs_get_root(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    #[cfg(target_os = "windows")]
+    if cfg!(windows) {
+        let d = unsafe { winapi::um::fileapi::GetLogicalDrives() };
+        let mut idx:u32 = 0;
+        let mut ret_arr:Vec<Value> = vec![];
+        for chr in 'A' .. 'Z' {
+           if(d & (1 << idx)) > 0 {
+               let mut string = String::from(chr);
+               string.push_str(":\\");
+               ret_arr.push(Value::String(string));
+           }
+           idx += 1;
+        }
+        return Ok(Value::Array(ret_arr));
+    };
+    Ok(Value::String(String::from("/")))
+}
+
 
 //
 
 #[test]
-fn ttt() {
-    use std::path::Path;
-    let p = Path::new("C:\\www\\..\\..\\..\\dd\\c.txt");
-    let abs = p.absolutize().unwrap();
-    dbg!(abs);
+ fn ttt() {
+   
 }
