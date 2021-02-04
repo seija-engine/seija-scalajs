@@ -1,0 +1,5 @@
+<Frame hor="Center" ver="Center" width="200" height="35">
+    <Image texture="(env res.white)" color="#333333" />
+    <Image texture="(env res.white)" margin="3,3,3,3" color="#ffffff" />
+    <Input  font="(env res.font)" fontSize="24" />
+</Frame>

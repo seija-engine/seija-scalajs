@@ -1,5 +1,5 @@
 use deno_core::v8;
-use seija::event::{GameEventCallBack,GameEvent};
+use seija::{event::{GameEventCallBack,GameEvent}, shred::World};
 use crate::core::game::MESSAGES;
 use crate::core::ToJsValue;
 #[derive(Debug)]
@@ -64,7 +64,7 @@ impl ToJsValue for GameEvent {
 }
 
 impl GameEventCallBack for JSEventCallback {
-    fn run(&self, ev:&GameEvent) {
+    fn run(&self, ev:&GameEvent,_world:&mut World) {
         let ev_type = ev.to_type() as u32;
         unsafe { MESSAGES.push_back(GameMessage {ev_type, type_id:0, entity_id:self.eid,ex0:0, event:Some(ev.clone())})};
     }
