@@ -1,12 +1,12 @@
 package seija.core
-
+import scalajs.js
 object World {
-  private var _id:Int = -1;
+  private var _id:js.Object = null;
 
-  def init(id:Int):Unit = {
+  def init(id:js.Object):Unit = {
     this._id = id
   }
 
-  def id:Int = this._id
+  def id:js.Object = this._id
 
 }

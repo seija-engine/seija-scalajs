@@ -1,4 +1,4 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 /*
 SharedQueue Binary Layout
 +-------------------------------+-------------------------------+
@@ -15,8 +15,6 @@ SharedQueue Binary Layout
 |                        RECORDS (*MAX_RECORDS)               ...
 +---------------------------------------------------------------+
  */
-
-/* eslint-disable @typescript-eslint/no-use-before-define */
 
 ((window) => {
   const MAX_RECORDS = 100;
@@ -36,16 +34,8 @@ SharedQueue Binary Layout
 
   let asyncHandlers;
 
-  let initialized = false;
   let opsCache = {};
   const errorMap = {};
-
-  function maybeInit() {
-    if (!initialized) {
-      init();
-      initialized = true;
-    }
-  }
 
   function init() {
     const shared = core.shared;
@@ -74,14 +64,12 @@ SharedQueue Binary Layout
   }
 
   function reset() {
-    maybeInit();
     shared32[INDEX_NUM_RECORDS] = 0;
     shared32[INDEX_NUM_SHIFTED_OFF] = 0;
     shared32[INDEX_HEAD] = HEAD_INIT;
   }
 
   function head() {
-    maybeInit();
     return shared32[INDEX_HEAD];
   }
 
@@ -99,26 +87,23 @@ SharedQueue Binary Layout
   }
 
   function getMeta(index) {
-    if (index < numRecords()) {
-      const buf = shared32[INDEX_OFFSETS + 2 * index];
-      const opId = shared32[INDEX_OFFSETS + 2 * index + 1];
-      return [opId, buf];
-    } else {
+    if (index >= numRecords()) {
       return null;
     }
+    const buf = shared32[INDEX_OFFSETS + 2 * index];
+    const opId = shared32[INDEX_OFFSETS + 2 * index + 1];
+    return [opId, buf];
   }
 
   function getOffset(index) {
-    if (index < numRecords()) {
-      if (index == 0) {
-        return HEAD_INIT;
-      } else {
-        const prevEnd = shared32[INDEX_OFFSETS + 2 * (index - 1)];
-        return (prevEnd + 3) & ~3;
-      }
-    } else {
+    if (index >= numRecords()) {
       return null;
     }
+    if (index == 0) {
+      return HEAD_INIT;
+    }
+    const prevEnd = shared32[INDEX_OFFSETS + 2 * (index - 1)];
+    return (prevEnd + 3) & ~3;
   }
 
   function push(opId, buf) {
@@ -126,7 +111,9 @@ SharedQueue Binary Layout
     const end = off + buf.byteLength;
     const alignedEnd = (end + 3) & ~3;
     const index = numRecords();
-    if (alignedEnd > shared32.byteLength || index >= MAX_RECORDS) {
+    const shouldNotPush = alignedEnd > shared32.byteLength ||
+      index >= MAX_RECORDS;
+    if (shouldNotPush) {
       // console.log("shared_queue.js push fail");
       return false;
     }
@@ -163,7 +150,6 @@ SharedQueue Binary Layout
   }
 
   function setAsyncHandler(opId, cb) {
-    maybeInit();
     assert(opId != null);
     asyncHandlers[opId] = cb;
   }
@@ -172,15 +158,15 @@ SharedQueue Binary Layout
     if (buf) {
       // This is the overflow_response case of deno::JsRuntime::poll().
       asyncHandlers[opId](buf);
-    } else {
-      while (true) {
-        const opIdBuf = shift();
-        if (opIdBuf == null) {
-          break;
-        }
-        assert(asyncHandlers[opIdBuf[0]] != null);
-        asyncHandlers[opIdBuf[0]](opIdBuf[1]);
+      return;
+    }
+    while (true) {
+      const opIdBuf = shift();
+      if (opIdBuf == null) {
+        break;
       }
+      assert(asyncHandlers[opIdBuf[0]] != null);
+      asyncHandlers[opIdBuf[0]](opIdBuf[1]);
     }
   }
 
@@ -216,15 +202,14 @@ SharedQueue Binary Layout
   function processResponse(res) {
     if ("ok" in res) {
       return res.ok;
-    } else {
-      const ErrorClass = getErrorClass(res.err.className);
-      if (!ErrorClass) {
-        throw new Error(
-          `Unregistered error class: "${res.err.className}"\n  ${res.err.message}\n  Classes of errors returned from ops should be registered via Deno.core.registerErrorClass().`,
-        );
-      }
-      throw new ErrorClass(res.err.message);
     }
+    const ErrorClass = getErrorClass(res.err.className);
+    if (!ErrorClass) {
+      throw new Error(
+        `Unregistered error class: "${res.err.className}"\n  ${res.err.message}\n  Classes of errors returned from ops should be registered via Deno.core.registerErrorClass().`,
+      );
+    }
+    throw new ErrorClass(res.err.message);
   }
 
   async function jsonOpAsync(opName, args = {}, ...zeroCopy) {
@@ -277,6 +262,7 @@ SharedQueue Binary Layout
     resources,
     registerErrorClass,
     getErrorClass,
+    sharedQueueInit: init,
     // sharedQueue is private but exposed for testing.
     sharedQueue: {
       MAX_RECORDS,

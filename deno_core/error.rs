@@ -1,5 +1,8 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+pub use anyhow::anyhow;
+pub use anyhow::bail;
+pub use anyhow::Context;
 use rusty_v8 as v8;
 use std::borrow::Cow;
 use std::convert::TryFrom;
@@ -9,7 +12,6 @@ use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
-use std::io;
 
 /// A generic wrapper that can encapsulate any concrete error type.
 pub type AnyError = anyhow::Error;
@@ -36,10 +38,6 @@ pub fn type_error(message: impl Into<Cow<'static, str>>) -> AnyError {
 
 pub fn uri_error(message: impl Into<Cow<'static, str>>) -> AnyError {
   custom_error("URIError", message)
-}
-
-pub fn last_os_error() -> AnyError {
-  io::Error::last_os_error().into()
 }
 
 pub fn bad_resource(message: impl Into<Cow<'static, str>>) -> AnyError {
@@ -183,11 +181,11 @@ impl JsError {
         .and_then(|m| m.to_string(scope))
         .map(|s| s.to_rust_string_lossy(scope))
         .unwrap_or_else(|| "".to_string());
-      let message = if name != "" && message_prop != "" {
+      let message = if !name.is_empty() && !message_prop.is_empty() {
         format!("Uncaught {}: {}", name, message_prop)
-      } else if name != "" {
+      } else if !name.is_empty() {
         format!("Uncaught {}", name)
-      } else if message_prop != "" {
+      } else if !message_prop.is_empty() {
         format!("Uncaught {}", message_prop)
       } else {
         "Uncaught".to_string()
@@ -195,14 +193,10 @@ impl JsError {
 
       // Access error.stack to ensure that prepareStackTrace() has been called.
       // This should populate error.__callSiteEvals.
+      let stack = get_property(scope, exception, "stack");
       let stack: Option<v8::Local<v8::String>> =
-        get_property(scope, exception, "stack")
-          .unwrap()
-          .try_into()
-          .ok();
+        stack.and_then(|s| s.try_into().ok());
       let stack = stack.map(|s| s.to_rust_string_lossy(scope));
-
-      // FIXME(bartlmieju): the rest of this function is CLI only
 
       // Read an array of structured frames from error.__callSiteEvals.
       let frames_v8 = get_property(scope, exception, "__callSiteEvals");
@@ -295,7 +289,7 @@ impl JsError {
               .unwrap();
           let is_promise_all = is_promise_all.is_true();
           let promise_index: Option<v8::Local<v8::Integer>> =
-            get_property(scope, call_site, "columnNumber")
+            get_property(scope, call_site, "promiseIndex")
               .unwrap()
               .try_into()
               .ok();
@@ -361,11 +355,11 @@ impl Display for JsError {
     if let Some(stack) = &self.stack {
       let stack_lines = stack.lines();
       if stack_lines.count() > 1 {
-        return writeln!(f, "{}", stack);
+        return write!(f, "{}", stack);
       }
     }
 
-    writeln!(f, "{}", self.message)?;
+    write!(f, "{}", self.message)?;
     if let Some(script_resource_name) = &self.script_resource_name {
       if self.line_number.is_some() && self.start_column.is_some() {
         let source_loc = format_source_loc(
@@ -373,7 +367,7 @@ impl Display for JsError {
           self.line_number.unwrap(),
           self.start_column.unwrap(),
         );
-        writeln!(f, "    at {}", source_loc)?;
+        write!(f, "\n    at {}", source_loc)?;
       }
     }
     Ok(())
@@ -385,7 +379,6 @@ pub(crate) fn attach_handle_to_error(
   err: AnyError,
   handle: v8::Local<v8::Value>,
 ) -> AnyError {
-  // TODO(bartomieju): this is a special case...
   ErrWithV8Handle::new(scope, err, handle).into()
 }
 

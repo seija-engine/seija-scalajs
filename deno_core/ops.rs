@@ -1,9 +1,11 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 use crate::error::bad_resource_id;
 use crate::error::type_error;
 use crate::error::AnyError;
 use crate::gotham_state::GothamState;
+use crate::resources::ResourceTable;
+use crate::runtime::GetErrorClassFn;
 use crate::BufVec;
 use crate::ZeroCopyBuf;
 use futures::Future;
@@ -31,23 +33,21 @@ pub enum Op {
   NotFound,
 }
 
+/// Maintains the resources and ops inside a JS runtime.
 pub struct OpState {
-  pub resource_table: crate::ResourceTable,
+  pub resource_table: ResourceTable,
   pub op_table: OpTable,
-  pub get_error_class_fn: crate::runtime::GetErrorClassFn,
+  pub get_error_class_fn: GetErrorClassFn,
   gotham_state: GothamState,
 }
 
-impl Default for OpState {
-  // TODO(ry) Only deno_core should be able to construct an OpState. But I don't
-  // know how to make default private. Maybe rename to
-  //   pub(crate) fn new() -> OpState
-  fn default() -> OpState {
+impl OpState {
+  pub(crate) fn new() -> OpState {
     OpState {
-      resource_table: crate::ResourceTable::default(),
+      resource_table: Default::default(),
       op_table: OpTable::default(),
       get_error_class_fn: &|_| "Error",
-      gotham_state: GothamState::default(),
+      gotham_state: Default::default(),
     }
   }
 }
@@ -114,43 +114,29 @@ impl Default for OpTable {
   }
 }
 
-#[test]
-fn op_table() {
-  let state = Rc::new(RefCell::new(OpState::default()));
-
-  let foo_id;
-  let bar_id;
-  {
-    let op_table = &mut state.borrow_mut().op_table;
-    foo_id = op_table.register_op("foo", |_, _| Op::Sync(b"oof!"[..].into()));
-    assert_eq!(foo_id, 1);
-    bar_id = op_table.register_op("bar", |_, _| Op::Sync(b"rab!"[..].into()));
-    assert_eq!(bar_id, 2);
-  }
-
-  let foo_res = OpTable::route_op(foo_id, state.clone(), Default::default());
-  assert!(matches!(foo_res, Op::Sync(buf) if &*buf == b"oof!"));
-  let bar_res = OpTable::route_op(bar_id, state.clone(), Default::default());
-  assert!(matches!(bar_res, Op::Sync(buf) if &*buf == b"rab!"));
-
-  let catalog_res = OpTable::route_op(0, state, Default::default());
-  let mut catalog_entries = match catalog_res {
-    Op::Sync(buf) => serde_json::from_slice::<HashMap<String, OpId>>(&buf)
-      .map(|map| map.into_iter().collect::<Vec<_>>())
-      .unwrap(),
-    _ => panic!("unexpected `Op` variant"),
-  };
-  catalog_entries.sort_by(|(_, id1), (_, id2)| id1.partial_cmp(id2).unwrap());
-  assert_eq!(
-    catalog_entries,
-    vec![
-      ("ops".to_owned(), 0),
-      ("foo".to_owned(), 1),
-      ("bar".to_owned(), 2)
-    ]
-  )
-}
-
+/// Creates an op that passes data synchronously using JSON.
+///
+/// The provided function `op_fn` has the following parameters:
+/// * `&mut OpState`: the op state, can be used to read/write resources in the runtime from an op.
+/// * `Value`: the JSON value that is passed to the Rust function.
+/// * `&mut [ZeroCopyBuf]`: raw bytes passed along, usually not needed if the JSON value is used.
+///
+/// `op_fn` returns a JSON value, which is directly returned to JavaScript.
+///
+/// When registering an op like this...
+/// ```ignore
+/// let mut runtime = JsRuntime::new(...);
+/// runtime.register_op("hello", deno_core::json_op_sync(Self::hello_op));
+/// ```
+///
+/// ...it can be invoked from JS using the provided name, for example:
+/// ```js
+/// Deno.core.ops();
+/// let result = Deno.core.jsonOpSync("function_name", args);
+/// ```
+///
+/// The `Deno.core.ops()` statement is needed once before any op calls, for initialization.
+/// A more complete example is available in the examples directory.
 pub fn json_op_sync<F>(op_fn: F) -> Box<OpFn>
 where
   F: Fn(&mut OpState, Value, &mut [ZeroCopyBuf]) -> Result<Value, AnyError>
@@ -166,6 +152,30 @@ where
   })
 }
 
+/// Creates an op that passes data asynchronously using JSON.
+///
+/// The provided function `op_fn` has the following parameters:
+/// * `Rc<RefCell<OpState>`: the op state, can be used to read/write resources in the runtime from an op.
+/// * `Value`: the JSON value that is passed to the Rust function.
+/// * `BufVec`: raw bytes passed along, usually not needed if the JSON value is used.
+///
+/// `op_fn` returns a future, whose output is a JSON value. This value will be asynchronously
+/// returned to JavaScript.
+///
+/// When registering an op like this...
+/// ```ignore
+/// let mut runtime = JsRuntime::new(...);
+/// runtime.register_op("hello", deno_core::json_op_async(Self::hello_op));
+/// ```
+///
+/// ...it can be invoked from JS using the provided name, for example:
+/// ```js
+/// Deno.core.ops();
+/// let future = Deno.core.jsonOpAsync("function_name", args);
+/// ```
+///
+/// The `Deno.core.ops()` statement is needed once before any op calls, for initialization.
+/// A more complete example is available in the examples directory.
 pub fn json_op_async<F, R>(op_fn: F) -> Box<OpFn>
 where
   F: Fn(Rc<RefCell<OpState>>, Value, BufVec) -> R + 'static,
@@ -221,7 +231,7 @@ fn json_serialize_op_result(
 }
 
 /// Return map of resources with id as key
-/// and string representaion as value.
+/// and string representation as value.
 ///
 /// This op must be wrapped in `json_op_sync`.
 pub fn op_resources(
@@ -229,7 +239,11 @@ pub fn op_resources(
   _args: Value,
   _zero_copy: &mut [ZeroCopyBuf],
 ) -> Result<Value, AnyError> {
-  let serialized_resources = state.resource_table.entries();
+  let serialized_resources: HashMap<u32, String> = state
+    .resource_table
+    .names()
+    .map(|(rid, name)| (rid, name.to_string()))
+    .collect();
   Ok(json!(serialized_resources))
 }
 
@@ -250,5 +264,48 @@ pub fn op_close(
     .resource_table
     .close(rid as u32)
     .ok_or_else(bad_resource_id)?;
+
   Ok(json!({}))
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn op_table() {
+    let state = Rc::new(RefCell::new(OpState::new()));
+
+    let foo_id;
+    let bar_id;
+    {
+      let op_table = &mut state.borrow_mut().op_table;
+      foo_id = op_table.register_op("foo", |_, _| Op::Sync(b"oof!"[..].into()));
+      assert_eq!(foo_id, 1);
+      bar_id = op_table.register_op("bar", |_, _| Op::Sync(b"rab!"[..].into()));
+      assert_eq!(bar_id, 2);
+    }
+
+    let foo_res = OpTable::route_op(foo_id, state.clone(), Default::default());
+    assert!(matches!(foo_res, Op::Sync(buf) if &*buf == b"oof!"));
+    let bar_res = OpTable::route_op(bar_id, state.clone(), Default::default());
+    assert!(matches!(bar_res, Op::Sync(buf) if &*buf == b"rab!"));
+
+    let catalog_res = OpTable::route_op(0, state, Default::default());
+    let mut catalog_entries = match catalog_res {
+      Op::Sync(buf) => serde_json::from_slice::<HashMap<String, OpId>>(&buf)
+        .map(|map| map.into_iter().collect::<Vec<_>>())
+        .unwrap(),
+      _ => panic!("unexpected `Op` variant"),
+    };
+    catalog_entries.sort_by(|(_, id1), (_, id2)| id1.partial_cmp(id2).unwrap());
+    assert_eq!(
+      catalog_entries,
+      vec![
+        ("ops".to_owned(), 0),
+        ("foo".to_owned(), 1),
+        ("bar".to_owned(), 2)
+      ]
+    );
+  }
 }

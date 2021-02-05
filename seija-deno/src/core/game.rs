@@ -6,7 +6,7 @@ use seija::window::ViewPortSize;
 use seija::render::{Camera,ActiveCamera};
 use seija::s2d::{S2DLoader};
 use seija::event::{GameEventType};
-use std::rc::Rc;
+use std::{ffi::c_void, ops::Deref, rc::Rc};
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use once_cell::sync::Lazy;
@@ -20,7 +20,6 @@ pub struct JSGame<'a> {
     quit_func:v8::Local<'a,v8::Function>,
     scope:v8::HandleScope<'a>,
     local_value:v8::Local<'a,v8::Value>,
-    op_state:Rc<RefCell<OpState>>,
     events:Vec<v8::Local<'a,v8::Value>>,
 }
 
@@ -31,8 +30,7 @@ impl<'a> JSGame<'a> {
     pub fn new(start_func:v8::Local<'a,v8::Function>,
                update_func:v8::Local<'a,v8::Function>,
                quit_func:v8::Local<'a,v8::Function>,
-               mut scope:v8::HandleScope<'a>,
-               op_state:Rc<RefCell<OpState>>) -> JSGame<'a> {
+               mut scope:v8::HandleScope<'a>) -> JSGame<'a> {
         let global = scope.get_current_context().global(&mut scope).into();
        
         JSGame {
@@ -41,7 +39,6 @@ impl<'a> JSGame<'a> {
             quit_func,
             scope,
             local_value:global,
-            op_state,
             events:vec![],
         }
     }
@@ -76,13 +73,11 @@ impl<'a> IGame for JSGame<'a> {
         JSGame::add_global_events(world, entity.id());
         world.fetch::<S2DLoader>().env().set_fs_root("./res/");
         
-        let box_world = Box::new(world as *mut World);
-        let res_id = self.op_state.borrow_mut().resource_table.add("World", box_world);
-        let world_res_id = v8::Integer::new(&mut self.scope, res_id as i32);
-
        
-        
-        self.start_func.call(&mut self.scope, self.local_value, &[world_res_id.into()]);
+        let ex_world = v8::External::new(&mut self.scope,world as *mut World as *mut c_void);
+        let world_object = v8::Object::new(&mut self.scope);
+        world_object.set_index(&mut self.scope, 0, ex_world.into());
+        self.start_func.call(&mut self.scope, self.local_value, &[world_object.into()]);
     }
 
 

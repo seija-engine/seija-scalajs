@@ -22,8 +22,6 @@ object Foreign {
     Deno.core.ops();
   }
 
-  def newSimple2d(dict:js.Dictionary[js.Any]):Int = Deno.core.jsonOpSync("newSimple2d",dict).asInstanceOf[Int]
-
   def getAbsoluteTime:Float = Deno.core.jsonOpSync("getAbsoluteTime").asInstanceOf[Float]
 
   def getTimeDelta:Float = Deno.core.jsonOpSync("getTimeDelta").asInstanceOf[Float]
@@ -280,8 +278,9 @@ trait DenoCore extends js.Object {
 @js.native
 @JSGlobal
 object Seija extends js.Object {
-  def runApp(int: Int,start:js.Function1[Int,Unit],update:js.Function,quit:js.Function0[Unit]):Unit = js.native
+  def runApp(int: js.Object,start:js.Function1[js.Object,Unit],update:js.Function,quit:js.Function0[Unit]):Unit = js.native
 
+  def makeSimple2d(dict:js.Dictionary[js.Any]):js.Object = js.native
   def parseXML(path:String):js.Any = js.native
 
   def parseXMLString(string:String):js.Any = js.native

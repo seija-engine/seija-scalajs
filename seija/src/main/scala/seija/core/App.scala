@@ -15,13 +15,13 @@ trait IGame {
 class App(val game:IGame,val simple2d: Simple2d) {
   def run(): Unit = {
     Foreign.initDeno()
-    val s = Foreign.newSimple2d(simple2d.toJS);
+    val s = Seija.makeSimple2d(simple2d.toJS);
     Screen.init(simple2d.window.width,simple2d.window.height)
     Seija.runApp(s,this.onStart,this.onUpdate,this.onQuit);
   }
 
-  def onStart:js.Function1[Int,Unit] = (worldId) => {
-    World.init(worldId)
+  def onStart:js.Function1[js.Object,Unit] = (world) => {
+    World.init(world)
     this.game.onStart()
   }
 

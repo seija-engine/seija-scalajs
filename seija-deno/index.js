@@ -61,7 +61,7 @@ function game_quit() {
   console.log("game quit");
 }
 
-let s2d = Deno.core.jsonOpSync("newSimple2d",{
+let s2d = Seija.makeSimple2d({
   window:{bg_color:[0.6,0.6,0.6,1],width:320,height:240 }
 });
 

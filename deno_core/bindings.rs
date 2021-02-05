@@ -1,7 +1,6 @@
-// Copyright 2018-2020 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 use crate::error::AnyError;
-use crate::error::JsError;
 use crate::runtime::JsRuntimeState;
 use crate::JsRuntime;
 use crate::Op;
@@ -12,6 +11,7 @@ use futures::future::FutureExt;
 use rusty_v8 as v8;
 use std::cell::Cell;
 use std::convert::TryFrom;
+use std::io::{stdout, Write};
 use std::option::Option;
 use url::Url;
 use v8::MapFnTo;
@@ -33,9 +33,6 @@ lazy_static! {
       },
       v8::ExternalReference {
         function: eval_context.map_fn_to()
-      },
-      v8::ExternalReference {
-        function: format_error.map_fn_to()
       },
       v8::ExternalReference {
         getter: shared_getter.map_fn_to()
@@ -62,24 +59,18 @@ pub fn script_origin<'a>(
   s: &mut v8::HandleScope<'a>,
   resource_name: v8::Local<'a, v8::String>,
 ) -> v8::ScriptOrigin<'a> {
-  let resource_line_offset = v8::Integer::new(s, 0);
-  let resource_column_offset = v8::Integer::new(s, 0);
-  let resource_is_shared_cross_origin = v8::Boolean::new(s, false);
-  let script_id = v8::Integer::new(s, 123);
   let source_map_url = v8::String::new(s, "").unwrap();
-  let resource_is_opaque = v8::Boolean::new(s, true);
-  let is_wasm = v8::Boolean::new(s, false);
-  let is_module = v8::Boolean::new(s, false);
   v8::ScriptOrigin::new(
+    s,
     resource_name.into(),
-    resource_line_offset,
-    resource_column_offset,
-    resource_is_shared_cross_origin,
-    script_id,
+    0,
+    0,
+    false,
+    123,
     source_map_url.into(),
-    resource_is_opaque,
-    is_wasm,
-    is_module,
+    true,
+    false,
+    false,
   )
 }
 
@@ -87,24 +78,18 @@ pub fn module_origin<'a>(
   s: &mut v8::HandleScope<'a>,
   resource_name: v8::Local<'a, v8::String>,
 ) -> v8::ScriptOrigin<'a> {
-  let resource_line_offset = v8::Integer::new(s, 0);
-  let resource_column_offset = v8::Integer::new(s, 0);
-  let resource_is_shared_cross_origin = v8::Boolean::new(s, false);
-  let script_id = v8::Integer::new(s, 123);
   let source_map_url = v8::String::new(s, "").unwrap();
-  let resource_is_opaque = v8::Boolean::new(s, true);
-  let is_wasm = v8::Boolean::new(s, false);
-  let is_module = v8::Boolean::new(s, true);
   v8::ScriptOrigin::new(
+    s,
     resource_name.into(),
-    resource_line_offset,
-    resource_column_offset,
-    resource_is_shared_cross_origin,
-    script_id,
+    0,
+    0,
+    false,
+    123,
     source_map_url.into(),
-    resource_is_opaque,
-    is_wasm,
-    is_module,
+    true,
+    false,
+    true,
   )
 }
 
@@ -157,11 +142,6 @@ pub fn initialize_context<'s>(
   let eval_context_tmpl = v8::FunctionTemplate::new(scope, eval_context);
   let eval_context_val = eval_context_tmpl.get_function(scope).unwrap();
   core_val.set(scope, eval_context_key.into(), eval_context_val.into());
-
-  let format_error_key = v8::String::new(scope, "formatError").unwrap();
-  let format_error_tmpl = v8::FunctionTemplate::new(scope, format_error);
-  let format_error_val = format_error_tmpl.get_function(scope).unwrap();
-  core_val.set(scope, format_error_key.into(), format_error_val.into());
 
   let encode_key = v8::String::new(scope, "encode").unwrap();
   let encode_tmpl = v8::FunctionTemplate::new(scope, encode);
@@ -272,10 +252,11 @@ pub extern "C" fn host_initialize_import_meta_object_callback(
   let state_rc = JsRuntime::state(scope);
   let state = state_rc.borrow();
 
-  let id = module.get_identity_hash();
-  assert_ne!(id, 0);
-
-  let info = state.modules.get_info(id).expect("Module not found");
+  let module_global = v8::Global::new(scope, module);
+  let info = state
+    .modules
+    .get_info(&module_global)
+    .expect("Module not found");
 
   let url_key = v8::String::new(scope, "url").unwrap();
   let url_val = v8::String::new(scope, &info.name).unwrap();
@@ -293,18 +274,18 @@ pub extern "C" fn promise_reject_callback(message: v8::PromiseRejectMessage) {
   let mut state = state_rc.borrow_mut();
 
   let promise = message.get_promise();
-  let promise_id = promise.get_identity_hash();
+  let promise_global = v8::Global::new(scope, promise);
 
   match message.get_event() {
     v8::PromiseRejectEvent::PromiseRejectWithNoHandler => {
-      let error = message.get_value();
+      let error = message.get_value().unwrap();
       let error_global = v8::Global::new(scope, error);
       state
         .pending_promise_exceptions
-        .insert(promise_id, error_global);
+        .insert(promise_global, error_global);
     }
     v8::PromiseRejectEvent::PromiseHandlerAddedAfterReject => {
-      state.pending_promise_exceptions.remove(&promise_id);
+      state.pending_promise_exceptions.remove(&promise_global);
     }
     v8::PromiseRejectEvent::PromiseRejectAfterResolved => {}
     v8::PromiseRejectEvent::PromiseResolveAfterResolved => {
@@ -342,7 +323,7 @@ fn print(
   _rv: v8::ReturnValue,
 ) {
   let arg_len = args.length();
-  assert!(arg_len >= 0 && arg_len <= 2);
+  assert!((0..=2).contains(&arg_len));
 
   let obj = args.get(0);
   let is_err_arg = args.get(1);
@@ -361,8 +342,10 @@ fn print(
   };
   if is_err {
     eprint!("{}", str_.to_rust_string_lossy(tc_scope));
+    stdout().flush().unwrap();
   } else {
     print!("{}", str_.to_rust_string_lossy(tc_scope));
+    stdout().flush().unwrap();
   }
 }
 
@@ -602,20 +585,6 @@ fn eval_context(
   rv.set(output.into());
 }
 
-fn format_error(
-  scope: &mut v8::HandleScope,
-  args: v8::FunctionCallbackArguments,
-  mut rv: v8::ReturnValue,
-) {
-  let e = JsError::from_v8_exception(scope, args.get(0));
-  let state_rc = JsRuntime::state(scope);
-  let state = state_rc.borrow();
-  let e = (state.js_error_create_fn)(e);
-  let e = e.to_string();
-  let e = v8::String::new(scope, &e).unwrap();
-  rv.set(e.into())
-}
-
 fn encode(
   scope: &mut v8::HandleScope,
   args: v8::FunctionCallbackArguments,
@@ -672,6 +641,14 @@ fn decode(
       view.byte_length(),
     )
   };
+
+  // Strip BOM
+  let buf =
+    if buf.len() >= 3 && buf[0] == 0xef && buf[1] == 0xbb && buf[2] == 0xbf {
+      &buf[3..]
+    } else {
+      buf
+    };
 
   // If `String::new_from_utf8()` returns `None`, this means that the
   // length of the decoded string would be longer than what V8 can
@@ -733,6 +710,7 @@ fn shared_getter(
   rv.set(shared_ab.into())
 }
 
+// Called by V8 during `Isolate::mod_instantiate`.
 pub fn module_resolve_callback<'s>(
   context: v8::Local<'s, v8::Context>,
   specifier: v8::Local<'s, v8::String>,
@@ -741,39 +719,38 @@ pub fn module_resolve_callback<'s>(
   let scope = &mut unsafe { v8::CallbackScope::new(context) };
 
   let state_rc = JsRuntime::state(scope);
-  let mut state = state_rc.borrow_mut();
+  let state = state_rc.borrow();
 
-  let referrer_id = referrer.get_identity_hash();
-  let referrer_name = state
+  let referrer_global = v8::Global::new(scope, referrer);
+  let referrer_info = state
     .modules
-    .get_info(referrer_id)
-    .expect("ModuleInfo not found")
-    .name
-    .to_string();
-  let len_ = referrer.get_module_requests_length();
+    .get_info(&referrer_global)
+    .expect("ModuleInfo not found");
+  let referrer_name = referrer_info.name.to_string();
 
   let specifier_str = specifier.to_rust_string_lossy(scope);
 
-  for i in 0..len_ {
-    let req = referrer.get_module_request(i);
-    let req_str = req.to_rust_string_lossy(scope);
+  let resolved_specifier = state
+    .loader
+    .resolve(
+      state.op_state.clone(),
+      &specifier_str,
+      &referrer_name,
+      false,
+    )
+    .expect("Module should have been already resolved");
 
-    if req_str == specifier_str {
-      let id = state.module_resolve_cb(&req_str, referrer_id);
-      match state.modules.get_info(id) {
-        Some(info) => return Some(v8::Local::new(scope, &info.handle)),
-        None => {
-          let msg = format!(
-            r#"Cannot resolve module "{}" from "{}""#,
-            req_str, referrer_name
-          );
-          throw_type_error(scope, msg);
-          return None;
-        }
-      }
+  if let Some(id) = state.modules.get_id(resolved_specifier.as_str()) {
+    if let Some(handle) = state.modules.get_handle(id) {
+      return Some(v8::Local::new(scope, handle));
     }
   }
 
+  let msg = format!(
+    r#"Cannot resolve module "{}" from "{}""#,
+    specifier_str, referrer_name
+  );
+  throw_type_error(scope, msg);
   None
 }
 
@@ -869,10 +846,7 @@ fn get_proxy_details(
   rv.set(proxy_details.into());
 }
 
-fn throw_type_error<'s>(
-  scope: &mut v8::HandleScope<'s>,
-  message: impl AsRef<str>,
-) {
+fn throw_type_error(scope: &mut v8::HandleScope, message: impl AsRef<str>) {
   let message = v8::String::new(scope, message.as_ref()).unwrap();
   let exception = v8::Exception::type_error(scope, message);
   scope.throw_exception(exception);
