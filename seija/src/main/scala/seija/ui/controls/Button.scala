@@ -37,6 +37,7 @@ class Button extends Control with LayoutViewComp with EventNodeComp {
         newEntity.addComponent[Transparent]()
 
         initProperty[String]("buttonState",params.paramStrings,Some(ButtonState.Normal),None);
+        initProperty[String]("text",params.paramStrings,Some(""),None)
         initLayoutView(this,view,params)
         initEventComp(this,params)
     }

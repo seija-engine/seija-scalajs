@@ -14,6 +14,6 @@
               )
            </Param.color>
         </Sprite>
-        <Label color="#ffffff" font="(env res.font)" text="新建文件夹" />
+        <Label color="#ffffff" font="(env res.font)" text="(attr-bind :text)" />
     </Param.Template>
 </Button>

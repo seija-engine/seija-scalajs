@@ -10,7 +10,13 @@
                     <Label margin="10,15,0,0" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="Start" text="路径:" />
                     <s:SelectBox OnValueChange="#(emit :select-root %)" dataSource="(map #(menu-item % %) (fs-roots))" margin="60,15,0,0" width="100" height="25" />
                     <core:Input hor="Start" ver="Start" margin="180,15,0,0" width="270" height="25"/>
-                    <core:Button hor="End" ver="Start" margin="0,12,30,0" width="120" height="30"/>
+                    <core:Button text="新建文件夹" hor="End" ver="Start" margin="0,12,30,0" width="120" height="30"/>
+                    <Frame margin="10,50,10,44">
+                        <Image texture="(env res.white)" color="#222222" />
+                        <Image texture="(env res.white)"  margin="1,1,1,1" color="#bbbbbb" />
+                    </Frame>
+                    <core:Button text="选择文件夹" hor="Start" ver="End" margin="140,0,0,8" width="120" height="30"/>
+                    <core:Button OnClick="#(emit :close-dialog)" text="取消" hor="End" ver="End" margin="0,0,140,8" width="120" height="30"/>
                 </Frame>
             </Frame>
         </Frame>
