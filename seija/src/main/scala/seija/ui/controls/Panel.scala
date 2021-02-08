@@ -13,7 +13,7 @@ import seija.s2d.layout.ContentView
 import seija.ui.comps.LayoutViewComp
 
 object Panel {
-    implicit val imageCreator:ControlCreator[Panel] = new ControlCreator[Panel] {
+    implicit val panelCreator:ControlCreator[Panel] = new ControlCreator[Panel] {
         val name: String = "Panel"
         def init(): Unit = {}
         def create(): Panel = new Panel

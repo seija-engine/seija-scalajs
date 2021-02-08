@@ -11,6 +11,6 @@ object list extends Function1[Path, IndexedSeq[Path]] {
   }
 
   def roots():js.Array[Path] = {
-    Foreign.getRoots().map(Path(_))
+    Foreign.getRoots().map(s => Path(s + ":"))
   }
 }

@@ -4,6 +4,7 @@ import seija.math.Vector2
 import scala.collection.mutable
 import scala.scalajs.js.Error
 import scalajs.js
+import slogging.LazyLogging
 
 class SContent(var parent:Option[SContent] = None) {
   val symbols:js.Dictionary[SExpr] = js.Dictionary()
@@ -32,6 +33,7 @@ object SExprInterp {
     this.rootContent.set("+", SNFunc(InterpCoreFunction.add))
     this.rootContent.set("vec2",SNFunc(InterpCoreFunction.vec2))
     this.rootContent.set("color.red",SUserData(Color.red))
+    this.rootContent.set("hex-color",SNFunc(InterpCoreFunction.hexColor))
     this.rootContent.set("color.green",SUserData(Color.green))
     this.rootContent.set("color.blue",SUserData(Color.blue))
     this.rootContent.set("color.transparent",SUserData(Color.transparent))
@@ -131,7 +133,7 @@ object SExprInterp {
   }
 }
 
-private object InterpCoreFunction {
+private object InterpCoreFunction extends LazyLogging {
   def add(args:js.Array[SExpr],content: SContent):SExpr = {
     val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
     var retNumber:Float = 0;
@@ -156,6 +158,18 @@ private object InterpCoreFunction {
     val x = evalArgs(0).castFloat()
     val y = evalArgs(1).castFloat()
     SUserData(Vector2.New(x, y))
+  }
+
+  def hexColor(args:js.Array[SExpr],content: SContent):SExpr = {
+    val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+    val strColor = evalArgs(0).castString()
+    Color.colorRead.read(strColor) match {
+      case Some(value) => SUserData(value)
+      case None => 
+        logger.error(strColor +" not color")
+        SNil
+    }
+    
   }
 
   def isOdd(args:js.Array[SExpr],content: SContent):SExpr = {

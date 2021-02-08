@@ -153,8 +153,7 @@ fn fs_get_root(_: &mut OpState,_: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, A
         let mut ret_arr:Vec<Value> = vec![];
         for chr in 'A' .. 'Z' {
            if(d & (1 << idx)) > 0 {
-               let mut string = String::from(chr);
-               string.push_str(":\\");
+               let string = String::from(chr);
                ret_arr.push(Value::String(string));
            }
            idx += 1;

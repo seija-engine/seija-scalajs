@@ -36,6 +36,11 @@ class Entity(val id:Int) {
     t
   }
 
+  private[seija] def addRawComp[T <: BaseComponent](value:T)(implicit comp:Component[T]):T = {
+    this.components.put(comp.key,value);
+    value
+  }
+
   def getComponent[T <: BaseComponent]()(implicit comp:Component[T]):Option[T] = {
     this.components.get(comp.key).map(_.asInstanceOf[T])
   }

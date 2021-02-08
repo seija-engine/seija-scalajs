@@ -1,7 +1,7 @@
 use deno_core::{JsRuntime,OpState,ZeroCopyBuf};
 use crate::opts::{reg_json_op_sync,get_mut_world};
-use serde_json::Value;
-use seija::{math::{Vector2}, s2d::layout::{ContentView, GridCell, view::ViewType}, specs::{Entity, World, WorldExt, WriteStorage}};
+use serde_json::{Number, Value};
+use seija::{math::{Vector2}, s2d::{layout::{ContentView, GridCell, view::ViewType}, ui::raw_input::RawInput}, specs::{Entity, ReadStorage, World, WorldExt, WriteStorage}};
 use deno_core::error::AnyError;
 use seija::render::{components::{ImageRender,Mesh2D,SpriteSheet,TextRender,LineMode,SpriteRender,ImageType,ImageFilledType},Transparent};
 use seija::assets::Handle;
@@ -66,6 +66,8 @@ pub fn init_json_func(rt:&mut JsRuntime) {
     reg_json_op_sync(rt,"addContentView",add_context_view);
     reg_json_op_sync(rt,"removeContentView",remove_context_view);
     
+    reg_json_op_sync(rt,"attachRawInput",attach_raw_input);
+    reg_json_op_sync(rt,"getRawInputLabel",get_raw_input_label);
 }
 
 
@@ -750,6 +752,27 @@ fn remove_context_view(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Res
         elems.remove(entity).unwrap();
     }
     Ok(Value::Null)
+}
+
+fn attach_raw_input(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let eid = value.as_i64().unwrap() as u32;
+    let entity = world.entities().entity(eid);
+    let succ = RawInput::attach_new(entity, None, world);
+    Ok(Value::Bool(succ))
+}
+
+fn get_raw_input_label(_: &mut OpState,value: Value,_:&mut [ZeroCopyBuf]) -> Result<Value, AnyError> {
+    let world = get_mut_world();
+    let eid = value.as_i64().unwrap() as u32;
+    let entity = world.entities().entity(eid);
+    let raw_inputs:ReadStorage<RawInput> = world.read_storage::<RawInput>();
+    let mle = raw_inputs.get(entity).map(|i| i.label);
+    match mle {
+        Some(e) => Ok(Value::Number(Number::from(e.id()))),
+        None => Ok(Value::Null),
+    }
+    
 }
 
 fn opt_rect_attr_ref(_: &mut OpState,value: Value,buffer:&mut [ZeroCopyBuf],f:fn(&mut Rect2D,bytes:&mut [u8])) -> Result<Value, AnyError> {

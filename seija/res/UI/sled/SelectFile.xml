@@ -1,15 +1,16 @@
-<SelectFile layer="Dialog" xmlns:s="/sled/">
+<SelectFile layer="Dialog" xmlns:core="/core/" xmlns:s="/sled/">
     <Param.Template>
         <Frame width="640" height="480" ver="Center" hor="Center">
-            <Image texture="(env res.white)" color="#999999" />
-            <Label hor="Center" fontSize="20" height="30" width="80" color="#000000" font="(env res.font)"  text="选择文件夹" />
-            <Label OnClick="#(emit :close-dialog)" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="End" ver="Start" text="@[ x ]" />
+            <Image texture="(env res.white)" color="#000000" />
+            <Label hor="Center" fontSize="20" height="30" width="80" color="#ffffff" font="(env res.font)"  text="选择文件夹" />
+            <Label OnClick="#(emit :close-dialog)" fontSize="20" height="30" width="40" color="#ffffff" font="(env res.font)" hor="End" ver="Start" text="@[ x ]" />
             <Frame  margin="0,30,0,0">
                 <Image texture="(env res.white)" color="#eeeeee" />
                 <Frame>
                     <Label margin="10,15,0,0" fontSize="20" height="30" width="40" color="#000000" font="(env res.font)" hor="Start" text="路径:" />
                     <s:SelectBox OnValueChange="#(emit :select-root %)" dataSource="(map #(menu-item % %) (fs-roots))" margin="60,15,0,0" width="100" height="25" />
-                    
+                    <core:Input hor="Start" ver="Start" margin="180,15,0,0" width="270" height="25"/>
+                    <core:Button hor="End" ver="Start" margin="0,12,30,0" width="120" height="30"/>
                 </Frame>
             </Frame>
         </Frame>

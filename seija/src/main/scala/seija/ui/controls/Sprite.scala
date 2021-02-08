@@ -12,6 +12,7 @@ import seija.s2d.SpriteRender
 import seija.s2d.layout.LayoutView
 import seija.s2d.assets.SpriteSheet
 import seija.s2d.ImageType
+import seija.data.Color
 
 object Sprite {
     implicit val spriteCreator:ControlCreator[Sprite] = new ControlCreator[Sprite] {
@@ -43,6 +44,9 @@ class Sprite extends Control with LayoutViewComp with EventNodeComp {
         }))
         this.initProperty[Float]("fillValue",params.paramStrings,None,Some((value) => {
            spriteRender.setFilledValue(value)
+        }))
+         this.initProperty[Color]("color",params.paramStrings,None,Some((color) => {
+            spriteRender.color = color
         }))
 
         initLayoutView(this,view,params)

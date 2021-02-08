@@ -15,6 +15,7 @@ object  SExprContent {
        content.set("num-rate",SNFunc(numRate))
        content.set("num-const",SNFunc(numConst))
        content.set("emit",SNFunc(emit))
+       content.set("emit-this",SNFunc(emitThis))
    }
 
    def env(args:js.Array[SExpr],content:SContent):SExpr = {
@@ -28,6 +29,16 @@ object  SExprContent {
       val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
       val evName = evalArgs(0).castKeyword()
       val ownerControlExpr = content.find("ownerControl");
+      if(ownerControlExpr.isEmpty) return SNil
+      val control = ownerControlExpr.get.castSingleAny().asInstanceOf[Control]
+      control.handleEvent(evName,evalArgs.tail)
+      SNil
+   }
+
+   def emitThis(args:js.Array[SExpr],content:SContent):SExpr = {
+      val evalArgs = args.map(e => SExprInterp.eval(e,Some(content)))
+      val evName = evalArgs(0).castKeyword()
+      val ownerControlExpr = content.find("control");
       if(ownerControlExpr.isEmpty) return SNil
       val control = ownerControlExpr.get.castSingleAny().asInstanceOf[Control]
       control.handleEvent(evName,evalArgs.tail)

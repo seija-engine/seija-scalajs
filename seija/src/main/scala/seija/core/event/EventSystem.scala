@@ -91,7 +91,7 @@ object GameEventType extends Enumeration {
     case "MouseEnter" => Some(GameEventType.MouseEnter)
     case "MouseLeave" => Some(GameEventType.MouseLeave)
     case "KeyBoard"   => Some(GameEventType.KeyBoard)
-    case _ => Some(GameEventType.Click)
+    case _ => None
   }
 }
 

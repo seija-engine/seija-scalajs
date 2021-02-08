@@ -250,8 +250,11 @@ object Foreign {
   def addContentView(entity:Int):Boolean =
     Deno.core.jsonOpSync("addContentView",entity).asInstanceOf[Boolean]
 
-  def removeContentView(entity:Int):Unit =
-    Deno.core.jsonOpSync("removeContentView",entity)
+  def removeContentView(entity:Int):Unit = Deno.core.jsonOpSync("removeContentView",entity)
+
+  def attachRawInput(entity:Int):Boolean = Deno.core.jsonOpSync("attachRawInput",entity).asInstanceOf[Boolean]
+
+  def getRawInputLabel(entity:Int):Int = Deno.core.jsonOpSync("getRawInputLabel",entity).asInstanceOf[Int]
 }
 
 @js.native

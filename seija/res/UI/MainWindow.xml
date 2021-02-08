@@ -20,7 +20,7 @@
                     </core:Menu>
                 </GridCell>
                 <GridCell row="1" colSpan="2"  col="0">
-                    <core:Input />
+                   
                 </GridCell>
             </Param.Template>
         </Grid>
