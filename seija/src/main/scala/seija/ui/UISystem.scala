@@ -47,6 +47,7 @@ object UISystem extends LazyLogging {
       this.addCreator[RawInput]()
       this.addCreator[SelectFile]()
       this.addCreator[Button]()
+      this.addCreator[ListBox]()
 
       val root = Entity.New(None)
       root.addComponent[Transform]()

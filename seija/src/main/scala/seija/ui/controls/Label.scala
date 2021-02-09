@@ -16,7 +16,7 @@ import seija.data.AnchorAlign._
 import seija.s2d.LineMode._
 
 object Label {
-  implicit val stackCreator:ControlCreator[Label] = new ControlCreator[Label] {
+  implicit val labelCreator:ControlCreator[Label] = new ControlCreator[Label] {
         val name: String = "Label"
         def init(): Unit = {}
         def create(): Label = new Label
